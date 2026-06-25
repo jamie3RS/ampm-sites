@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en-GB" data-arc="full" data-skin="night">
+<head>
+<meta charset="utf-8" />
+<title>Fire, Security &amp; Ventilation Systems for UK Commercial &amp; Public Sector Buildings · Gemini AMPM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="We are Gemini AMPM, an award-winning, employee-owned provider of fire and security safety systems, ventilation, gas suppression, passive fire, asset management and property maintenance services across the UK." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;700;800&family=Archivo:wght@400;500;600;700&family=Archivo+Black&family=Quicksand:wght@500;600;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="gemini-base.css?v=6" />
+<link rel="stylesheet" href="gemini-theme.css?v=18" />
+<script src="image-slot.js"></script>
+
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+    <rect width="200" height="200" fill="#0b0e1c" />
+    <circle cx="150" cy="52" r="30" fill="none" stroke="#bacbff" stroke-width="2" opacity="0.5" />
+    <g transform="translate(60 84)">
+      <rect x="0" y="0" width="18" height="18" fill="#3D8E2E" />
+      <rect x="22" y="0" width="18" height="18" fill="#7A2E8F" />
+      <rect x="0" y="22" width="18" height="18" fill="#E8742C" />
+      <rect x="22" y="22" width="18" height="18" fill="#2E5FAB" />
+    </g>
+    <text x="100" y="150" text-anchor="middle" fill="#f4ead8" font-family="Arial Black, sans-serif" font-size="26" font-weight="800" letter-spacing="0.02em">GEMINI</text>
+  </svg>
+</template>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="g-data.jsx?v=22"></script>
+<script type="text/babel" src="g-shell.jsx?v=10"></script>
+<script type="text/babel" src="g-home.jsx?v=7"></script>
+<script type="text/babel" src="g-service.jsx?v=3"></script>
+<script type="text/babel" src="g-pages.jsx?v=10"></script>
+
+<script type="text/babel" data-presets="env,react">
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "arc": "Full",
+    "displayFont": "Big Shoulders",
+    "heroConcept": "The Watch",
+    "accent": "Amber",
+    "skin": "Night"
+  }/*EDITMODE-END*/;
+
+  const ACCENTS = { Amber: "var(--m-orange)", Blue: "var(--m-blue)", Green: "var(--m-green)", Violet: "var(--m-purple)" };
+  const PILLAR_IDS = PILLARS.map((p) => p.id);
+  const ACCRED_ROUTE_IDS = ACCRED_IDS; // exposed by g-data.jsx
+  const ROUTE_IDS = ["home", "services", "sectors", "casestudies", "news", "about", "why", "contact", "accreditations", "clients", "manufacturers"].concat(PILLAR_IDS).concat(ACCRED_ROUTE_IDS);
+
+  function readHash() {
+    const h = (location.hash || "").replace("#", "");
+    return ROUTE_IDS.indexOf(h) >= 0 ? h : "home";
+  }
+
+  function App() {
+    const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+    const [route, setRouteState] = React.useState(readHash());
+    const phone = CONTACT.phone;
+
+    const setRoute = React.useCallback((id) => {
+      setRouteState(id);
+      if (location.hash.replace("#", "") !== id) location.hash = id;
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }, []);
+
+    React.useEffect(() => {
+      const onHash = () => setRouteState(readHash());
+      window.addEventListener("hashchange", onHash);
+      return () => window.removeEventListener("hashchange", onHash);
+    }, []);
+
+    // Tweaks → document
+    React.useEffect(() => {
+      const root = document.documentElement;
+      root.setAttribute("data-arc", String(t.arc || "Full").toLowerCase());
+      root.setAttribute("data-skin", t.skin === "Day" ? "day" : "night");
+      root.style.setProperty("--g-accent", ACCENTS[t.accent] || ACCENTS.Amber);
+      const fam = t.displayFont === "Archivo Black"
+        ? '"Archivo Black", "Archivo", sans-serif'
+        : '"Big Shoulders Display", "Archivo", sans-serif';
+      root.style.setProperty("--d-display", fam);
+    }, [t, route]);
+
+    const skin = t.skin === "Day" ? "day" : "night";
+    const concept = t.heroConcept === "First Light" ? "firstlight" : "watch";
+
+    let Page;
+    if (PILLAR_IDS.indexOf(route) >= 0) Page = <ServicePillarPage id={route} setRoute={setRoute} skin={skin} />;
+    else if (ACCRED_ROUTE_IDS.indexOf(route) >= 0) Page = <AccreditationPage slug={route} setRoute={setRoute} skin={skin} />;
+    else if (route === "accreditations") Page = <AccreditationsIndexPage setRoute={setRoute} skin={skin} />;
+    else if (route === "clients") Page = <ClientsDirectoryPage setRoute={setRoute} skin={skin} />;
+    else if (route === "manufacturers") Page = <ManufacturersDirectoryPage setRoute={setRoute} skin={skin} />;
+    else if (route === "services") Page = <ServicesPage setRoute={setRoute} skin={skin} />;
+    else if (route === "sectors") Page = <SectorsPage setRoute={setRoute} skin={skin} />;
+    else if (route === "casestudies") Page = <CaseStudiesPage setRoute={setRoute} skin={skin} />;
+    else if (route === "news") Page = <NewsPage setRoute={setRoute} skin={skin} />;
+    else if (route === "about") Page = <AboutPage setRoute={setRoute} skin={skin} />;
+    else if (route === "why") Page = <WhyPage setRoute={setRoute} skin={skin} />;
+    else if (route === "contact") Page = <ContactPage setRoute={setRoute} skin={skin} phone={phone} />;
+    else Page = <GeminiHome setRoute={setRoute} phone={phone} concept={concept} />;
+
+    return (
+      <>
+        <Nav route={route} setRoute={setRoute} phone={phone} />
+        {Page}
+        <Footer setRoute={setRoute} phone={phone} />
+      </>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

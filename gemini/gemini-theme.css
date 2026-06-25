@@ -1,0 +1,487 @@
+/* ============================================================================
+   GEMINI AMPM — night theme layer (loads AFTER gemini-base.css)
+   Same group DNA as AMPM Building Services — Big Shoulders + Archivo, the
+   four-colour meridian, the stamp markers — but Gemini owns the NIGHT.
+   Home runs the inverted PM→AM arc; interior pages run the BS calm-page
+   system in a dark "night" skin (flip --paper/--ink vars), with a day skin
+   toggle. Tweak hooks: [data-arc], [data-skin], --g-accent, --d-display.
+   ============================================================================ */
+
+:root {
+  --g-accent: var(--m-orange);          /* night identity accent (tweakable) */
+  --night-2: #141a30;
+  --dusk: #2b3558;
+  --d-display: "Big Shoulders Display", "Archivo", sans-serif;
+}
+
+body { background: var(--night); color: var(--night-text); }
+
+/* ===========================================================================
+   A. INTERIOR-PAGE SKIN  — flip the BS sub-page variables to go dark.
+   The whole .page component family (.svc-detail, .capgroups, .caselist,
+   .otherlines, .statband, .acc-wall, .thread, .team, .routes2, .kicker…)
+   re-themes automatically because it reads these vars.
+   =========================================================================== */
+html[data-skin="night"] {
+  --paper: #0b0e1c;
+  --paper-2: #161d36;
+  --paper-card: #10162c;
+  --ink: #f4ead8;                 /* now the light tone — borders, grid lines, text */
+  --ink-2: rgba(244,234,216,0.74);
+  --ink-3: rgba(244,234,216,0.48);
+  --line: rgba(244,234,216,0.18);
+  --line-strong: rgba(244,234,216,0.85);
+}
+/* the few base rules that hardcode ink-rgba (not the vars) need a night value */
+html[data-skin="night"] .case-card .ci,
+html[data-skin="night"] .cap .img,
+html[data-skin="night"] .hero-fig image-slot,
+html[data-skin="night"] .case image-slot { background: rgba(244,234,216,0.07); }
+html[data-skin="night"] .svc:hover,
+html[data-skin="night"] .svc-detail.link:hover { background: rgba(244,234,216,0.05); }
+/* buttons: keep a light-on-dark solid + ghost outline */
+html[data-skin="night"] .btn { background: var(--night-text); color: #0b0e1c; border-color: var(--night-text); }
+html[data-skin="night"] .btn:hover { transform: translateY(-2px); }
+html[data-skin="night"] .btn.line { background: transparent; color: var(--night-text); }
+html[data-skin="night"] .btn.line:hover { background: var(--night-text); color: #0b0e1c; }
+html[data-skin="night"] .team .person .role,
+html[data-skin="night"] .grp-grid .cell.current .tag { color: var(--m-green); }
+/* on a night page the moon-glow drifts behind the hero */
+.page { position: relative; overflow: hidden; }
+.page .pageglow { position: absolute; top: -120px; right: -60px; width: 560px; height: 560px;
+  pointer-events: none; z-index: 0; background: radial-gradient(circle, rgba(186,203,255,0.14) 0%, rgba(186,203,255,0) 66%); }
+html[data-skin="day"] .page .pageglow { display: none; }
+.page .shell { position: relative; z-index: 1; }
+
+/* interior dark hero band (the night signature on every sub-page) */
+.p-hero.nightband { margin: 0 calc(-1 * var(--pad-x)); padding-left: var(--pad-x); padding-right: var(--pad-x);
+  background: linear-gradient(170deg, var(--dusk) 0%, #18203c 55%, var(--night) 100%); color: var(--night-text); }
+html[data-skin="night"] .p-hero.nightband { background: linear-gradient(170deg, #1a2240 0%, #0d1226 100%); }
+.p-hero.nightband h1 { color: #fff; }
+.p-hero.nightband .lede { color: rgba(244,234,216,0.85); }
+.p-hero.nightband .lede strong { color: #fff; }
+html[data-skin="day"] .p-hero.nightband .kicker { color: rgba(244,234,216,0.7); }
+
+/* accent-driven kicker tick + active nav underline use the night accent */
+.kicker::before { background: currentColor; }
+.svc-bar.accent { background: var(--g-accent); }
+
+/* ===========================================================================
+   B. THE HOME ARC  — scoped under .ghome. PM (dusk) → deep night → AM (dawn).
+   =========================================================================== */
+.ghome { position: relative; color: var(--night-text);
+  background: linear-gradient(180deg, var(--dusk) 0%, #1b2440 6%, var(--night) 15%, var(--night) 100%); }
+html[data-arc="subtle"] .ghome {
+  background: linear-gradient(180deg, #1e2748 0%, #121831 9%, var(--night) 22%, var(--night) 100%); }
+
+/* stars + moon glow in the deep-night band */
+.ghome .stars { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
+.ghome .star { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #fff; opacity: 0.7;
+  animation: g-twinkle 4.6s ease-in-out infinite; }
+.ghome .star.s2 { width: 2px; height: 2px; opacity: 0.45; }
+@keyframes g-twinkle { 0%,100% { opacity: 0.18; } 50% { opacity: 0.92; } }
+.ghome .moonglow { position: absolute; width: 520px; height: 520px;
+  background: radial-gradient(circle, rgba(186,203,255,0.22) 0%, rgba(186,203,255,0) 65%); }
+html[data-arc="still"] .ghome .star { animation: none; }
+@media (prefers-reduced-motion: reduce) { .ghome .star { animation: none; } }
+
+/* spine + content rails (mirror the launch site) */
+.ghome .gspine { position: fixed; left: var(--spine-x); top: 0; bottom: 0; width: 2px;
+  background: rgba(244,234,216,0.16); z-index: 1; pointer-events: none; }
+@media (max-width: 1000px) { .ghome .gspine { display: none; } }
+.gwrap { padding-left: calc(var(--spine-x) + clamp(18px,3vw,46px)); padding-right: var(--pad-x);
+  position: relative; z-index: 2; max-width: 1480px; }
+@media (max-width: 1000px) { .gwrap { padding-left: var(--pad-x); } }
+
+/* stamp marker on dark */
+.gstamp { font-family: var(--d-display); font-weight: 700; font-size: clamp(20px,2.2vw,30px);
+  letter-spacing: 0.04em; display: flex; align-items: center; gap: 16px; margin: 0 0 26px; color: var(--night-text); }
+.gstamp .tick { width: 46px; height: 2px; background: var(--g-accent); margin-left: calc(-46px - 18px); }
+@media (max-width: 1000px) { .gstamp .tick { display: none; } }
+.gstamp .shift { font-family: var(--d-body); font-size: 12px; font-weight: 600;
+  letter-spacing: 0.24em; text-transform: uppercase; opacity: 0.6; }
+
+/* hero */
+.ghero { padding-top: clamp(36px,5vw,70px); padding-bottom: clamp(48px,6vw,80px); }
+.ghero h1 { font-family: var(--d-display); font-weight: 800; font-size: clamp(64px,12vw,168px);
+  line-height: 0.86; letter-spacing: 0.005em; text-transform: uppercase; margin: 12px 0 0; color: #fff; }
+.ghero h1 .arr { display: inline-block; transform: translateY(-0.06em); color: var(--g-accent); }
+.ghero .sub-row { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(28px,4vw,56px);
+  margin-top: clamp(28px,4vw,46px); align-items: start; }
+@media (max-width: 900px) { .ghero .sub-row { grid-template-columns: 1fr; } }
+.ghero .standfirst { font-size: clamp(17px,1.5vw,21px); line-height: 1.55; font-weight: 500;
+  max-width: 34ch; margin: 0; color: rgba(244,234,216,0.85); }
+.ghero .standfirst strong { color: #fff; font-weight: 700; }
+.gcta { display: flex; gap: 16px; margin-top: 30px; flex-wrap: wrap; }
+.gfig { position: relative; margin: 0; }
+.gfig image-slot { background: rgba(244,234,216,0.07); }
+.gcap { font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+  opacity: 0.55; margin-top: 10px; }
+
+/* discipline ribbon (four hero pillars) */
+.gribbon { position: relative; z-index: 2; margin: 0 var(--pad-x) 0 calc(var(--spine-x) + clamp(18px,3vw,46px)); }
+@media (max-width: 1000px) { .gribbon { margin-left: var(--pad-x); } }
+.gribbon .bar { display: flex; height: 64px; }
+.gribbon .seg { flex: 1; display: flex; align-items: center; justify-content: space-between; padding: 0 18px;
+  font-family: var(--d-display); font-weight: 700; font-size: clamp(13px,1.35vw,18px); letter-spacing: 0.05em;
+  text-transform: uppercase; color: #fff; text-decoration: none; transition: flex 0.3s; }
+.gribbon .seg:hover { flex: 1.35; }
+.gribbon .seg small { font-family: var(--d-body); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; opacity: 0.8; }
+.gribbon .legend { display: flex; justify-content: space-between; gap: 12px; font-size: 11.5px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.55; padding: 12px 2px 0; }
+@media (max-width: 700px) { .gribbon .legend span:nth-child(2) { display: none; } }
+
+/* big section head */
+.gh2 { font-family: var(--d-display); font-weight: 800; font-size: clamp(44px,7vw,92px); line-height: 0.92;
+  text-transform: uppercase; letter-spacing: 0.005em; margin: 0 0 40px; color: #fff; }
+.gh2 .lt { color: rgba(244,234,216,0.5); }
+
+/* services ledger */
+.gservices { padding-top: clamp(80px,9vw,120px); }
+.gsvc { display: grid; grid-template-columns: clamp(70px,9vw,140px) 1fr 1.05fr 64px; gap: clamp(16px,2.6vw,36px);
+  align-items: center; border-top: 3px solid rgba(244,234,216,0.85); padding: clamp(20px,2.4vw,30px) 0;
+  text-decoration: none; color: inherit; transition: background 0.2s; cursor: pointer; }
+.gsvc:last-of-type { border-bottom: 3px solid rgba(244,234,216,0.85); }
+.gsvc:hover { background: rgba(244,234,216,0.05); }
+.gsvc:hover .go { transform: translateX(10px); }
+.gsvc .num { font-family: var(--d-display); font-weight: 800; font-size: clamp(40px,5.5vw,76px); line-height: 1; color: #fff; }
+.gsvc .nm { font-family: var(--d-display); font-weight: 700; font-size: clamp(24px,3vw,40px); line-height: 0.95;
+  text-transform: uppercase; letter-spacing: 0.01em; color: #fff; }
+.gsvc .nm .sw { display: inline-block; width: 36px; height: 13px; margin-left: 14px; vertical-align: middle; }
+.gsvc p { font-size: 15px; line-height: 1.55; font-weight: 500; margin: 0; color: rgba(244,234,216,0.78); max-width: 46ch; }
+.gsvc .go { font-family: var(--d-display); font-weight: 800; font-size: 40px; text-align: right; transition: transform 0.2s; color: #fff; }
+@media (max-width: 800px) { .gsvc { grid-template-columns: 56px 1fr 40px; } .gsvc p { display: none; } }
+
+/* glass panels over the night sky (proof / log / clients) */
+.gglass { border: 3px solid rgba(244,234,216,0.85); background: rgba(16,22,44,0.42);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.gproof { margin-top: clamp(40px,5vw,60px); display: flex; flex-wrap: wrap; }
+.gproof .cell { flex: 1 1 200px; padding: 26px; border-right: 3px solid rgba(244,234,216,0.85); }
+.gproof .cell:last-child { border-right: 0; }
+@media (max-width: 860px) { .gproof .cell { border-right: 0; border-bottom: 3px solid rgba(244,234,216,0.85); } .gproof .cell:last-child { border-bottom: 0; } }
+.gproof .big { font-family: var(--d-display); font-weight: 800; font-size: clamp(40px,4.4vw,58px); line-height: 0.95; color: #fff; }
+.gproof .lbl { font-size: 13px; font-weight: 600; line-height: 1.4; margin-top: 8px; color: rgba(244,234,216,0.8); }
+
+/* the watch — night log */
+.gwatch { padding-top: clamp(90px,11vw,140px); }
+.gwatch .cols { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px,5vw,56px); align-items: center; }
+@media (max-width: 900px) { .gwatch .cols { grid-template-columns: 1fr; } }
+.gwatch .story p { font-size: clamp(16px,1.4vw,18px); line-height: 1.65; font-weight: 500;
+  color: rgba(244,234,216,0.85); margin: 0 0 18px; max-width: 52ch; }
+.gwatch .story p strong { color: #fff; font-weight: 700; }
+.glog { padding: clamp(24px,3vw,32px) clamp(26px,3vw,34px); }
+.glog .hd { font-family: var(--d-display); font-weight: 800; font-size: 22px; letter-spacing: 0.04em;
+  text-transform: uppercase; color: #fff; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+.glog .hd .dotlive { width: 9px; height: 9px; border-radius: 50%; background: var(--m-green);
+  box-shadow: 0 0 0 0 rgba(61,142,46,0.6); animation: g-pulse 2.4s infinite; }
+@keyframes g-pulse { 0% { box-shadow: 0 0 0 0 rgba(61,142,46,0.55); } 70% { box-shadow: 0 0 0 10px rgba(61,142,46,0); } 100% { box-shadow: 0 0 0 0 rgba(61,142,46,0); } }
+html[data-arc="still"] .glog .hd .dotlive { animation: none; }
+.glog .row { display: grid; grid-template-columns: 76px 1fr; gap: 18px; padding: 12px 0;
+  border-top: 1px solid rgba(244,234,216,0.28); font-size: 14px; font-weight: 500; color: rgba(244,234,216,0.85); }
+.glog .row .t { font-family: var(--d-display); font-weight: 700; font-size: 17px; letter-spacing: 0.06em; color: #fff; }
+.glog .row strong { color: #fff; }
+
+/* clients */
+.gclients { padding-top: clamp(80px,10vw,120px); }
+.gclient-row { display: grid; grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 1100px) { .gclient-row { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 760px)  { .gclient-row { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px)  { .gclient-row { grid-template-columns: 1fr; } }
+
+/* "See every client we work with →" pill CTA below the home featured-12 grid */
+.gpill { display: inline-block; font-family: var(--d-display); font-weight: 700;
+  font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(244,234,216,0.85); text-decoration: none;
+  padding: 13px 28px; border: 2px solid rgba(244,234,216,0.4); border-radius: 999px;
+  transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease; }
+.gpill:hover { color: #fff; border-color: #fff; background: rgba(255,255,255,0.08); }
+.gclient { padding: 28px 26px; border-right: 1px solid rgba(244,234,216,0.18);
+  border-bottom: 1px solid rgba(244,234,216,0.18);
+  display: flex; flex-direction: column; gap: 12px; min-height: 168px;
+  text-decoration: none; color: inherit;
+  transition: background 0.18s ease; }
+.gclient--linked:hover { background: rgba(244,234,216,0.04); }
+.gclient--linked:hover .nm { color: var(--g-accent, var(--m-orange)); }
+.gclient-logo { display: block; height: 36px; width: auto; max-width: 80%; object-fit: contain;
+  object-position: left center; filter: brightness(0) invert(1); opacity: 0.92; }
+/* Logos that are already white, have built-in coloured backgrounds, or
+   depend on brand colour for legibility (NHS blue, Kingston blue, Maze
+   navy box) — keep their original colour. */
+.gclient-logo--keep { filter: none; opacity: 1; height: 44px; }
+.gclient-logo--text { font-family: var(--d-display); font-weight: 700; font-size: 14px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: rgba(244,234,216,0.5);
+  height: 36px; display: flex; align-items: center; filter: none; }
+.gclient .nm { font-family: var(--d-display); font-weight: 800; font-size: 22px; text-transform: uppercase; color: #fff; line-height: 1.05;
+  transition: color 0.18s ease; }
+.gclient .what { font-size: 13px; font-weight: 500; line-height: 1.5; color: rgba(244,234,216,0.7); }
+
+/* who-we-are (Direction B) */
+.gwho { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: rgba(244,234,216,0.18);
+  border: 1px solid rgba(244,234,216,0.18); }
+@media (max-width: 860px) { .gwho { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 540px) { .gwho { grid-template-columns: 1fr; } }
+.gwho .cell { background: var(--night); padding: 28px 24px; display: flex; flex-direction: column; gap: 10px; }
+.gwho .cell .n { font-family: var(--d-display); font-weight: 800; font-size: 22px; color: var(--g-accent); }
+.gwho .cell h4 { font-family: var(--d-display); font-weight: 700; text-transform: uppercase; font-size: 21px;
+  line-height: 1; margin: 0; color: #fff; }
+.gwho .cell p { font-size: 13.5px; line-height: 1.55; font-weight: 500; color: rgba(244,234,216,0.78); margin: 0; }
+
+/* sectors teaser (home) */
+.gsector-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: rgba(244,234,216,0.18);
+  border: 1px solid rgba(244,234,216,0.18); }
+@media (max-width: 900px) { .gsector-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 540px) { .gsector-grid { grid-template-columns: 1fr; } }
+.gsector { background: var(--night); padding: 24px 22px; display: flex; flex-direction: column; gap: 10px;
+  text-decoration: none; cursor: pointer; transition: background 0.2s; min-height: 132px; }
+.gsector:hover { background: var(--night-2); }
+.gsector .sw { width: 30px; height: 11px; }
+.gsector .nm { font-family: var(--d-display); font-weight: 700; text-transform: uppercase; font-size: 19px;
+  line-height: 1; color: #fff; }
+.gsector .bl { font-size: 12.5px; line-height: 1.5; font-weight: 500; color: rgba(244,234,216,0.74); margin: 0; }
+
+/* news teaser (home + index) */
+.gnews-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+@media (max-width: 900px) { .gnews-row { grid-template-columns: 1fr; } }
+.gnews { display: flex; flex-direction: column; text-decoration: none; color: inherit; cursor: pointer; }
+.gnews .ni { width: 100%; height: 196px; background: rgba(244,234,216,0.07); display: block; }
+.gnews .meta { display: flex; gap: 14px; align-items: center; margin: 16px 0 8px; font-size: 11px;
+  font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(244,234,216,0.55); }
+.gnews .meta .cat { color: var(--g-accent); }
+.gnews h4 { font-family: var(--d-display); font-weight: 700; text-transform: uppercase; font-size: 21px;
+  line-height: 1.04; margin: 0 0 8px; color: #fff; }
+.gnews p { font-size: 13.5px; line-height: 1.5; font-weight: 500; color: rgba(244,234,216,0.74); margin: 0; }
+.gnews:hover h4 { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; }
+
+/* ===== dawn handback — pixel-anchored daybreak band at the foot ===== */
+.gdaybreak { position: relative; z-index: 2;
+  background: linear-gradient(180deg, var(--night) 0px, #1b2440 120px, #41507c 220px,
+    #c97f5e 320px, #ecc9a0 400px, #f3dfc4 500px, #fdfaf2 640px); }
+html[data-arc="subtle"] .gdaybreak {
+  background: linear-gradient(180deg, var(--night) 0px, #2a3354 150px, #b7a79f 360px, #f3ead9 560px, #fdfaf2 700px); }
+.gdawn { padding-top: 540px; padding-bottom: 70px; color: var(--ink-fixed, #1c1812); }
+.gdawn .gstamp { color: #1c1812; }
+.gdawn .gstamp .tick { background: var(--g-accent); }
+.gdawn .gh2 { color: #1c1812; }
+.gdawn .lead { font-size: clamp(17px,1.5vw,20px); line-height: 1.6; font-weight: 500; max-width: 54ch;
+  margin: 0 0 32px; color: rgba(28,24,18,0.85); }
+.gdawn .lead strong { color: #1c1812; font-weight: 700; }
+.gdawn .btn { background: #1c1812; color: #f9efdd; border-color: #1c1812; }
+.gdawn .btn.line { background: transparent; color: #1c1812; border-color: #1c1812; }
+.gsister { margin-top: 52px; border: 3px solid #1c1812; padding: 26px 30px; display: flex;
+  align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; cursor: pointer;
+  text-decoration: none; color: #1c1812; transition: background 0.2s; }
+.gsister:hover { background: rgba(28,24,18,0.04); }
+.gsister .txt { font-size: 15px; font-weight: 600; line-height: 1.5; max-width: 56ch; }
+.gsister .txt strong { font-family: var(--d-display); font-weight: 800; font-size: 21px; text-transform: uppercase;
+  letter-spacing: 0.03em; display: block; margin-bottom: 4px; }
+.gsister .arrow { font-family: var(--d-display); font-weight: 800; font-size: 40px; }
+
+/* ===== moon mark (the sun mark, lower-half — Gemini's signature) ===== */
+.moonmark { width: 34px; height: 34px; position: relative; overflow: hidden; flex: none; display: block; color: inherit; }
+.moonmark::before { content: ""; position: absolute; left: 2px; right: 2px; bottom: 4px; height: 14px;
+  background: currentColor; border-radius: 0 0 14px 14px; }
+.moonmark::after { content: ""; position: absolute; left: 2px; right: 2px; bottom: 19px; height: 2.5px; background: currentColor; }
+
+/* ===== Gemini AMPM logo lockup (production PNG artwork) =====
+   Two <img> tags stack; CSS picks the right one for the surface.
+   Default = cream "-rev" artwork (matches the night skin and any
+   [data-nav-dark] section). On a light surface (day skin nav before
+   it scrolls over a dark band), we flip to the charcoal version. */
+.glogo { display: inline-flex; align-items: center; line-height: 0; color: inherit; }
+.glogo .glogo-img { display: block; height: 34px; width: auto; max-width: none; }
+.glogo.lg .glogo-img { height: 80px; }
+
+/* Default surface = light — show charcoal artwork. The nav already toggles
+   .dark when scrolled over a [data-nav-dark] section; we follow that, plus
+   any [data-nav-dark] ancestor (the footer is permanently dark). */
+.glogo .glogo-img--light { display: block; }
+.glogo .glogo-img--dark  { display: none; }
+.nav.dark .glogo .glogo-img--light,
+[data-nav-dark] .glogo .glogo-img--light { display: none; }
+.nav.dark .glogo .glogo-img--dark,
+[data-nav-dark] .glogo .glogo-img--dark  { display: block; }
+.nav .wm { text-decoration: none; font-family: var(--d-body); }
+.foot .fwm { line-height: 1; }
+
+/* nav: est. line + dark-by-default tweaks reuse base .nav */
+.nav .est { font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+  opacity: 0.55; white-space: nowrap; align-self: center; }
+@media (max-width: 1100px) { .nav .est { display: none; } }
+.nav .wm small { letter-spacing: 0.08em; }
+
+/* ===== child-service grid (service pillar pages) — preserved URLs visible ===== */
+.kids { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+@media (max-width: 860px) { .kids { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .kids { grid-template-columns: 1fr; } }
+.kid { background: var(--paper); padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; min-height: 96px;
+  justify-content: space-between; text-decoration: none; color: inherit;
+  transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease; }
+.kid:hover { background: #fff; transform: translateY(-1px); box-shadow: 0 1px 0 var(--g-accent) inset, 0 6px 18px rgba(28,24,18,0.08); }
+.kid:hover .kn { color: var(--g-accent); }
+.kid:hover .ku { color: var(--ink); }
+.kid .kn { font-family: var(--d-display); font-weight: 700; text-transform: uppercase; font-size: 18px; line-height: 1.02; color: var(--ink);
+  transition: color 0.18s ease; }
+.kid .ku { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10.5px; letter-spacing: 0.01em;
+  color: var(--ink-3); word-break: break-all; line-height: 1.4; transition: color 0.18s ease; }
+
+/* ===== sector chips (service pillar pages) ===== */
+.sectorchips { display: flex; flex-wrap: wrap; gap: 10px; }
+.sectorchip { display: inline-flex; align-items: center; gap: 10px; padding: 9px 15px; border: 2px solid var(--line);
+  font-size: 13px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; color: var(--ink-2);
+  cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+.sectorchip:hover { border-color: var(--line-strong); color: var(--ink); }
+.sectorchip .sw { width: 22px; height: 9px; flex: none; }
+
+/* ===== accreditation page (single cert detail view) ===== */
+.acc-detail { display: grid; grid-template-columns: 1.2fr 1fr; gap: clamp(28px, 4vw, 64px); align-items: start; }
+@media (max-width: 900px) { .acc-detail { grid-template-columns: 1fr; } }
+.acc-covers { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 12px; }
+.acc-covers li { font-size: 15.5px; line-height: 1.55; padding-left: 20px; position: relative; color: var(--ink-2); }
+.acc-covers li::before { content: ""; position: absolute; left: 0; top: 0.72em; width: 10px; height: 2px; background: var(--g-accent, var(--m-orange)); }
+.acc-covers li strong { color: var(--ink); }
+
+.acc-cert-card { display: flex; flex-direction: column; gap: 14px; padding: 18px; background: var(--paper);
+  border: 1px solid var(--line); text-decoration: none; color: inherit;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease; }
+.acc-cert-card:hover { border-color: var(--g-accent, var(--m-orange)); box-shadow: 0 8px 24px rgba(28,24,18,0.10); }
+.acc-cert-card img { display: block; width: 100%; height: auto; box-shadow: 0 2px 6px rgba(28,24,18,0.12); }
+.acc-cert-go { font-family: var(--d-display); font-weight: 700; font-size: 13px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--g-accent, var(--m-orange)); }
+.acc-cert-card.pending { padding: 36px 24px; align-items: flex-start; justify-content: center; min-height: 240px; }
+.acc-cert-pending { font-family: var(--d-display); font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink); }
+.acc-cert-pending-sub { font-size: 13.5px; line-height: 1.5; color: var(--ink-2); margin-top: 8px; }
+
+/* "Where we apply this" — related pillar links */
+.acc-pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+@media (max-width: 860px) { .acc-pillars { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .acc-pillars { grid-template-columns: 1fr; } }
+.acc-pillar { background: var(--paper); padding: 22px 22px 20px; display: grid;
+  grid-template-columns: 1fr auto; grid-template-rows: auto auto; gap: 6px 14px; align-items: start;
+  text-decoration: none; color: inherit; transition: background 0.18s ease; }
+.acc-pillar:hover { background: #fff; }
+.acc-pillar:hover .go { transform: translateX(4px); color: var(--g-accent, var(--m-orange)); }
+.acc-pillar .t { font-family: var(--d-display); font-weight: 700; text-transform: uppercase; font-size: 18px; line-height: 1.02; color: var(--ink); }
+.acc-pillar .d { font-size: 13.5px; line-height: 1.5; color: var(--ink-2); grid-column: 1 / -1; }
+.acc-pillar .go { font-family: var(--d-display); font-weight: 800; font-size: 22px; color: var(--ink-3); transition: transform 0.18s ease, color 0.18s ease; }
+
+/* Bottom strip — "all twelve accreditations" */
+.acc-siblings { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+@media (max-width: 900px) { .acc-siblings { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .acc-siblings { grid-template-columns: 1fr; } }
+.acc-sibling { background: var(--paper); padding: 16px 18px; display: flex; flex-direction: column; gap: 4px;
+  text-decoration: none; color: inherit; transition: background 0.18s ease; }
+.acc-sibling:hover { background: #fff; }
+.acc-sibling:hover .t { color: var(--g-accent, var(--m-orange)); }
+.acc-sibling .t { font-family: var(--d-display); font-weight: 700; text-transform: uppercase; font-size: 15px; line-height: 1.02; color: var(--ink); transition: color 0.18s ease; }
+.acc-sibling .d { font-size: 11.5px; line-height: 1.45; color: var(--ink-3); }
+
+/* ===== clients directory page (full /clients/) =====
+   Mirrors the dark-skin home .gclient tiles but in the day-skin
+   sub-page layout. Each sector renders as an H2 + grid block. */
+.cdir-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+@media (max-width: 1100px) { .cdir-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 760px)  { .cdir-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px)  { .cdir-grid { grid-template-columns: 1fr; } }
+.cdir-cell { background: var(--paper); padding: 24px 22px; display: flex; flex-direction: column; gap: 10px;
+  min-height: 160px; text-decoration: none; color: inherit;
+  transition: background 0.18s ease, box-shadow 0.18s ease; }
+a.cdir-cell:hover { background: #fff; box-shadow: 0 4px 14px rgba(28,24,18,0.08); }
+a.cdir-cell:hover .cdir-nm { color: var(--g-accent, var(--m-orange)); }
+.cdir-logo { display: block; height: 32px; width: auto; max-width: 80%; object-fit: contain;
+  object-position: left center; opacity: 0.95; }
+.cdir-logo--keep { /* preserve original colours */ }
+.cdir-logo--text { font-family: var(--d-display); font-weight: 700; font-size: 13px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);
+  height: 32px; display: flex; align-items: center; }
+.cdir-nm { font-family: var(--d-display); font-weight: 800; font-size: 18px; text-transform: uppercase;
+  color: var(--ink); line-height: 1.05; transition: color 0.18s ease; }
+.cdir-what { font-size: 12.5px; line-height: 1.5; color: var(--ink-2); }
+
+/* ===== sectors index grid ===== */
+.sec-index { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+@media (max-width: 760px) { .sec-index { grid-template-columns: 1fr; } }
+.sec-card { background: var(--paper); padding: 30px 30px 32px; display: flex; flex-direction: column; gap: 12px; cursor: pointer; transition: background 0.2s; }
+.sec-card:hover { background: var(--paper-2); }
+.sec-card .sw { width: 44px; height: 14px; }
+.sec-card h3 { font-family: var(--d-display); font-weight: 700; text-transform: uppercase; font-size: clamp(24px,2.6vw,32px); line-height: 0.98; margin: 0; color: var(--ink); }
+.sec-card p { font-size: 14.5px; line-height: 1.6; font-weight: 500; color: var(--ink-2); margin: 0; max-width: 52ch; }
+.sec-card .url { font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; color: var(--ink-3); margin-top: 4px; }
+
+/* ===== news index ===== */
+.news-index { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+@media (max-width: 900px) { .news-index { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 620px) { .news-index { grid-template-columns: 1fr; } }
+.ni-card { display: flex; flex-direction: column; cursor: pointer; }
+.ni-card .img { width: 100%; height: 200px; background: rgba(28,24,18,0.07); display: block; }
+html[data-skin="night"] .ni-card .img { background: rgba(244,234,216,0.07); }
+.ni-card .meta { display: flex; gap: 14px; align-items: center; margin: 16px 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
+.ni-card .meta .cat { color: var(--g-accent); }
+.ni-card h4 { font-family: var(--d-display); font-weight: 700; text-transform: uppercase; font-size: 22px; line-height: 1.04; margin: 0 0 8px; color: var(--ink); }
+.ni-card p { font-size: 14px; line-height: 1.55; font-weight: 500; color: var(--ink-2); margin: 0; }
+.ni-card .url { font-family: ui-monospace, Menlo, monospace; font-size: 10px; color: var(--ink-3); margin-top: 10px; word-break: break-all; }
+.ni-card:hover h4 { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; }
+
+/* ===== contact ===== */
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px,5vw,64px); align-items: start; }
+@media (max-width: 860px) { .contact-grid { grid-template-columns: 1fr; gap: 34px; } }
+.cform { display: flex; flex-direction: column; }
+.cform .f { border: 0; border-bottom: 2px solid var(--line-strong); background: transparent; color: var(--ink);
+  font-family: var(--d-body); font-size: 16px; font-weight: 500; padding: 15px 2px 11px; outline: none; }
+.cform .f::placeholder { color: var(--ink-3); }
+.cform .f:focus { border-bottom-color: var(--g-accent); }
+.cform select.f { appearance: none; }
+.cform .btn { margin-top: 26px; align-self: flex-start; cursor: pointer; }
+.cform .sla { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); margin-top: 14px; }
+
+/* ===== Apprenticeships page ===== */
+.founder { display: grid; grid-template-columns: 0.82fr 1.18fr; gap: clamp(28px,4vw,56px); align-items: start; }
+@media (max-width: 860px) { .founder { grid-template-columns: 1fr; } }
+.founder .portrait { position: relative; }
+.founder .portrait image-slot { width: 100%; height: clamp(360px,42vw,520px); display: block; background: rgba(244,234,216,0.07); }
+html[data-skin="day"] .founder .portrait image-slot { background: rgba(28,24,18,0.06); }
+.founder .portrait .pin { position: absolute; left: 0; bottom: 0; background: var(--g-accent); color: #fff;
+  font-family: var(--mono, ui-monospace); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 9px 14px; }
+.founder .letter p { font-size: clamp(17px,1.5vw,21px); line-height: 1.6; font-weight: 500; color: var(--ink-2); margin: 0 0 18px; text-wrap: pretty; }
+.founder .letter p.lead-q { font-family: var(--d-display); font-weight: 700; font-size: clamp(26px,3vw,40px); line-height: 1.08;
+  text-transform: none; letter-spacing: 0; color: var(--ink); margin-bottom: 26px; }
+.founder .letter p strong { color: var(--ink); font-weight: 700; }
+.founder .sign { display: flex; align-items: center; gap: 16px; margin-top: 28px; padding-top: 20px; border-top: 2px solid var(--line); }
+.founder .sign .nm { font-family: var(--d-display); font-weight: 800; font-size: 22px; text-transform: uppercase; letter-spacing: 0.01em; color: var(--ink); line-height: 1; }
+.founder .sign .ro { font-size: 13px; font-weight: 600; color: var(--ink-3); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+.pathway { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+@media (max-width: 900px) { .pathway { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .pathway { grid-template-columns: 1fr; } }
+.pathway .step { background: var(--paper); padding: 24px 22px; display: flex; flex-direction: column; gap: 10px; }
+.pathway .step .pn { font-family: var(--d-display); font-weight: 800; font-size: 30px; color: var(--g-accent); line-height: 1; }
+.pathway .step h4 { font-family: var(--d-display); font-weight: 700; text-transform: uppercase; font-size: 18px; line-height: 1; margin: 0; color: var(--ink); }
+.pathway .step p { font-size: 13px; line-height: 1.5; font-weight: 500; color: var(--ink-2); margin: 0; }
+
+.apvalues { display: flex; flex-wrap: wrap; border: 1px solid var(--line); }
+.apvalues .v { flex: 1 1 25%; padding: 24px 22px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.apvalues .v:last-child { border-right: 0; }
+@media (max-width: 760px) { .apvalues .v { flex: 1 1 100%; border-right: 0; border-bottom: 1px solid var(--line); } .apvalues .v:last-child { border-bottom: 0; } }
+.apvalues .v .t { font-family: var(--d-display); font-weight: 800; font-size: 19px; text-transform: uppercase; color: var(--ink); line-height: 1; }
+.apvalues .v .d { font-size: 13.5px; line-height: 1.55; font-weight: 500; color: var(--ink-2); }
+
+/* ===== reveal: keep content reliably visible =====
+   The base .reveal opacity-transition can stall at 0 in throttled/background
+   iframes (target is correct but the transition never advances). Force the
+   resolved/visible state so copy never gets trapped invisible. A gentle
+   entrance still plays on .in when the tab is active and motion is allowed. */
+.reveal, .page .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+@media (prefers-reduced-motion: no-preference) {
+  .reveal.in { animation: g-rise 0.55s ease both; }
+}
+@keyframes g-rise { from { transform: translateY(16px); } to { transform: none; } }
+
+/* ===== accreditation strip (home, dark) ===== */
+.gaccred { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: rgba(244,234,216,0.85); border: 3px solid rgba(244,234,216,0.85); }
+@media (max-width: 1000px) { .gaccred { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 560px) { .gaccred { grid-template-columns: repeat(2, 1fr); } }
+.gaccred .cell { background: var(--night); padding: 20px 18px; display: flex; flex-direction: column; gap: 7px; min-height: 96px; justify-content: center; }
+.gaccred .t { font-family: var(--d-display); font-weight: 700; text-transform: uppercase; font-size: 20px; line-height: 0.98; color: #fff; }
+.gaccred .d { font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(244,234,216,0.6); line-height: 1.35; }
+
+/* utility */
+.center-narrow { max-width: 760px; }

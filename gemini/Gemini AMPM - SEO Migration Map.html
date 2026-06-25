@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<title>Gemini AMPM — SEO Migration Map</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Page-by-page plan for renewing geminiampm.co.uk on the AMPM group design system without losing search ranking equity — URL inventory, redirect register and pre-launch checklist." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+    <rect width="200" height="200" fill="#fdfaf2" />
+    <g transform="translate(64 64)" fill="none" stroke="#1c1812" stroke-width="3">
+      <path d="M6 30 H66 M6 50 H66 M6 70 H46" />
+      <circle cx="58" cy="12" r="11" stroke="#E8742C" />
+    </g>
+    <text x="100" y="150" text-anchor="middle" fill="#1c1812" font-family="Arial Black, sans-serif" font-size="20" font-weight="800">SEO MAP</text>
+  </svg>
+</template>
+<style>
+  :root {
+    --m-orange:#E8742C; --m-green:#3D8E2E; --m-blue:#2E5FAB; --m-purple:#7A2E8F;
+    --ink:#1c1812; --ink-2:rgba(28,24,18,0.72); --ink-3:rgba(28,24,18,0.5);
+    --paper:#fdfaf2; --paper-2:#f4ecdb; --line:rgba(28,24,18,0.16); --night:#0b0e1c;
+    --d:"Big Shoulders Display","Archivo",sans-serif; --b:"Archivo","Helvetica Neue",sans-serif;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:var(--b); color:var(--ink); background:#e7e2d6;
+    -webkit-font-smoothing:antialiased; line-height:1.6; }
+  .sheet { max-width:1000px; margin:32px auto; background:var(--paper); padding:clamp(32px,6vw,76px);
+    box-shadow:0 12px 48px rgba(0,0,0,0.16); }
+  .kick { font-size:11px; font-weight:700; letter-spacing:0.22em; text-transform:uppercase; color:var(--ink-3);
+    display:flex; align-items:center; gap:12px; margin:0 0 18px; }
+  .kick::before { content:""; width:26px; height:2px; background:currentColor; }
+  .mer { display:inline-flex; width:104px; height:7px; margin-bottom:22px; }
+  .mer>span { flex:1; }
+  h1 { font-family:var(--d); font-weight:800; text-transform:uppercase; font-size:clamp(40px,6.5vw,76px);
+    line-height:0.92; letter-spacing:0.005em; margin:0 0 18px; }
+  .lede { font-size:clamp(16px,1.6vw,20px); line-height:1.55; font-weight:500; color:var(--ink-2); max-width:64ch; margin:0; text-wrap:pretty; }
+  .lede strong { color:var(--ink); font-weight:700; }
+  h2 { font-family:var(--d); font-weight:700; text-transform:uppercase; font-size:clamp(26px,3.4vw,40px);
+    line-height:0.98; letter-spacing:0.01em; margin:0 0 8px; }
+  .sec { margin-top:clamp(44px,6vw,72px); }
+  .sec-no { font-family:var(--d); font-weight:700; color:var(--ink-3); font-size:15px; letter-spacing:0.06em; }
+  .rule { height:3px; background:var(--ink); margin:14px 0 26px; }
+  p.body { font-size:15.5px; line-height:1.62; color:var(--ink-2); max-width:70ch; }
+  p.body strong { color:var(--ink); font-weight:700; }
+
+  .principles { display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:var(--line); border:1px solid var(--line); }
+  .principle { background:var(--paper); padding:24px 26px; display:flex; flex-direction:column; gap:8px; }
+  .principle .n { font-family:var(--d); font-weight:800; font-size:22px; }
+  .principle h3 { font-family:var(--d); font-weight:700; text-transform:uppercase; font-size:20px; line-height:1; margin:0; }
+  .principle p { font-size:14px; line-height:1.55; color:var(--ink-2); margin:0; }
+
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  caption { text-align:left; font-family:var(--d); font-weight:700; text-transform:uppercase; font-size:22px;
+    padding:22px 0 12px; color:var(--ink); }
+  thead th { text-align:left; font-size:10.5px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--ink-3); border-bottom:2px solid var(--ink); padding:8px 12px 8px 0; vertical-align:bottom; }
+  tbody td { padding:11px 12px 11px 0; border-bottom:1px solid var(--line); vertical-align:top; }
+  tbody tr.pillar td { background:var(--paper-2); }
+  .url { font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--ink); word-break:break-all; }
+  .url .child { color:var(--ink-3); }
+  .sw { display:inline-block; width:22px; height:9px; margin-right:7px; vertical-align:middle; }
+  .tmpl { font-weight:600; }
+  .act { color:var(--ink-2); }
+  .keep { display:inline-block; font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--m-green); border:1.5px solid var(--m-green); padding:2px 7px; white-space:nowrap; }
+  .chg { color:var(--m-orange); border-color:var(--m-orange); }
+
+  .checklist { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:2px; }
+  .checklist li { display:grid; grid-template-columns:24px 1fr; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); font-size:14.5px; }
+  .checklist .box { width:18px; height:18px; border:2px solid var(--ink); margin-top:2px; }
+  .checklist b { font-weight:700; }
+  .note { background:var(--night); color:#f4ead8; padding:22px 26px; margin-top:24px; }
+  .note h3 { font-family:var(--d); font-weight:700; text-transform:uppercase; font-size:18px; margin:0 0 8px; color:#fff; }
+  .note p { font-size:14px; line-height:1.6; color:rgba(244,234,216,0.85); margin:0 0 8px; max-width:80ch; }
+  .note p:last-child { margin-bottom:0; }
+  .note code { font-family:ui-monospace,Menlo,monospace; font-size:12.5px; color:#ffd9b0; }
+  .meta-foot { margin-top:54px; padding-top:20px; border-top:2px solid var(--ink); display:flex;
+    justify-content:space-between; flex-wrap:wrap; gap:10px; font-size:11px; font-weight:600;
+    letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-3); }
+  @media (max-width:680px){ .principles{grid-template-columns:1fr;} table{font-size:12.5px;} }
+  @media print {
+    body{background:#fff;} .sheet{box-shadow:none; margin:0; max-width:none; padding:24px 28px;}
+    .sec{ break-inside:avoid; } tr{ break-inside:avoid; } .note{ break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="kick">AMPM Group · Gemini AMPM</div>
+  <span class="mer"><span style="background:var(--m-green)"></span><span style="background:var(--m-purple)"></span><span style="background:var(--m-orange)"></span><span style="background:var(--m-blue)"></span></span>
+  <h1>SEO migration map</h1>
+  <p class="lede">A page-by-page plan for renewing <strong>geminiampm.co.uk</strong> on the AMPM group design system — <strong>without losing the search ranking earned to date.</strong> The renewed design is a re-skin within the existing WordPress install: every ranking URL stays exactly where it is, every title and meta description is preserved, and no redirect is needed for the pages that carry equity today.</p>
+
+  <div class="sec">
+    <div class="sec-no">01 — Strategy</div>
+    <h2>Re-skin, don&rsquo;t re-architect</h2>
+    <div class="rule"></div>
+    <div class="principles">
+      <div class="principle"><span class="n">A</span><h3>URLs are frozen</h3><p>Every live address — including the deep service children and sector pages — keeps its exact slug. The renewed templates render onto the same URLs. Nothing 404s, nothing needs a redirect.</p></div>
+      <div class="principle"><span class="n">B</span><h3>Titles &amp; meta preserved</h3><p>Page titles, meta descriptions, OG/Twitter tags and canonical URLs carry over unchanged. Where copy is sharpened, the target keyword stays in the H1 and first paragraph.</p></div>
+      <div class="principle"><span class="n">C</span><h3>Content depth retained</h3><p>The seven pillars and their child pages remain as individual, indexable pages. Thin pages are strengthened, never deleted — pruning is what loses rankings.</p></div>
+      <div class="principle"><span class="n">D</span><h3>Internal links rebuilt 1:1</h3><p>The new navigation and in-body links point to the same destinations, preserving the internal link graph and crawl paths Google already understands.</p></div>
+      <div class="principle"><span class="n">E</span><h3>Machine-readable layer kept</h3><p>The existing <code>llms.txt</code>, <code>llm-info</code>, XML sitemap, robots directives and schema markup are retained and re-pointed at the renewed templates.</p></div>
+      <div class="principle"><span class="n">F</span><h3>One controlled cutover</h3><p>Staged on a preview, validated against this map, then published in a single switch — with Search Console and analytics watched for two weeks after.</p></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-no">02 — Inventory</div>
+    <h2>Every page, mapped</h2>
+    <div class="rule"></div>
+    <p class="body">Live URL on the left, the renewed template that replaces it, and the action. <span class="keep">KEEP</span> means the URL is unchanged — the overwhelming default. <strong>Every URL below was verified against the live site in June 2026</strong> unless marked <span class="keep chg">Confirm</span>.</p>
+    <div id="tables"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-no">03 — WordPress build</div>
+    <h2>Six templates cover the whole site</h2>
+    <div class="rule"></div>
+    <p class="body">The renewed design is deliberately <strong>template-driven</strong>, so the existing WordPress page tree drops straight in — no page needs a bespoke build, and nothing has to move. Each live page type maps to one reusable template:</p>
+    <div class="principles">
+      <div class="principle"><span class="n">1</span><h3>Service pillar</h3><p>The 7 top-level service pages. Hero + child-service grid + &ldquo;why now&rdquo; + projects + sectors + CTA. <em>WP: page template.</em></p></div>
+      <div class="principle"><span class="n">2</span><h3>Child service</h3><p>The ~40 deep service pages reuse the <em>same</em> pillar template (hero + scope + projects + CTA) minus the child grid. One template, not forty.</p></div>
+      <div class="principle"><span class="n">3</span><h3>Sector</h3><p>The 8 <code>/sector/&hellip;/</code> landing pages. Hero + tailored scope + relevant services + CTA.</p></div>
+      <div class="principle"><span class="n">4</span><h3>Article / news</h3><p>Blog posts (at root) + the <code>/news-overview/</code> index. Standard WP single + archive.</p></div>
+      <div class="principle"><span class="n">5</span><h3>Case study</h3><p>The <code>/case-studies-category/&hellip;/</code> taxonomy — archive + single. Re-skin only; keep term URLs.</p></div>
+      <div class="principle"><span class="n">6</span><h3>Standard page</h3><p>Home, About, Why, Contact, Request-a-consultation, Certificates, legal. Bespoke or block-built.</p></div>
+    </div>
+    <div class="note">
+      <h3>Why this protects the SEO</h3>
+      <p>Because the build is a <strong>theme/template re-skin inside the same WordPress install</strong>, the page IDs, slugs, permalinks, menu structure, Rank Math titles/meta and uploaded media all stay exactly as they are. You are restyling how pages look — not rebuilding the site tree. That is the single most important factor in not losing ranking.</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-no">04 — Redirects</div>
+    <h2>Redirect register</h2>
+    <div class="rule"></div>
+    <p class="body"><strong>One intentional redirect is required</strong> (the security-remedial page is being moved to its correct section); otherwise no redirects are needed, because no other URL changes. This register records that move plus the structural quirks to leave alone.</p>
+    <div class="note" style="background:#10261a;">
+      <h3>301 required &mdash; intentional move</h3>
+      <p>· <strong>Security Remedial Works.</strong> Currently mis-filed on the live site at <code>/passive-fire-systems/security-systems-remedial-works/</code>. It belongs under Security, so the renewed site places it at <code>/security-access-control/security-systems-remedial-works/</code>. Add a permanent <code>301</code> from the old passive path to the new security path, and update any internal links. This consolidates it into the correct topical cluster and passes the existing ranking equity across.</p>
+    </div>
+    <div class="note">
+      <h3>Leave as-is — verified cross-listings</h3>
+      <p>· <code>/passive-fire-systems/fire-alarm-remedial-works/</code> sits under Passive Fire but is linked from the Fire Alarm menu. Keep the URL, keep both menu links.</p>
+      <p>· The header &ldquo;Sectors&rdquo; link historically pointed to <code>cleanducts.co.uk/sectors/</code> (a legacy/group target). The renewed nav points &ldquo;Sectors&rdquo; at the on-site <code>/sectors/</code> index. Confirm the desired destination before launch.</p>
+      <p>· If any thin child page is ever merged into its pillar, add a <code>301</code> from the old child slug to the pillar here &mdash; and only then.</p>
+    </div>
+    <div class="note" style="background:#3a2410;">
+      <h3>Confirm against a full crawl before launch</h3>
+      <p>· <strong>Registered vs trading address.</strong> Companies House lists 30&ndash;34 North Street, Hailsham BN27&nbsp;1DW; recent material shows a Burgess Hill address. Confirm which is correct for LocalBusiness schema, the footer and Google Business Profile (NAP consistency matters for local SEO).</p>
+      <p>· <strong>Phone number.</strong> Confirm the canonical number(s) for NAP consistency.</p>
+      <p>· <strong>Extra disciplines</strong> referenced on live pages &mdash; dry risers, emergency lighting, water-leak detection, fire-escape condition reports, kitchen-extract cleaning &mdash; may exist as their own URLs. A Screaming Frog crawl will surface any page not in this map so it inherits the right template and keeps its slug.</p>
+      <p>· <strong>Brand/partner logos</strong> (security: Genetec, Paxton, Hikvision; plus fire-alarm manufacturers) appear on live service pages &mdash; carry these across.</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-no">05 — Cutover</div>
+    <h2>Pre-launch checklist</h2>
+    <div class="rule"></div>
+    <ul class="checklist">
+      <li><span class="box"></span><span><b>Crawl the live site first.</b> Export every URL (Screaming Frog / Search Console) with its title, meta and current ranking. This map is the spec; the crawl is the proof.</span></li>
+      <li><span class="box"></span><span><b>Preserve titles &amp; meta per page</b> in the WordPress/SEO plugin — copy the live values across before restyling templates.</span></li>
+      <li><span class="box"></span><span><b>Keep the XML sitemap &amp; robots.txt</b> intact; confirm the renewed templates don&rsquo;t add <code>noindex</code> anywhere by default.</span></li>
+      <li><span class="box"></span><span><b>Retain structured data</b> (LocalBusiness, Service, Article schema) and the <code>llms.txt</code> / <code>llm-info</code> discovery resources.</span></li>
+      <li><span class="box"></span><span><b>Check internal links</b> resolve to the same slugs — nav, footer, in-body and related-content links.</span></li>
+      <li><span class="box"></span><span><b>Preserve image filenames &amp; alt text</b> where images carry image-search traffic; keep the <code>/wp-content/uploads/</code> paths.</span></li>
+      <li><span class="box"></span><span><b>Validate on a staging URL</b> against this inventory before going live; confirm Core Web Vitals haven&rsquo;t regressed.</span></li>
+      <li><span class="box"></span><span><b>Publish in one cutover</b>, resubmit the sitemap in Search Console, then monitor coverage, impressions and rankings for 14 days.</span></li>
+    </ul>
+  </div>
+
+  <div class="meta-foot">
+    <span>Gemini AMPM · An AMPM Group company · est. 1997</span>
+    <span>Pairs with: Gemini AMPM Website (renewed design)</span>
+  </div>
+</div>
+
+<script>
+  const COL = { orange:"var(--m-orange)", green:"var(--m-green)", blue:"var(--m-blue)", purple:"var(--m-purple)" };
+  const groups = [
+    { caption:"Core pages", rows:[
+      { url:"/", tmpl:"Homepage — the PM→AM night arc (re-skin)", act:"Preserve title & meta verbatim; H1 keeps fire/security/ventilation keywords" },
+      { url:"about-us/", tmpl:"About — company & group story", act:"Keep URL & meta; refresh copy around EOT + group" },
+      { url:"why-choose-gemini/", tmpl:"Why Choose Gemini", act:"Keep URL; principles + proof", c:true },
+      { url:"services/", tmpl:"Services overview (pillar ledger)", act:"Keep URL; links to all 7 pillars", c:true },
+      { url:"contact-us/", tmpl:"Contact", act:"Keep URL; form + routes preserved" },
+      { url:"request-a-consultation/", tmpl:"Consultation request (form)", act:"Keep URL; primary conversion page", c:true },
+      { url:"about-us/certificates/", tmpl:"Certificates / accreditations", act:"Keep URL; retain cert assets", c:true },
+    ]},
+  ];
+
+  const PILLARS = [
+    { name:"Fire Alarm & Evacuation Systems", slug:"fire-alarm-evacuation-systems", colour:COL.orange, children:[
+      ["Fire Extinguishers","fire-alarm-evacuation-systems/fire-extinguishers"],
+      ["Fire Alarm Installation","fire-alarm-evacuation-systems/fire-alarm-installation"],
+      ["Fire Alarm Service & Maintenance","fire-alarm-evacuation-systems/fire-alarm-service-maintenance"],
+      ["Evacuation Alert Systems","fire-alarm-evacuation-systems/fire-alarm-evacuation-alert-systems"],
+      ["Wireless Systems","fire-alarm-evacuation-systems/fire-alarm-wireless-systems"],
+      ["Fire Alarm Monitoring","fire-alarm-evacuation-systems/fire-alarm-monitoring"],
+      ["Hybrid Systems","fire-alarm-evacuation-systems/fire-alarm-hybrid-systems"],
+      ["Nimbus Connect","fire-alarm-evacuation-systems/nimbus-connect-real-time-fire-system-monitoring-control"],
+      ["Fire Alarm Remedial Works","passive-fire-systems/fire-alarm-remedial-works"],
+    ]},
+    { name:"Passive Fire Systems", slug:"passive-fire-systems", colour:COL.purple, children:[
+      ["Fire Doors","passive-fire-systems/fire-doors"],
+      ["Fire Stopping","passive-fire-systems/fire-stopping"],
+      ["Compartmentation & Fire Stopping","passive-fire-systems/compartmentation-and-fire-stopping"],
+      ["Fire Safety Signage","passive-fire-systems/fire-safety-signage"],
+      ["Fire Risk Assessments","passive-fire-systems/fire-risk-assessments"],
+      ["Fire Barriers","passive-fire-systems/fire-barriers"],
+    ]},
+    { name:"Security & Access Control", slug:"security-access-control", colour:COL.green, children:[
+      ["CCTV","security-access-control/security-systems-cctv"],
+      ["Door Entry","security-access-control/security-systems-door-entry"],
+      ["Intruder Alarms","security-access-control/intruders-alarms"],
+      ["Control Centre & Monitoring","security-access-control/control-centre-monitoring"],
+      ["Access Control","security-access-control/security-systems-access-control"],
+      ["Security Remedial Works","security-access-control/security-systems-remedial-works"],
+    ]},
+    { name:"Ventilation & Air Quality", slug:"ventilation-air-quality", colour:COL.blue, children:[
+      ["AHU & Duct Install","ventilation-air-quality/ventilation-systems-ahu-duct-install"],
+      ["Service & Repair","ventilation-air-quality/ventilation-systems-service-repair"],
+      ["Fire Damper Testing","ventilation-air-quality/fire-damper-testing"],
+      ["Ventilation Hygiene","ventilation-air-quality/ventilation-hygiene"],
+      ["AOV Smoke Extract","ventilation-air-quality/aov-smoke-extract-systems"],
+      ["Air Conditioning","ventilation-air-quality/air-conditioning"],
+      ["Commissioning","ventilation-air-quality/commissioning"],
+      ["Pressure Testing","ventilation-air-quality/pressure-testing"],
+    ]},
+    { name:"Gas Suppression Systems", slug:"gas-suppression-systems", colour:COL.orange, children:[
+      ["Inert Gas Suppression","gas-suppression-systems/inert-gas-suppression-systems"],
+      ["Chemical Gas Suppression","gas-suppression-systems/chemical-gas-suppression-systems"],
+      ["Maintenance & Servicing","gas-suppression-systems/maintenance-and-servicing-of-gas-suppression-systems"],
+      ["System Installations","gas-suppression-systems/gas-suppression-system-installations"],
+      ["System Repairs","gas-suppression-systems/gas-suppression-system-repairs"],
+      ["System Maintenance","gas-suppression-systems/gas-suppression-system-maintenance"],
+      ["Gas Suppression FAQ","gas-suppression-systems/gas-suppression-system-faq"],
+    ]},
+    { name:"Small Works & Project Remedials", slug:"small-works-project-remedials", colour:COL.green, children:[] },
+    { name:"Mechanical & Electrical Services", slug:"mechanical-electrical-services", colour:COL.blue, children:[] },
+  ];
+
+  const SECTORS = [
+    ["Residential & Social Housing","sector/residential-social-housing",COL.green],
+    ["IT Data Centres","sector/it-data-centres",COL.blue],
+    ["Restaurants & Hotels","sector/restaurants-hotels",COL.orange],
+    ["Commercial & Retail Buildings","sector/commercial-and-retail-buildings",COL.purple],
+    ["Warehouses & Storage Units","sector/warehouses-storage-units",COL.blue],
+    ["Care Homes","sector/care-homes",COL.green],
+    ["Healthcare & NHS Hospitals","sector/healthcare-facilities-including-nhs-hospitals",COL.orange],
+    ["Educational Institutions","sector/educational-institutions",COL.purple],
+  ];
+
+  const CONTENT = [
+    { url:"news-overview/", tmpl:"News & insights index (re-skin)", act:"Keep URL — verified live" },
+    { url:"[post-slug]/", tmpl:"Article post template (posts sit at root, e.g. /gas-suppression-vs-sprinklers-data-centres/)", act:"Every existing post keeps its root slug — re-skin the template only" },
+    { url:"case-studies-category/[slug]/", tmpl:"Case-study taxonomy (e.g. dry-riser-installations) — verified live", act:"Keep the taxonomy & term URLs; re-skin the archive + single templates" },
+    { url:"sitemap/", tmpl:"HTML sitemap", act:"Keep URL; auto-regenerate" },
+    { url:"privacy-policy/", tmpl:"Privacy policy", act:"Keep URL & content" },
+    { url:"terms-and-conditions/", tmpl:"Terms & conditions", act:"Keep URL & content" },
+    { url:"llm-info.html / llms.txt", tmpl:"AI discovery resources", act:"Retain; re-point at renewed content" },
+  ];
+
+  const esc = (s)=>s.replace(/&/g,"&amp;");
+  const keep = (extra)=>`<span class="keep ${extra||""}">${extra==="chg"?"Confirm":"Keep"}</span>`;
+  const fullUrl = (slug)=>`geminiampm.co.uk/${slug}/`;
+
+  function tableHead(){ return `<thead><tr><th style="width:42%">Live URL</th><th style="width:34%">Renewed template</th><th style="width:14%">Action</th><th style="width:10%">URL</th></tr></thead>`; }
+
+  let html = "";
+
+  // core
+  groups.forEach(g=>{
+    html += `<table><caption>${g.caption}</caption>${tableHead()}<tbody>`;
+    g.rows.forEach(r=>{
+      const u = r.url === "/" ? "geminiampm.co.uk/" : fullUrl(r.url);
+      html += `<tr><td class="url">${u}</td><td class="tmpl">${r.tmpl}</td><td class="act">${r.act}</td><td>${keep(r.c?"chg":"")}</td></tr>`;
+    });
+    html += `</tbody></table>`;
+  });
+
+  // pillars + children
+  html += `<table><caption>Service pillars &amp; their pages</caption>${tableHead()}<tbody>`;
+  PILLARS.forEach(p=>{
+    html += `<tr class="pillar"><td class="url"><span class="sw" style="background:${p.colour}"></span>${fullUrl(p.slug)}</td><td class="tmpl">${esc(p.name)} — pillar page</td><td class="act">Pillar template; lists its child services</td><td>${keep()}</td></tr>`;
+    p.children.forEach(c=>{
+      html += `<tr><td class="url"><span class="child">${fullUrl(c[1])}</span></td><td class="tmpl">${esc(c[0])}</td><td class="act">Child service page — re-skin only</td><td>${keep()}</td></tr>`;
+    });
+    if(!p.children.length){
+      html += `<tr><td class="url"><span class="child">— no child pages —</span></td><td class="tmpl">Single page</td><td class="act">Strengthen copy; keep URL</td><td>${keep()}</td></tr>`;
+    }
+  });
+  html += `</tbody></table>`;
+
+  // sectors
+  html += `<table><caption>Sectors</caption>${tableHead()}<tbody>`;
+  html += `<tr class="pillar"><td class="url">geminiampm.co.uk/sectors/</td><td class="tmpl">Sectors index (new on-site index)</td><td class="act">Point the nav &ldquo;Sectors&rdquo; link here</td><td>${keep("chg")}</td></tr>`;
+  SECTORS.forEach(s=>{
+    html += `<tr><td class="url"><span class="sw" style="background:${s[2]}"></span>${fullUrl(s[1])}</td><td class="tmpl">${esc(s[0])}</td><td class="act">Sector landing — re-skin only</td><td>${keep()}</td></tr>`;
+  });
+  html += `</tbody></table>`;
+
+  // content
+  html += `<table><caption>News, casework &amp; system pages</caption>${tableHead()}<tbody>`;
+  CONTENT.forEach(r=>{
+    const u = r.url.includes("/") && !r.url.includes(" ") ? fullUrl(r.url).replace(/\/\/$/,"/") : "geminiampm.co.uk/"+r.url;
+    html += `<tr><td class="url">${u}</td><td class="tmpl">${r.tmpl}</td><td class="act">${r.act}</td><td>${keep()}</td></tr>`;
+  });
+  html += `</tbody></table>`;
+
+  document.getElementById("tables").innerHTML = html;
+</script>
+</body>
+</html>
