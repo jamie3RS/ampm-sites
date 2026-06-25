@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.pnp.*
+.yarn/
+package-lock.json
+yarn.lock
+
+# Build output
+dist/
+.output/
+.cache/
+.astro/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+.dev.vars
+
+# Cloudflare
+.wrangler/
+
+# Payload
+.payload/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Secrets
+*credentials*
+*secret*
+.tokens
+
+# Sensitive content folders (mirror business dirs in case anything strays)
+**/compliance/
+**/contracts/
+**/employment/

@@ -1,0 +1,20 @@
+{
+  "name": "ampm-sites",
+  "version": "0.0.0",
+  "private": true,
+  "description": "AMPM Group websites monorepo — Gemini AMPM + AMPM Group + AMPM Building Services. Each site is an Astro project sharing a _shared-pkg of brand, tokens, components and content schemas.",
+  "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "gemini",
+    "group",
+    "bs",
+    "_shared-pkg"
+  ],
+  "scripts": {
+    "dev:gemini": "pnpm --filter gemini dev",
+    "dev:group": "pnpm --filter group dev",
+    "dev:bs": "pnpm --filter bs dev",
+    "build:all": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck"
+  }
+}
