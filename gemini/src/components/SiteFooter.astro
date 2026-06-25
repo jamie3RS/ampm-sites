@@ -1,0 +1,101 @@
+---
+import type { Service } from '~/lib/types';
+interface Props { svc: Service }
+const { svc } = Astro.props;
+const year = '2026';
+---
+<footer class="ft">
+  <div class="container ft__inner">
+    <div class="ft__cta">
+      <h2 class="ft__h">Ready to get a survey booked?</h2>
+      <div class="ft__buttons">
+        <a class="btn btn--primary" href="#quote">Request my quote</a>
+        <a class="btn btn--line" href={svc.regionalDDI}>Call {svc.regionalDDIDisplay}</a>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="ft__grid">
+      <div>
+        <p class="kicker">Coverage</p>
+        <ul class="ft__regions">
+          {svc.coverageRegions.map((r) => <li>{r}</li>)}
+        </ul>
+      </div>
+
+      <div>
+        <p class="kicker">Related services</p>
+        <ul class="ft__related">
+          {svc.relatedServices.map((r) => <li><a href={r.href}>{r.label}</a></li>)}
+        </ul>
+      </div>
+
+      <div>
+        <p class="kicker">Office</p>
+        <address class="ft__addr">
+          <strong>Gemini AMPM Ltd</strong><br />
+          {svc.officeAddress.streetAddress}<br />
+          {svc.officeAddress.locality}, {svc.officeAddress.postalCode}<br />
+          <a href={svc.regionalDDI}>{svc.regionalDDIDisplay}</a>
+        </address>
+      </div>
+
+      <div>
+        <p class="kicker">Quick contact</p>
+        <form class="ft__mini" method="post" action={`mailto:hello@geminiampm.co.uk?subject=${encodeURIComponent('[FOOTER] Quick contact')}`} enctype="text/plain">
+          <label class="sr-only" for="ft-email">Email</label>
+          <input id="ft-email" type="email" name="Email" placeholder="your.email@company.co.uk" required />
+          <label class="sr-only" for="ft-msg">Message</label>
+          <input id="ft-msg" type="text" name="Message" placeholder="One-line about what you need" required />
+          <button type="submit" class="btn btn--primary btn--sm">Send →</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="ft__small">
+      <span>© {year} Gemini AMPM Ltd · Employee-Owned · BAFE-registered since 1997</span>
+      <span class="ft__author">Reviewed {year}-06-25 by the suppression team</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .ft {
+    background: var(--bg-elev);
+    border-top: 1px solid var(--line);
+    padding: var(--s-9) 0 var(--s-7);
+  }
+  .ft__cta { max-width: 780px; margin-bottom: var(--s-6); }
+  .ft__h { margin: 0 0 var(--s-4); font-size: var(--t-display-m); }
+  .ft__buttons { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+
+  .ft__grid {
+    display: grid; gap: var(--s-6);
+    grid-template-columns: 1fr;
+    margin: var(--s-6) 0;
+  }
+  @media (min-width: 880px) { .ft__grid { grid-template-columns: repeat(4, 1fr); } }
+
+  .ft__regions, .ft__related { list-style: none; padding: 0; margin: 0; }
+  .ft__regions li, .ft__related li { padding: 4px 0; color: var(--text-soft); font-size: var(--t-body-s); }
+  .ft__related a { color: var(--text-soft); text-decoration: none; }
+  .ft__related a:hover { color: var(--accent); }
+  .ft__addr { color: var(--text-soft); font-size: var(--t-body-s); font-style: normal; line-height: 1.7; }
+
+  .ft__mini { display: flex; flex-direction: column; gap: var(--s-3); }
+  .ft__mini input {
+    background: var(--bg); border: 1px solid var(--line-strong);
+    border-radius: 6px; color: var(--text); font: inherit; padding: 10px 12px;
+  }
+  .ft__mini input:focus { outline: none; border-color: var(--accent); }
+  .ft__mini button { align-self: flex-start; }
+
+  .ft__small {
+    margin-top: var(--s-6); padding-top: var(--s-5);
+    border-top: 1px solid var(--line);
+    display: flex; gap: var(--s-4); flex-wrap: wrap; justify-content: space-between;
+    color: var(--text-muted); font-size: var(--t-body-s);
+  }
+  .ft__author { color: var(--text-muted); }
+</style>

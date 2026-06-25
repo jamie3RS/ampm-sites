@@ -1,0 +1,77 @@
+---
+const phone = '01322 865 000';
+const phoneTel = 'tel:+441322865000';
+---
+<header class="nav">
+  <div class="container nav__inner">
+    <a class="nav__brand" href="/">
+      <span class="nav__brand-mark" aria-hidden="true">
+        <span style="background:var(--m-orange)"></span>
+        <span style="background:var(--m-blue)"></span>
+        <span style="background:var(--m-green)"></span>
+        <span style="background:var(--m-purple)"></span>
+      </span>
+      <span class="nav__brand-text">Gemini <em>AMPM</em></span>
+    </a>
+
+    <nav class="nav__links" aria-label="Primary">
+      <a href="/gas-suppression/">Services</a>
+      <a href="/case-studies/">Case studies</a>
+      <a href="/why-gemini/">Why Gemini</a>
+      <a href="/contact/">Contact</a>
+    </nav>
+
+    <div class="nav__cta">
+      <a class="nav__tel" href={phoneTel}>{phone}</a>
+      <a class="btn btn--primary btn--sm" href="#quote">Get a quote</a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(11,14,28,0.85);
+    backdrop-filter: saturate(140%) blur(12px);
+    -webkit-backdrop-filter: saturate(140%) blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--s-5);
+    padding-top: var(--s-3);
+    padding-bottom: var(--s-3);
+  }
+  .nav__brand {
+    display: flex; align-items: center; gap: 12px;
+    text-decoration: none; color: var(--text);
+    font-family: var(--f-display); font-weight: 700; font-size: 1.25rem;
+    letter-spacing: 0.01em;
+  }
+  .nav__brand em { font-style: normal; color: var(--accent); font-weight: 800; }
+  .nav__brand-mark {
+    display: inline-grid; grid-template-columns: 1fr 1fr;
+    width: 24px; height: 24px; gap: 2px; border-radius: 4px; overflow: hidden;
+  }
+  .nav__brand-mark span { display: block; }
+
+  .nav__links {
+    display: none; margin-left: auto; align-items: center; gap: var(--s-5);
+  }
+  .nav__links a {
+    color: var(--text-soft); text-decoration: none; font-size: var(--t-body-s); font-weight: 500;
+  }
+  .nav__links a:hover { color: var(--accent); }
+
+  .nav__cta { display: flex; align-items: center; gap: var(--s-4); margin-left: auto; }
+  .nav__tel { color: var(--accent); text-decoration: none; font-weight: 600; font-size: var(--t-body-s); }
+  @media (max-width: 600px) { .nav__tel { display: none; } }
+
+  @media (min-width: 880px) {
+    .nav__links { display: flex; }
+    .nav__cta { margin-left: 0; }
+  }
+</style>

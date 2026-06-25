@@ -1,0 +1,44 @@
+---
+import type { Service } from '~/lib/types';
+import Section from '~/components/Section.astro';
+interface Props { svc: Service }
+const { svc } = Astro.props;
+---
+<Section id="industries" tone="elevated">
+  <div class="ind__lead">
+    <p class="kicker">Industries & applications</p>
+    <h2>{svc.industriesHeadline}</h2>
+  </div>
+
+  <div class="ind__grid">
+    {svc.industries.map((i) => (
+      <article class="ind__card">
+        <div class="ind__icon" aria-hidden="true"></div>
+        <h3 class="ind__name">{i.sectorName}</h3>
+        <p class="ind__body">{i.body}</p>
+      </article>
+    ))}
+  </div>
+</Section>
+
+<style>
+  .ind__lead { max-width: 780px; margin-bottom: var(--s-7); }
+  .ind__grid {
+    display: grid; gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  .ind__card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--s-5);
+  }
+  .ind__icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--m-orange), var(--m-purple));
+    margin-bottom: var(--s-3);
+    opacity: 0.85;
+  }
+  .ind__name { margin: 0 0 var(--s-3); font-size: 1.15rem; }
+  .ind__body { color: var(--text-soft); font-size: var(--t-body-s); }
+</style>

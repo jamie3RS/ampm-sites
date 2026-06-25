@@ -1,0 +1,98 @@
+---
+import Base from '~/layouts/Base.astro';
+
+const pillars = [
+  { slug: 'gas-suppression', name: 'Gas Suppression', tag: 'BAFE · BS EN 15004',  blurb: 'ProInert IG-55, FM-200, Novec 1230, Inergen. Server rooms, data centres, archives.', live: true,  color: 'var(--m-orange)' },
+  { slug: 'fire-alarm',      name: 'Fire Alarm & Evacuation', tag: 'BAFE · BS 5839-1', blurb: 'Apollo, Hochiki, Hyfire, Advanced. Addressable, wireless and hybrid systems.',  live: false, color: 'var(--m-blue)' },
+  { slug: 'passive-fire',    name: 'Passive Fire Protection', tag: 'FIRAS · BS 9999',  blurb: 'Compartmentation, fire-stopping, fire-rated doorsets, intumescent coatings.',  live: false, color: 'var(--m-green)' },
+  { slug: 'security',        name: 'Security & Access Control', tag: 'NSI Gold · BS EN 50131', blurb: 'Paxton, Suprema, Honeywell. Access control, intruder, CCTV, monitoring.', live: false, color: 'var(--m-purple)' },
+  { slug: 'ventilation',     name: 'Ventilation & Air Quality', tag: 'F-Gas · Approved Doc F', blurb: 'Daikin, Mitsubishi, Hitachi. VRF, MVHR, AOV, kitchen extract, smoke control.', live: false, color: 'var(--m-orange)' },
+  { slug: 'mechanical-electrical', name: 'Mechanical & Electrical', tag: 'NICEIC · Gas Safe', blurb: 'Lighting, power, plant rooms, BMS, full M&E packages on UK fit-outs.', live: false, color: 'var(--m-blue)' },
+  { slug: 'small-works',     name: 'Small Works & Reactive', tag: '24/7 callout', blurb: 'Minor works, compliance certs, reactive callouts, system additions.', live: false, color: 'var(--m-green)' },
+];
+---
+<Base
+  title="Gemini AMPM — UK fire, security, gas suppression and ventilation since 1997"
+  description="Employee-owned UK contractor — BAFE, FIRAS, NSI Gold. Fire alarms, gas suppression, passive fire, ventilation and security on commercial estates from Mace to NHS Trusts."
+>
+  <section class="lp__hero">
+    <div class="container">
+      <p class="kicker">Gemini AMPM</p>
+      <h1>UK fire, security, gas suppression and ventilation contractor — since 1997</h1>
+      <p class="lede">Employee-owned. BAFE-registered. FIRAS-certificated. NSI Gold. From Mace to the NHS, we deliver compliance-grade life-safety systems on UK commercial and public-sector estates.</p>
+      <div class="lp__cta">
+        <a class="btn btn--primary" href="/gas-suppression/">See gas suppression first</a>
+        <a class="btn btn--line" href="#pillars">All services →</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="pillars" class="lp__pillars">
+    <div class="container">
+      <h2>Seven service pillars</h2>
+      <p class="lede">Gas Suppression is the first vertical fully built on the new template. The other six are ready for content — same design, same SEO architecture, same conversion model.</p>
+
+      <div class="lp__grid">
+        {pillars.map((p) => (
+          <article class={`lp__card ${p.live ? 'lp__card--live' : ''}`}>
+            <span class="lp__dot" style={`background: ${p.color}`}></span>
+            <h3 class="lp__name">{p.name}</h3>
+            <p class="lp__tag">{p.tag}</p>
+            <p class="lp__blurb">{p.blurb}</p>
+            {p.live
+              ? <a class="btn btn--primary btn--sm" href={`/${p.slug}/`}>View live page →</a>
+              : <span class="lp__soon">Phase 2</span>}
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <footer class="lp__ft">
+    <div class="container">
+      <p>© 2026 Gemini AMPM Ltd · Employee-Owned · BAFE-registered · Dartford, Kent</p>
+    </div>
+  </footer>
+
+  <style>
+    .lp__hero {
+      padding: var(--s-10) 0 var(--s-9);
+      background:
+        radial-gradient(1200px 600px at 30% -10%, rgba(232,116,44,0.18), transparent 60%),
+        radial-gradient(900px 500px at 70% 10%, rgba(46,95,171,0.18), transparent 60%),
+        var(--bg);
+      border-bottom: 1px solid var(--line);
+    }
+    .lp__hero h1 { max-width: 22ch; margin-bottom: var(--s-5); }
+    .lp__hero .lede { margin-bottom: var(--s-6); max-width: 60ch; }
+    .lp__cta { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+
+    .lp__pillars { padding: var(--s-9) 0; }
+    .lp__pillars h2 { max-width: 22ch; }
+    .lp__pillars .lede { margin-bottom: var(--s-7); }
+    .lp__grid {
+      display: grid; gap: var(--s-4);
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    .lp__card {
+      background: var(--bg-elev);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: var(--s-5);
+      display: flex; flex-direction: column;
+      gap: var(--s-3);
+    }
+    .lp__card--live { border-color: rgba(232,116,44,0.45); }
+    .lp__dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
+    .lp__name { margin: 0; font-size: 1.2rem; }
+    .lp__tag { color: var(--accent); font-size: var(--t-body-s); font-weight: 600; margin: 0; }
+    .lp__blurb { color: var(--text-soft); font-size: var(--t-body-s); margin: 0 0 var(--s-3); flex: 1; }
+    .lp__soon {
+      display: inline-block; padding: 6px 12px; border-radius: 999px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+      color: var(--text-muted); font-size: var(--t-body-s); align-self: flex-start;
+    }
+
+    .lp__ft { padding: var(--s-7) 0; border-top: 1px solid var(--line); color: var(--text-muted); font-size: var(--t-body-s); }
+  </style>
+</Base>

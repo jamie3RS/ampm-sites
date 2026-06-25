@@ -1,0 +1,72 @@
+---
+import type { Service } from '~/lib/types';
+import Section from '~/components/Section.astro';
+interface Props { svc: Service }
+const { svc } = Astro.props;
+---
+<Section id="pricing" tone="elevated">
+  <div class="pp__lead">
+    <p class="kicker">Honest pricing</p>
+    <h2>{svc.pricingHeadline}</h2>
+    <p class="lede">No "request a quote" walls. Real ranges from real UK commercial jobs. Your site survey produces a fixed quote you can rely on.</p>
+  </div>
+
+  <div class="pp__bands">
+    {svc.pricingBands.map((b) => (
+      <article class="pp__band">
+        <h3 class="pp__bname">{b.bandName}</h3>
+        <p class="pp__scope">{b.scopeQualifier}</p>
+        <div class="pp__price">{b.priceRange}</div>
+        <p class="pp__incl"><strong>Included:</strong> {b.whatsIncluded}</p>
+        {b.whatsExtra && <p class="pp__extra"><strong>Extra:</strong> {b.whatsExtra}</p>}
+      </article>
+    ))}
+  </div>
+
+  <div class="pp__drivers">
+    <h3 class="pp__dheader">What changes the price</h3>
+    <ul>
+      {svc.priceDrivers.map((d) => <li>{d}</li>)}
+    </ul>
+    <p class="pp__caveat">{svc.humanCaveat}</p>
+    <p class="pp__maint">{svc.maintenancePriceCallout}</p>
+    <a class="btn btn--line btn--sm" href="#consult">Book a free consultation →</a>
+  </div>
+</Section>
+
+<style>
+  .pp__lead { max-width: 780px; margin-bottom: var(--s-7); }
+  .pp__bands {
+    display: grid; gap: var(--s-5);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    margin-bottom: var(--s-7);
+  }
+  .pp__band {
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg);
+    padding: var(--s-6);
+  }
+  .pp__bname { font-size: 1.15rem; margin: 0 0 var(--s-2); }
+  .pp__scope { color: var(--text-muted); font-size: var(--t-body-s); margin-bottom: var(--s-4); }
+  .pp__price {
+    font-family: var(--f-display); font-weight: 800;
+    font-size: 1.8rem; color: var(--accent);
+    margin-bottom: var(--s-4);
+  }
+  .pp__incl, .pp__extra { font-size: var(--t-body-s); margin-bottom: var(--s-2); }
+  .pp__incl strong, .pp__extra strong { color: var(--text); }
+  .pp__incl { color: var(--text-soft); }
+  .pp__extra { color: var(--text-muted); }
+
+  .pp__drivers {
+    background: var(--accent-soft);
+    border: 1px solid rgba(232,116,44,0.3);
+    border-radius: var(--radius);
+    padding: var(--s-6);
+  }
+  .pp__dheader { margin: 0 0 var(--s-4); font-size: 1.15rem; }
+  .pp__drivers ul { margin-bottom: var(--s-5); color: var(--text-soft); font-size: var(--t-body-s); }
+  .pp__caveat { color: var(--text); font-size: var(--t-body); max-width: 65ch; }
+  .pp__maint { color: var(--accent); font-weight: 600; margin-bottom: var(--s-5); }
+</style>

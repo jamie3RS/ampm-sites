@@ -1,0 +1,72 @@
+/* ──────────────────────────────────────────────────────────────────
+   Gemini AMPM — Design Tokens
+   Carries forward the night-skin identity from the static prototype:
+   four-colour meridian (orange/blue/green/purple), amber accent,
+   Big Shoulders Display + Archivo type, deep-navy background.
+   ────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Meridian — the 4 service-pillar colours */
+  --m-orange: #E8742C;   /* Gas suppression */
+  --m-blue:   #2E5FAB;   /* Fire alarm */
+  --m-green:  #3D8E2E;   /* Passive fire */
+  --m-purple: #7A2E8F;   /* Security */
+
+  /* Skin (night-dominant) */
+  --bg:           #0b0e1c;
+  --bg-elev:      #131831;
+  --bg-elev-2:    #1a2040;
+  --surface:      #161a30;
+  --line:         rgba(255,255,255,0.08);
+  --line-strong:  rgba(255,255,255,0.16);
+
+  --text:         #f4ead8;
+  --text-soft:    #bacbff;
+  --text-muted:   #8b96b8;
+
+  --accent:       var(--m-orange);  /* amber */
+  --accent-soft:  rgba(232,116,44,0.14);
+
+  --success:      #4ade80;
+  --warn:         #fbbf24;
+  --danger:       #ef4444;
+
+  /* Type */
+  --f-display: "Big Shoulders Display", "Archivo", system-ui, sans-serif;
+  --f-body:    "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:    ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Type scale (rem-based, fluid clamps for desktop) */
+  --t-display-xl: clamp(2.6rem, 6vw + 1rem, 5.5rem);
+  --t-display-l:  clamp(2.2rem, 4vw + 0.8rem, 4rem);
+  --t-display-m:  clamp(1.8rem, 3vw + 0.7rem, 2.8rem);
+  --t-display-s:  clamp(1.4rem, 2vw + 0.6rem, 2rem);
+  --t-body-l:     1.125rem;   /* 18px */
+  --t-body:       1rem;       /* 16px */
+  --t-body-s:     0.875rem;   /* 14px */
+  --t-kicker:     0.75rem;    /* 12px tracked */
+
+  /* Spacing */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+  --s-10: 128px;
+
+  /* Layout */
+  --container: 1180px;
+  --radius-sm: 6px;
+  --radius:    12px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow:    0 6px 24px rgba(0,0,0,0.45);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,0.55);
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}

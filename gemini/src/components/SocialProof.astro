@@ -1,0 +1,112 @@
+---
+import type { Service } from '~/lib/types';
+import Section from '~/components/Section.astro';
+import QuoteForm from '~/components/QuoteForm.astro';
+interface Props { svc: Service }
+const { svc } = Astro.props;
+---
+<Section id="proof">
+  <div class="sp__lead">
+    <p class="kicker">Proof of delivery</p>
+    <h2>Real jobs, named clients, real outcomes</h2>
+  </div>
+
+  <div class="sp__grid">
+    <article class="sp__case">
+      <p class="kicker">Flagship case study</p>
+      <h3 class="sp__title">{svc.flagshipCaseStudy.title}</h3>
+      <p class="sp__body">{svc.flagshipCaseStudy.summary}</p>
+      {svc.flagshipCaseStudy.outcomeStat && <div class="sp__stat">{svc.flagshipCaseStudy.outcomeStat}</div>}
+      {svc.flagshipCaseStudy.href && <a class="btn btn--line btn--sm" href={svc.flagshipCaseStudy.href}>Read full case study →</a>}
+    </article>
+
+    <aside class="sp__side">
+      <p class="kicker">Named clients</p>
+      <ul class="sp__logos">
+        {svc.namedClients.map((c) => (
+          <li class="sp__logo">
+            {c.logo
+              ? <img src={c.logo} alt={`${c.name} logo`} loading="lazy" />
+              : <span>{c.name}</span>}
+          </li>
+        ))}
+      </ul>
+
+      {svc.testimonial && (
+        <figure class="sp__quote">
+          <blockquote>“{svc.testimonial.quote}”</blockquote>
+          <figcaption>
+            <strong>{svc.testimonial.author}</strong>, {svc.testimonial.role}<br />
+            <span class="sp__quote-org">{svc.testimonial.org}</span>
+          </figcaption>
+        </figure>
+      )}
+    </aside>
+  </div>
+
+  <div class="sp__form">
+    <QuoteForm
+      headline={svc.quoteFormHeadline}
+      mailbox={svc.quoteRoutingMailbox}
+      subjectPrefix={svc.quoteSubjectPrefix}
+      spaceTypes={svc.spaceTypeOptions}
+      responsePromise={svc.responsePromise}
+      altPhone={svc.regionalDDI}
+      altPhoneDisplay={svc.regionalDDIDisplay}
+    />
+  </div>
+</Section>
+
+<style>
+  .sp__lead { max-width: 780px; margin-bottom: var(--s-7); }
+  .sp__grid {
+    display: grid; gap: var(--s-6);
+    grid-template-columns: 1fr;
+    margin-bottom: var(--s-7);
+  }
+  @media (min-width: 880px) { .sp__grid { grid-template-columns: 1.4fr 1fr; } }
+
+  .sp__case {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: var(--s-6);
+  }
+  .sp__title { margin: 0 0 var(--s-4); font-size: var(--t-display-s); }
+  .sp__body { color: var(--text); margin-bottom: var(--s-4); }
+  .sp__stat {
+    display: inline-block;
+    padding: 8px 14px; border-radius: 999px;
+    background: var(--accent-soft); border: 1px solid rgba(232,116,44,0.45);
+    color: var(--text); font-size: var(--t-body-s); font-weight: 600;
+    margin-bottom: var(--s-4);
+  }
+
+  .sp__side { display: flex; flex-direction: column; gap: var(--s-6); }
+  .sp__logos {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-3);
+  }
+  @media (min-width: 600px) { .sp__logos { grid-template-columns: repeat(3, 1fr); } }
+  .sp__logo {
+    display: flex; align-items: center; justify-content: center;
+    background: #fff;
+    border-radius: 8px;
+    aspect-ratio: 16/9;
+    padding: 8px;
+    overflow: hidden;
+  }
+  .sp__logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .sp__logo span { color: #222; font-size: var(--t-body-s); font-weight: 600; text-align: center; }
+
+  .sp__quote {
+    margin: 0;
+    background: var(--bg-elev);
+    border-left: 3px solid var(--accent);
+    padding: var(--s-5);
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .sp__quote blockquote { margin: 0 0 var(--s-3); color: var(--text); font-style: italic; }
+  .sp__quote figcaption { color: var(--text-soft); font-size: var(--t-body-s); }
+  .sp__quote-org { color: var(--text-muted); }
+</style>

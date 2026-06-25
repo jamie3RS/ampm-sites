@@ -1,0 +1,53 @@
+---
+import type { Service } from '~/lib/types';
+import Section from '~/components/Section.astro';
+interface Props { svc: Service }
+const { svc } = Astro.props;
+---
+<Section id="faq" tone="elevated">
+  <div class="faq__lead">
+    <p class="kicker">FAQ</p>
+    <h2>Buyer questions, straight answers</h2>
+    <p class="lede">Real questions our installers get on the phone every week. If yours isn't here, book a consultation and ask us live.</p>
+  </div>
+
+  <div class="faq__list">
+    {svc.faqs.map((f, i) => (
+      <details class="faq__item" open={i < 2}>
+        <summary>{f.question}</summary>
+        <div class="faq__answer">{f.answer}</div>
+      </details>
+    ))}
+  </div>
+</Section>
+
+<style>
+  .faq__lead { max-width: 780px; margin-bottom: var(--s-6); }
+  .faq__list { display: grid; gap: var(--s-3); }
+  .faq__item {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--s-4) var(--s-5);
+    transition: border-color .15s var(--ease);
+  }
+  .faq__item[open] { border-color: rgba(232,116,44,0.45); }
+  .faq__item summary {
+    list-style: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: var(--f-body);
+    font-size: var(--t-body-l);
+    padding-right: var(--s-5);
+    position: relative;
+  }
+  .faq__item summary::-webkit-details-marker { display: none; }
+  .faq__item summary::after {
+    content: '+';
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    color: var(--accent); font-weight: 800; font-size: 1.4rem;
+    transition: transform .2s var(--ease);
+  }
+  .faq__item[open] summary::after { content: '−'; }
+  .faq__answer { margin-top: var(--s-4); color: var(--text-soft); max-width: 75ch; }
+</style>

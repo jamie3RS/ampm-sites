@@ -1,0 +1,36 @@
+---
+interface Props {
+  phone: string;
+  phoneDisplay: string;
+}
+const { phone, phoneDisplay } = Astro.props;
+---
+<div class="smc" role="region" aria-label="Quick contact">
+  <a class="smc__tel" href={phone}>
+    <span aria-hidden="true">📞</span>
+    <span>{phoneDisplay}</span>
+  </a>
+  <a class="smc__quote btn btn--primary btn--sm" href="#quote">Get a quote</a>
+</div>
+
+<style>
+  .smc {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 60;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--s-3);
+    padding: 10px 16px;
+    background: rgba(11,14,28,0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line-strong);
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.5);
+  }
+  @media (min-width: 720px) { .smc { display: none; } }
+
+  .smc__tel {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--text); text-decoration: none;
+    font-weight: 600; font-size: var(--t-body-s);
+  }
+  .smc__quote { padding: 10px 14px; }
+</style>

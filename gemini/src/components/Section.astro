@@ -1,0 +1,23 @@
+---
+interface Props {
+  id?: string;
+  tone?: 'default' | 'elevated' | 'accent';
+  density?: 'long' | 'standard' | 'compact';
+  className?: string;
+}
+const { id, tone = 'default', density = 'standard', className = '' } = Astro.props;
+---
+<section id={id} class={`sec sec--${tone} sec--${density} ${className}`}>
+  <div class="container"><slot /></div>
+</section>
+
+<style>
+  .sec { padding-top: var(--s-9); padding-bottom: var(--s-9); }
+  @media (max-width: 720px) { .sec { padding-top: var(--s-7); padding-bottom: var(--s-7); } }
+
+  .sec--compact { padding-top: var(--s-7); padding-bottom: var(--s-7); }
+  .sec--long    { padding-top: var(--s-10); padding-bottom: var(--s-10); }
+
+  .sec--elevated { background: var(--bg-elev); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .sec--accent   { background: linear-gradient(180deg, rgba(232,116,44,0.08), transparent 60%); }
+</style>

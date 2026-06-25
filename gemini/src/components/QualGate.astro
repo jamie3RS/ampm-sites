@@ -1,0 +1,49 @@
+---
+import type { Service } from '~/lib/types';
+import Section from '~/components/Section.astro';
+import ConsultForm from '~/components/ConsultForm.astro';
+interface Props { svc: Service }
+const { svc } = Astro.props;
+---
+<Section id="when" tone="elevated">
+  <div class="qg__lead">
+    <p class="kicker">When you need one</p>
+    <h2 class="qg__h">{svc.gateHeadline}</h2>
+    <div class="qg__chips">
+      {svc.useCases.map((uc) => (
+        <div class="chip">
+          <div class="chip__label">{uc.scenarioLabel}</div>
+          <div class="chip__trigger">{uc.oneLineTrigger}</div>
+        </div>
+      ))}
+    </div>
+    <p class="qg__reg">{svc.regulatoryAnchor}</p>
+  </div>
+
+  <div class="qg__form">
+    <ConsultForm
+      headline={svc.consultFormHeadline}
+      mailbox={svc.consultRoutingMailbox}
+      subjectPrefix={svc.consultSubjectPrefix}
+    />
+  </div>
+</Section>
+
+<style>
+  .qg__lead { max-width: 780px; margin-bottom: var(--s-7); }
+  .qg__h { margin-bottom: var(--s-5); max-width: 22ch; }
+  .qg__chips {
+    display: grid; gap: var(--s-3);
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    margin-bottom: var(--s-5);
+  }
+  .chip {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--s-4);
+  }
+  .chip__label { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .chip__trigger { color: var(--text-soft); font-size: var(--t-body-s); }
+  .qg__reg { color: var(--text-muted); font-size: var(--t-body-s); max-width: 70ch; }
+</style>

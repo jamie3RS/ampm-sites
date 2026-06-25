@@ -1,0 +1,62 @@
+---
+import type { Service } from '~/lib/types';
+import Section from '~/components/Section.astro';
+interface Props { svc: Service }
+const { svc } = Astro.props;
+---
+<Section id="process">
+  <div class="pr__lead">
+    <p class="kicker">How it works</p>
+    <h2>{svc.processHeadline}</h2>
+  </div>
+
+  <ol class="pr__steps">
+    {svc.steps.map((s) => (
+      <li class="pr__step">
+        <h3 class="pr__h">{s.h3}</h3>
+        <p class="pr__body">{s.bodyCopy}</p>
+        <dl class="pr__meta">
+          <div><dt>Deliverable</dt><dd>{s.deliverable}</dd></div>
+          <div><dt>Timing</dt><dd>{s.indicativeTiming}</dd></div>
+        </dl>
+      </li>
+    ))}
+  </ol>
+
+  <p class="pr__closing">{svc.processClosingLine}</p>
+</Section>
+
+<style>
+  .pr__lead { max-width: 780px; margin-bottom: var(--s-7); }
+  .pr__steps {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; gap: var(--s-5);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 880px) { .pr__steps { grid-template-columns: repeat(4, 1fr); } }
+  .pr__step {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--s-5);
+    margin: 0;
+    position: relative;
+  }
+  .pr__h { margin: 0 0 var(--s-3); font-size: 1.15rem; color: var(--accent); }
+  .pr__body { color: var(--text); font-size: var(--t-body-s); margin-bottom: var(--s-4); }
+  .pr__meta { margin: 0; }
+  .pr__meta > div + div { margin-top: var(--s-3); }
+  .pr__meta dt {
+    font-size: var(--t-kicker);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+  }
+  .pr__meta dd { margin: 0; color: var(--text-soft); font-size: var(--t-body-s); }
+  .pr__closing {
+    margin-top: var(--s-7); padding-top: var(--s-5);
+    border-top: 1px solid var(--line);
+    color: var(--text-soft); font-size: var(--t-body-l); max-width: 60ch;
+  }
+</style>

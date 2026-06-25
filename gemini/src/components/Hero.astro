@@ -1,0 +1,74 @@
+---
+import type { Service } from '~/lib/types';
+interface Props { svc: Service }
+const { svc } = Astro.props;
+---
+<section class="hero">
+  <div class="container hero__inner">
+    <p class="kicker">Gas Suppression</p>
+    <h1 class="hero__h1" set:html={svc.h1.replace(/&/g, '&amp;')} />
+    <p class="lede hero__lede">{svc.subHeadline}</p>
+
+    <div class="hero__cta">
+      <a class="btn btn--primary" href="#quote">{svc.primaryCTAlabel}</a>
+      <a class="btn btn--line" href="#process">{svc.secondaryCTAlabel}</a>
+      <a class="hero__tel" href={svc.regionalDDI}>or call <strong>{svc.regionalDDIDisplay}</strong></a>
+    </div>
+
+    <ul class="hero__trust" aria-label="Trust indicators">
+      <li class="trust__rating">
+        <span class="trust__stars" aria-hidden="true">★★★★★</span>
+        <span class="trust__rating-text"><strong>4.9</strong> · Google reviews</span>
+      </li>
+      {svc.accreditationsForHero.map((a) => (
+        <li class="trust__cred">
+          {a.thumb ? <img src={a.thumb} alt={`${a.shortName} accreditation`} loading="eager" width="36" height="36" /> : a.shortName}
+        </li>
+      ))}
+      <li class="trust__pill">Since 1997</li>
+      <li class="trust__pill trust__pill--accent">Employee-Owned</li>
+    </ul>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding: var(--s-9) 0 var(--s-8);
+    background:
+      radial-gradient(1200px 600px at 20% -10%, rgba(232,116,44,0.18), transparent 60%),
+      radial-gradient(900px 500px at 90% 10%, rgba(46,95,171,0.18), transparent 60%),
+      var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  .hero__inner { max-width: 1080px; }
+  .hero__h1 { margin: 0 0 var(--s-4); max-width: 22ch; }
+  .hero__lede { margin-bottom: var(--s-6); max-width: 56ch; }
+
+  .hero__cta {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3);
+    margin-bottom: var(--s-7);
+  }
+  .hero__tel { color: var(--text-muted); text-decoration: none; font-size: var(--t-body-s); margin-left: var(--s-2); }
+  .hero__tel strong { color: var(--accent); font-weight: 700; }
+  .hero__tel:hover { color: var(--text); }
+
+  .hero__trust {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-4);
+  }
+  .hero__trust li { margin: 0; }
+  .trust__rating { display: inline-flex; align-items: center; gap: var(--s-2); padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,0.04); border: 1px solid var(--line); }
+  .trust__stars { color: #fbbf24; letter-spacing: 1px; }
+  .trust__rating-text { color: var(--text-soft); font-size: var(--t-body-s); }
+  .trust__cred {
+    width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center;
+    background: #fff; border-radius: 8px; padding: 6px;
+  }
+  .trust__cred img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .trust__pill {
+    display: inline-flex; padding: 8px 14px; border-radius: 999px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+    color: var(--text-soft); font-size: var(--t-body-s); font-weight: 500;
+  }
+  .trust__pill--accent { background: var(--accent-soft); border-color: rgba(232,116,44,0.45); color: var(--text); }
+</style>
