@@ -1,0 +1,310 @@
+---
+/**
+ * Gemini AMPM — Section 10: FAQ.
+ *
+ * Spec: SERVICE_VERTICAL_TEMPLATE.md §Section 10.
+ *
+ * Purpose — long-tail buyer-intent capture (questions phrased EXACTLY as
+ * buyers ask them, sourced from Google Search Console + People-Also-Ask
+ * harvests) plus FAQPage JSON-LD schema for entity-graph value. We no
+ * longer expect SERP-visible rich results post-2023 Google restriction,
+ * but the entity signal still moves the needle on the manufacturer +
+ * regulatory entity graph the service pages are trying to occupy.
+ *
+ * Composition:
+ *   1. <Kicker> + accordion heading. NOTE: the H2 lives INSIDE the
+ *      <FAQAccordion> primitive (it owns `<h2 id="faq-heading">` so the
+ *      surrounding <section aria-labelledby> wiring works without us
+ *      double-rendering). We pass `heading` through to the primitive
+ *      rather than stamping a separate <Heading> here — single source
+ *      of truth, no duplicated outline node.
+ *   2. <FAQAccordion> primitive: native <details>/<summary> stack of
+ *      6–10 Q&A pairs, first 2 expanded by default, optional inline
+ *      anchor CTA per answer (typically jumps to #form-quote).
+ *   3. Optional cross-link to a deeper FAQ child page —
+ *      "More questions? Read the full {pillar} FAQ →". Surfaced when
+ *      Payload's `faqChildPageLink` relationship resolves.
+ *
+ * Why the H2 lives in the primitive: the FAQ block is the only section
+ * whose semantic root IS the heading-described region (we want the
+ * accordion list to be `aria-labelledby` the H2). Stamping a <Heading>
+ * here and then a second <h2> in the primitive would either break that
+ * wiring or duplicate the document outline. The primitive's `heading`
+ * prop is the single knob.
+ *
+ * No-JS by design — the accordion uses native <details>/<summary>, so
+ * this section never needs a React island. That keeps Section 10 at
+ * zero client-side JS, which matters for the Lighthouse INP budget
+ * (this section sits low on the page, after Section 7's React island
+ * has already cost us a script-eval window).
+ *
+ * Forms: none in this section. The spec is explicit that FAQ answers
+ * may carry an inline CTA hook (anchor-jump to Form #2 in Section 7),
+ * surfaced via each `faq.optionalInlineCTAAnchor` + `optionalInternalLinkURL`
+ * pair on the primitive. Adding a fourth form here would compete with
+ * the three the page already runs.
+ *
+ * Anchor id `#faq` is the stable jump target so other sections (sticky
+ * mobile bar, footer related-services row, schema bundle's mainEntity
+ * pointer) can deep-link without coupling to the H2 id.
+ *
+ * Density flex: this section reads identically across the three density
+ * presets — the spec caps FAQs at 6–10 regardless of pillar density.
+ * Compact-density pillars (small-works, M&E) may pass
+ * `defaultOpenCount={1}` via the primitive's knob if needed; the
+ * default of 2 matches the spec.
+ */
+
+import Section from '../primitives/Section.astro';
+import Container from '../primitives/Container.astro';
+import Kicker from '../primitives/Kicker.astro';
+import FAQAccordion, { type FAQ } from '../primitives/FAQAccordion.astro';
+
+/**
+ * Shallow shape of the Payload `faqChildPageLink` relationship,
+ * resolved at page-data fetch time to only the bits this section
+ * renders. Mirrors the pattern used by 05-ProcessSection's
+ * `LinkedCaseStudy` — keeps the section component cheap to render and
+ * keeps the Payload relationship hydration in one place at the page
+ * boundary.
+ */
+export interface FAQChildPageLink {
+  /** URL slug for the deeper FAQ page (e.g. "gas-suppression-faq"). */
+  slug: string;
+  /**
+   * Anchor label. Usually pillar-scoped — e.g. "the full gas suppression
+   * FAQ". The section renders it inline after a lead-in phrase, so
+   * pass the phrase you want as the underlined anchor only, not a full
+   * sentence.
+   */
+  title: string;
+  /**
+   * Optional override of the URL prefix. Defaults to `/faq/` so a
+   * `slug: 'gas-suppression'` resolves to `/faq/gas-suppression/`. Pages
+   * with bespoke routing (e.g. nested under a pillar root) can pass an
+   * absolute path via `href` instead.
+   */
+  href?: string;
+}
+
+export interface Props {
+  /**
+   * 6–10 FAQ pairs per spec. Field aligns to Payload `services.faqs`
+   * (minRows: 6, maxRows: 10). Each entry carries the buyer-literal
+   * question, a 40–80 word answer, and an optional inline CTA anchor.
+   */
+  faqs: FAQ[];
+
+  /**
+   * Optional cross-link to the deeper FAQ child page. Field aligns to
+   * Payload `services.faqChildPageLink`. When omitted, the cross-link
+   * block is suppressed entirely.
+   */
+  faqChildPageLink?: FAQChildPageLink;
+
+  /**
+   * Kicker copy above the heading. Defaults to "Questions buyers ask" —
+   * the framing the spec uses to set up the buyer-literal phrasing. Per-
+   * pillar overrides allowed (e.g. specifierMode pages might prefer
+   * "Specifier questions").
+   */
+  kicker?: string;
+
+  /**
+   * H2 copy. Defaults to "Frequently asked questions" which is what the
+   * primitive uses if we omit it; we surface the knob here so a per-
+   * pillar variant can pass a more buyer-resonant H2 like "Common
+   * questions about gas suppression systems" without us having to fork
+   * the primitive.
+   */
+  heading?: string;
+
+  /**
+   * How many FAQs render open by default. Spec says 2 (default). Exposed
+   * so compact-density pillars (small-works, M&E) can pass 1, or a
+   * future A/B test can flex it without forking the primitive.
+   */
+  defaultOpenCount?: number;
+
+  /** Extra classes for the outer <section>, rarely needed. */
+  class?: string;
+}
+
+const {
+  faqs,
+  faqChildPageLink,
+  kicker = 'Questions buyers ask',
+  heading = 'Frequently asked questions',
+  defaultOpenCount = 2,
+  class: extraClass,
+} = Astro.props;
+
+/* Defensive dev warning — the spec mandates 6–10 questions. Payload's
+ * minRows: 6 / maxRows: 10 enforces this at the CMS layer, but a hand-
+ * rolled page during dev might pass the wrong shape. */
+if (import.meta.env.DEV && (faqs.length < 6 || faqs.length > 10)) {
+  // eslint-disable-next-line no-console
+  console.warn(
+    `[10-FAQSection] expected 6–10 FAQs per SERVICE_VERTICAL_TEMPLATE §10, got ${faqs.length}.`,
+  );
+}
+
+/* Resolve the cross-link href. Default URL prefix is `/faq/` so the
+ * common case is a one-field Payload relationship; callers with bespoke
+ * routing can override via the link's `href`. */
+const childHref = faqChildPageLink
+  ? faqChildPageLink.href ?? `/faq/${faqChildPageLink.slug}/`
+  : null;
+---
+
+<Section
+  id="faq"
+  background="default"
+  density="standard"
+  class={extraClass}
+>
+  <Container>
+    <header class="faq-section__head">
+      <Kicker as="p">{kicker}</Kicker>
+    </header>
+
+    <FAQAccordion
+      faqs={faqs}
+      heading={heading}
+      defaultOpenCount={defaultOpenCount}
+      class="faq-section__accordion"
+    />
+
+    {childHref && faqChildPageLink && (
+      <footer class="faq-section__foot">
+        <p class="faq-section__crosslink">
+          <span class="faq-section__crosslink-label">
+            More questions?
+          </span>
+          <a
+            href={childHref}
+            class="faq-section__crosslink-anchor"
+            data-source="faq-crosslink"
+          >
+            Read {faqChildPageLink.title}
+            <span aria-hidden="true" class="faq-section__crosslink-arrow">→</span>
+          </a>
+        </p>
+      </footer>
+    )}
+  </Container>
+</Section>
+
+<style>
+  /* ── Header block ─────────────────────────────────────────────
+     Just the kicker — the H2 lives inside the FAQAccordion primitive
+     so the primitive's aria-labelledby wiring stays intact. We give
+     a tight bottom margin because the primitive owns its own
+     heading-to-list rhythm. */
+  .faq-section__head {
+    /* Constrain to the same 820px reading rail the accordion uses so
+       the kicker visually aligns with the H2 below. */
+    max-width: 820px;
+    margin-inline: auto;
+    margin-bottom: var(--s-3, 12px);
+  }
+
+  /* ── Accordion ────────────────────────────────────────────────
+     The primitive already centres itself at max-width 820px and
+     owns its own internal padding, so we only need to gate the
+     gap to the footer cross-link. */
+  .faq-section__accordion {
+    margin-bottom: var(--s-6, 32px);
+  }
+
+  /* ── Footer cross-link ───────────────────────────────────────
+     Inline label + anchor. Matches the typographic and motion
+     language of 05-ProcessSection's cross-link so the two
+     sections feel like one family when they appear back-to-back
+     on long-density pillars (gas-suppression, fire-alarm). */
+  .faq-section__foot {
+    max-width: 820px;
+    margin-inline: auto;
+  }
+
+  .faq-section__crosslink {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--s-2, 8px) var(--s-3, 12px);
+    font-family: var(--f-body, "Archivo", sans-serif);
+    font-size: var(--t-body, 1rem);
+    line-height: 1.5;
+  }
+
+  .faq-section__crosslink-label {
+    color: var(--text-muted, var(--ink-3, currentColor));
+  }
+
+  .faq-section__crosslink-anchor {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--s-2, 8px);
+    color: var(--g-accent, var(--accent));
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--g-accent, var(--accent)) 40%, transparent);
+    transition:
+      color 0.15s var(--ease, ease),
+      border-color 0.15s var(--ease, ease),
+      transform 0.15s var(--ease, ease);
+  }
+
+  .faq-section__crosslink-anchor:hover,
+  .faq-section__crosslink-anchor:focus-visible {
+    color: var(--g-accent, var(--accent));
+    border-bottom-color: var(--g-accent, var(--accent));
+    transform: translateY(-1px);
+  }
+
+  .faq-section__crosslink-anchor:focus-visible {
+    outline: 2px solid var(--g-accent, var(--accent));
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  .faq-section__crosslink-arrow {
+    /* Tabular spacing so the arrow stays put even if the title
+       wraps under it on narrow viewports. */
+    font-variant-numeric: tabular-nums;
+    transition: transform 0.15s var(--ease, ease);
+  }
+
+  .faq-section__crosslink-anchor:hover .faq-section__crosslink-arrow,
+  .faq-section__crosslink-anchor:focus-visible .faq-section__crosslink-arrow {
+    transform: translateX(3px);
+  }
+
+  /* ── Desktop rhythm ──────────────────────────────────────────
+     At >=768px give the accordion-to-cross-link gap a touch more
+     room so the cross-link sits cleanly below the last <details>
+     bottom rule rather than crowding it. */
+  @media (min-width: 768px) {
+    .faq-section__accordion {
+      margin-bottom: var(--s-7, 48px);
+    }
+  }
+
+  /* Reduced-motion: drop the hover translate + arrow drift so
+     users with the OS preference set don't see micro-movement. */
+  @media (prefers-reduced-motion: reduce) {
+    .faq-section__crosslink-anchor,
+    .faq-section__crosslink-arrow {
+      transition: none;
+    }
+    .faq-section__crosslink-anchor:hover,
+    .faq-section__crosslink-anchor:focus-visible {
+      transform: none;
+    }
+    .faq-section__crosslink-anchor:hover .faq-section__crosslink-arrow,
+    .faq-section__crosslink-anchor:focus-visible .faq-section__crosslink-arrow {
+      transform: none;
+    }
+  }
+</style>

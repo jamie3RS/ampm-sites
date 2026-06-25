@@ -1,0 +1,312 @@
+---
+/**
+ * Gemini AMPM — Section 3: System Types We Install
+ *
+ * Reference: SERVICE_VERTICAL_TEMPLATE.md §"Section 3 — System Types We Install".
+ *
+ * Purpose
+ *   Technical-depth signal + long-tail SEO engine. Each card pairs a named
+ *   product (H3 carrying manufacturer + product-line keyword) with a 60-100
+ *   word body, a "Best for…" qualifier, an accreditation/installer-partner
+ *   line, and an anchor slug for paid-ads deep-linking (e.g. `#fm-200`).
+ *
+ * Build
+ *   Astro static repeater. 2-col desktop / 1-col mobile via CSS grid. Closing
+ *   "Not sure which?" soft CTA anchor-jumps UP to Form #1 on the same page —
+ *   the spec is explicit that this points at the consultation form, not the
+ *   primary quote form, because the buyer is still mid-evaluation.
+ *
+ * Payload mapping
+ *   Field names align to the `services` collection in the spec:
+ *     - systemTypes: array of { h3, manufacturer*, bestForLine, bodyCopy,
+ *       anchorSlug, optionalDeepLinkURL, accreditationLine }
+ *     - closingSoftCTA: optional override for the closing prompt
+ *
+ *   The Payload schema relates `manufacturer` via `relationTo: 'manufacturers'`.
+ *   For the template's TS interface we accept a denormalised `manufacturer`
+ *   object (name + optional logo URL + optional link) so the section stays
+ *   page-renderable without a second Payload round-trip. The page-level
+ *   loader is responsible for the join.
+ *
+ *   `accreditationLine` is not in the spec's TS schema as a discrete field,
+ *   but the spec's *build* explicitly calls for "accreditation/installer-
+ *   partner line" per card; expose it as an optional per-row field so the
+ *   loader can stitch it from the related manufacturer or from a manual
+ *   override.
+ *
+ * Primitives consumed
+ *   Section, Container, Heading, Kicker, Button, ManufacturerChip
+ */
+import Section from '../primitives/Section.astro';
+import Container from '../primitives/Container.astro';
+import Heading from '../primitives/Heading.astro';
+import Kicker from '../primitives/Kicker.astro';
+import Button from '../primitives/Button.astro';
+import ManufacturerChip from '../primitives/ManufacturerChip.astro';
+
+/** Denormalised manufacturer payload — populated by the page loader from the
+ *  `manufacturers` collection relationship. Logo and link both optional so
+ *  text-only fallbacks still render (per spec's small-works pillar). */
+export interface SystemTypeManufacturer {
+  name: string;
+  logo?: string | null;
+  link?: string | null;
+}
+
+/** One row of the `systemTypes` array in the `services` Payload collection. */
+export interface SystemTypeCard {
+  /** Card heading — manufacturer + product line keyword (long-tail bait). */
+  h3: string;
+  /** Denormalised manufacturer relation (Payload `manufacturerRelation`). */
+  manufacturer?: SystemTypeManufacturer | null;
+  /** "Best for…" qualifier line; surfaces buyer-intent self-selection. */
+  bestForLine?: string;
+  /** 60–100 word body copy. */
+  bodyCopy: string;
+  /** URL-fragment slug, e.g. `fm-200`. Used as `#fm-200` for paid-ads deep-link. */
+  anchorSlug: string;
+  /** Optional outbound link (e.g. manufacturer's data sheet). */
+  optionalDeepLinkURL?: string | null;
+  /** Accreditation / installer-partner line — per spec's build notes. */
+  accreditationLine?: string;
+}
+
+export interface Props {
+  /** Pillar slug — surfaced as data-attr for analytics + anchor-prefix isolation. */
+  pillar: string;
+  /** Payload field: `systemTypes`. */
+  systemTypes: SystemTypeCard[];
+  /** Anchor id of the consultation form (Section 2). Defaults to `consult`. */
+  consultFormAnchor?: string;
+  /** Optional override for the closing soft CTA prompt. */
+  closingSoftCTA?: string;
+  /** Section heading override. */
+  headline?: string;
+  /** Kicker label override. */
+  kicker?: string;
+}
+
+const {
+  pillar,
+  systemTypes,
+  consultFormAnchor = 'consult',
+  closingSoftCTA = "Not sure which is right for your site? Book a 30-minute consultation and an engineer will help you scope it.",
+  headline = 'System types we design, install & maintain',
+  kicker = 'Systems & manufacturers',
+} = Astro.props;
+
+const hasCards = Array.isArray(systemTypes) && systemTypes.length > 0;
+---
+
+<Section id="system-types" background="surface-1" density="standard" data-pillar={pillar}>
+  <Container>
+    <header class="st-head">
+      <Kicker as="p">{kicker}</Kicker>
+      <Heading as="h2">{headline}</Heading>
+    </header>
+
+    {hasCards && (
+      <ul class="st-grid" role="list">
+        {systemTypes.map((card) => {
+          const href = card.optionalDeepLinkURL ?? null;
+          const Tag = href ? 'a' : 'div';
+          return (
+            <li class="st-card-cell" id={card.anchorSlug}>
+              <Tag
+                class:list={['st-card', href ? 'st-card--linked' : null]}
+                href={href ?? undefined}
+                rel={href ? 'noopener' : undefined}
+                target={href && /^https?:/.test(href) ? '_blank' : undefined}
+                aria-labelledby={`st-h-${card.anchorSlug}`}
+              >
+                {card.manufacturer && (
+                  <div class="st-card__chip">
+                    <ManufacturerChip
+                      name={card.manufacturer.name}
+                      logo={card.manufacturer.logo ?? null}
+                      link={null}
+                    />
+                  </div>
+                )}
+
+                <Heading as="h3" size="sm" id={`st-h-${card.anchorSlug}`} class="st-card__title">
+                  {card.h3}
+                </Heading>
+
+                <p class="st-card__body">{card.bodyCopy}</p>
+
+                {card.bestForLine && (
+                  <p class="st-card__meta">
+                    <span class="st-card__meta-label">Best for</span>
+                    <span class="st-card__meta-value">{card.bestForLine}</span>
+                  </p>
+                )}
+
+                {card.accreditationLine && (
+                  <p class="st-card__accred">{card.accreditationLine}</p>
+                )}
+              </Tag>
+            </li>
+          );
+        })}
+      </ul>
+    )}
+
+    <div class="st-cta">
+      <p class="st-cta__copy">{closingSoftCTA}</p>
+      <Button
+        href={`#${consultFormAnchor}`}
+        variant="secondary"
+        size="md"
+        label="Book a free consultation"
+        data-cta-source="system-types-closing"
+      />
+    </div>
+  </Container>
+</Section>
+
+<style>
+  .st-head {
+    margin-bottom: clamp(28px, 4vw, 48px);
+    max-width: 56ch;
+  }
+
+  /* 1-col mobile → 2-col desktop, per spec. */
+  .st-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(16px, 2.5vw, 24px);
+  }
+
+  @media (min-width: 820px) {
+    .st-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  /* Make sure the anchor target lands clear of the sticky nav. */
+  .st-card-cell {
+    scroll-margin-top: 96px;
+    display: flex;
+  }
+
+  .st-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3, 12px);
+    width: 100%;
+    padding: clamp(20px, 2.2vw, 28px);
+    background: var(--paper-card, var(--paper));
+    border: 1px solid var(--line);
+    border-radius: var(--radius, 12px);
+    color: var(--ink);
+    text-decoration: none;
+    transition:
+      border-color 0.15s var(--ease, ease),
+      transform 0.15s var(--ease, ease),
+      box-shadow 0.15s var(--ease, ease);
+  }
+
+  .st-card--linked {
+    cursor: pointer;
+  }
+
+  .st-card--linked:hover,
+  .st-card--linked:focus-visible {
+    border-color: var(--g-accent, var(--accent));
+    transform: translateY(-2px);
+    outline: none;
+  }
+
+  .st-card--linked:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--g-accent, var(--accent)) 40%, transparent);
+  }
+
+  .st-card__chip {
+    /* Pin the chip to the top so cards of differing copy length share a baseline. */
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+  }
+
+  .st-card__title {
+    margin: 0;
+    /* Tighten the gap chip → H3 without overriding the Heading primitive's own
+       font sizing. */
+    margin-top: calc(-1 * var(--s-1, 4px));
+  }
+
+  .st-card__body {
+    margin: 0;
+    color: var(--ink-2);
+    font-family: var(--f-body, var(--d-body));
+    font-size: var(--t-body, 1rem);
+    line-height: 1.55;
+  }
+
+  .st-card__meta {
+    margin: 0;
+    font-family: var(--f-body, var(--d-body));
+    font-size: var(--t-body-s, 0.875rem);
+    line-height: 1.45;
+    color: var(--ink);
+  }
+
+  .st-card__meta-label {
+    display: inline-block;
+    margin-right: 0.4em;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--g-accent, var(--accent));
+  }
+
+  .st-card__meta-value {
+    color: var(--ink-2);
+  }
+
+  .st-card__accred {
+    margin: 0;
+    padding-top: var(--s-2, 8px);
+    border-top: 1px solid var(--line);
+    font-family: var(--f-body, var(--d-body));
+    font-size: var(--t-body-s, 0.875rem);
+    line-height: 1.45;
+    color: var(--ink-3);
+  }
+
+  /* Closing soft CTA — sits beneath the grid, anchor-jumps UP to Form #1. */
+  .st-cta {
+    margin-top: clamp(28px, 4vw, 48px);
+    padding: clamp(20px, 2.5vw, 32px);
+    background: var(--paper);
+    border: 1px dashed var(--line);
+    border-radius: var(--radius, 12px);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3, 12px);
+    align-items: flex-start;
+  }
+
+  @media (min-width: 720px) {
+    .st-cta {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--s-4, 16px);
+    }
+  }
+
+  .st-cta__copy {
+    margin: 0;
+    font-family: var(--f-body, var(--d-body));
+    font-size: var(--t-body, 1rem);
+    line-height: 1.5;
+    color: var(--ink-2);
+    max-width: 56ch;
+  }
+</style>

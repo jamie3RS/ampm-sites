@@ -1,0 +1,116 @@
+---
+/**
+ * Gemini AMPM — <Section> primitive.
+ *
+ * Vertical-rhythm wrapper used by every service-vertical block (hero, why-us,
+ * proof, FAQ, CTA, etc.). Owns the page's vertical padding and the
+ * background-band colour so child components can stay layout-agnostic.
+ *
+ * Backgrounds resolve via the `--paper*` token chain in global.css, so
+ * flipping `html[data-skin="night"]` re-themes a Section automatically — no
+ * per-component skin logic needed.
+ *
+ * Density is mobile-first: the clamp() floor sets the phone value, the ceiling
+ * sets desktop. `long` is for high-altitude blocks (hero, closing CTA);
+ * `standard` is the default body block; `compact` is for utility rows
+ * (breadcrumbs, sub-nav, small proof strips).
+ */
+
+interface Props {
+  /** Optional anchor id — set when a section needs to be link-targeted. */
+  id?: string;
+  /**
+   * Background band.
+   *  - default:   page paper (--paper)         — most blocks
+   *  - surface-1: one step elevated (--paper-2) — alternating band
+   *  - surface-2: card-deep (--paper-card)     — quoted/feature strip
+   *  - accent:    tinted g-accent wash         — CTA / pillar callout
+   */
+  background?: 'default' | 'surface-1' | 'surface-2' | 'accent';
+  /**
+   * Vertical rhythm.
+   *  - long:     hero / closing CTA (~64px mobile → ~128px desktop)
+   *  - standard: default body block (~48px mobile → ~96px desktop)
+   *  - compact:  utility rows       (~32px mobile → ~64px desktop)
+   */
+  density?: 'long' | 'standard' | 'compact';
+  /** Extra classes for the outer <section> (rarely needed). */
+  class?: string;
+  /** Mark this as the page <main> region instead of generic section. */
+  as?: 'section' | 'article' | 'aside';
+}
+
+const {
+  id,
+  background = 'default',
+  density = 'standard',
+  class: extraClass,
+  as = 'section',
+} = Astro.props;
+
+const Tag = as;
+---
+<Tag
+  id={id}
+  class:list={['g-section', `g-section--${background}`, `g-section--${density}`, extraClass]}
+>
+  <div class="g-section__inner">
+    <slot />
+  </div>
+</Tag>
+
+<style>
+  /* Backgrounds read the day/night-aware token chain so the same component
+     re-themes automatically when html[data-skin="night"] flips. */
+  .g-section {
+    position: relative;
+    width: 100%;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .g-section--surface-1 { background: var(--paper-2); }
+  .g-section--surface-2 { background: var(--paper-card); }
+
+  /* Accent band: tinted wash over paper so text contrast survives both skins. */
+  .g-section--accent {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--g-accent) 14%, var(--paper)) 0%,
+        var(--paper) 100%
+      );
+  }
+
+  /* Inner rail — gutters from global.css (--pad-x), max-width from prototype
+     (1180px container). Tailwind utilities aren't used here because we want
+     a single source of truth on the gutter so future skin/theme tweaks land
+     in tokens.css, not scattered across components. */
+  .g-section__inner {
+    width: 100%;
+    max-width: 1180px;
+    margin-inline: auto;
+    padding-inline: var(--pad-x);
+  }
+
+  /* Density — mobile-first clamp(). Floor = phone, ceiling = desktop.
+     Roughly tracks the prototype's --s-7 / --s-8 / --s-9 spacing rungs. */
+  .g-section--long {
+    padding-block: clamp(64px, 9vw, 128px);
+  }
+  .g-section--standard {
+    padding-block: clamp(48px, 7vw, 96px);
+  }
+  .g-section--compact {
+    padding-block: clamp(32px, 4vw, 64px);
+  }
+
+  /* When two same-background sections butt up, drop the gap so it reads as
+     one continuous band. Same-background-adjacent is the common case for a
+     hero immediately followed by an intro on the same paper colour. */
+  .g-section + .g-section--default.g-section--default,
+  .g-section--surface-1 + .g-section--surface-1,
+  .g-section--surface-2 + .g-section--surface-2 {
+    padding-top: 0;
+  }
+</style>

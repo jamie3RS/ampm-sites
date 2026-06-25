@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+   Gemini AMPM — global tokens.
+   Migrated from the prototype's gemini-base.css :root + gemini-theme.css
+   [data-skin="night"] override block. The interior-page component CSS
+   (.svc-detail, .case-card, .acc-wall, .kid, etc.) reads --paper/--ink/--line
+   so flipping skin re-themes everything automatically.
+   ============================================================================ */
+
+:root {
+  /* AMPM group meridian */
+  --m-orange: #E8742C;
+  --m-green:  #3D8E2E;
+  --m-blue:   #2E5FAB;
+  --m-purple: #7A2E8F;
+
+  /* Day-skin surfaces */
+  --ink: #1c1812;
+  --cream: #f9efdd;
+  --paper: #fdfaf2;
+  --paper-2: #f7f0e2;
+  --paper-card: #fdfaf2;
+  --ink-2: rgba(28,24,18,0.78);
+  --ink-3: rgba(28,24,18,0.5);
+  --line: rgba(28,24,18,0.18);
+  --line-strong: rgba(28,24,18,0.85);
+
+  /* Night-skin surfaces */
+  --night: #0b0e1c;
+  --night-2: #141a30;
+  --night-text: #f4ead8;
+  --dusk: #2b3558;
+
+  /* Gemini identity accent (tweakable per-page) */
+  --g-accent: var(--m-orange);
+
+  /* Type stacks */
+  --d-display: "Big Shoulders Display", "Archivo", sans-serif;
+  --d-body:    "Archivo", "Helvetica Neue", sans-serif;
+
+  /* Layout rails */
+  --pad-x: clamp(20px, 5vw, 72px);
+  --spine-x: clamp(20px, 4vw, 84px);
+}
+
+/* Night skin — flip paper/ink so the same component CSS re-themes dark. */
+html[data-skin="night"] {
+  --paper: #0b0e1c;
+  --paper-2: #161d36;
+  --paper-card: #10162c;
+  --ink: #f4ead8;
+  --ink-2: rgba(244,234,216,0.74);
+  --ink-3: rgba(244,234,216,0.48);
+  --line: rgba(244,234,216,0.18);
+  --line-strong: rgba(244,234,216,0.85);
+}
+
+/* Body baseline — Tailwind preflight is disabled in astro.config.mjs (we own
+   applyBaseStyles via this file), so set the page background + body font here. */
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--d-body);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+html[data-skin="night"] body {
+  background: var(--night);
+  color: var(--night-text);
+}
+
+/* Reveal — keep copy reliably visible (mirrors the prototype's guard).
+   Some throttled tabs strand `.reveal` at opacity:0 because the transition
+   never advances. Force the resolved state and only animate when the tab
+   is active + motion is allowed. */
+.reveal { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .reveal.in { animation: g-rise 0.55s ease both; }
+}
+@keyframes g-rise { from { transform: translateY(16px); } to { transform: none; } }
+
+/* Focus styles — visible by default on keyboard nav only. */
+:focus-visible {
+  outline: 2px solid var(--g-accent);
+  outline-offset: 3px;
+}

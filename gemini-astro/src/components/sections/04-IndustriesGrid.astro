@@ -1,0 +1,204 @@
+---
+/**
+ * Gemini AMPM — Section 4 · Industries & Applications We Serve
+ *
+ * Position in the service-vertical template (see
+ * `01-website/audits/SERVICE_VERTICAL_TEMPLATE.md`, Section 4):
+ *
+ *   1. Hero
+ *   2. Qualification Gate + Form #1
+ *   3. System Types We Install
+ *   4. INDUSTRIES & APPLICATIONS WE SERVE   ← this file
+ *   5. How It Works
+ *   6. Honest Pricing
+ *   7. Social Proof + Form #2 (primary)
+ *   8. Maintenance + Form #3
+ *   9. Why Gemini AMPM
+ *   10. FAQ
+ *   11. Footer CTA + Schema bundle
+ *
+ * --------------------------------------------------------------------------
+ * Purpose
+ * --------------------------------------------------------------------------
+ * Captures `[service] for [sector]` long-tail commercial queries that
+ * FAQPage schema cannot rank for — e.g. "gas suppression for data centres",
+ * "fire alarm for healthcare", "access control for warehousing". Closes the
+ * gap competitor Logic Fire exploits with their "Where Are Gas Suppression
+ * Systems Essential?" block.
+ *
+ * --------------------------------------------------------------------------
+ * Build (per the spec)
+ * --------------------------------------------------------------------------
+ * - Astro static, no JS island.
+ * - Grid of 6–9 IndustryCard primitives. Spec: mobile 1-col, tablet 2-col,
+ *   desktop 3-col. Validated softly (a console warn in dev only) so a CMS
+ *   author can ship 5 or 10 in a pinch without a hard build break.
+ * - Section sits on `surface-1` (--paper-2) so it reads as an alternating
+ *   band against the white/paper sections above and below.
+ * - Each card is one Payload `industries[]` array item — fields mapped 1:1.
+ *
+ * --------------------------------------------------------------------------
+ * Payload mapping (services.industries, per SERVICE_VERTICAL_TEMPLATE.md)
+ * --------------------------------------------------------------------------
+ *   industries: array of {
+ *     iconSlug:     text   // kebab-case, resolves to /icons/industries/{slug}.svg
+ *     sectorName:   text
+ *     body:         textarea (30–50 words)
+ *     optionalLink: text   // case study or sector landing page (Phase 2)
+ *   }
+ *
+ * The component accepts those fields as-is (no rename), plus optional
+ * section-chrome props (`kicker`, `heading`, `intro`, `id`) so a page
+ * template can stamp this section without an extra wrapper.
+ */
+
+import Section from '../primitives/Section.astro';
+import Container from '../primitives/Container.astro';
+import Heading from '../primitives/Heading.astro';
+import Kicker from '../primitives/Kicker.astro';
+import IndustryCard from '../primitives/IndustryCard.astro';
+
+/** One row from the Payload `services.industries` array. */
+export interface IndustryItem {
+  /** Kebab-case slug; resolves to `/icons/industries/{slug}.svg`. */
+  iconSlug: string;
+  /** Sector name — e.g. "Data centres", "Healthcare", "Warehousing". */
+  sectorName: string;
+  /** 30–50 word intent-matched body copy. */
+  body: string;
+  /** Optional CTA href — case study or sector landing page (Phase 2). */
+  optionalLink?: string | null;
+}
+
+export interface Props {
+  /** Payload `industries` array — render 6–9 cards. */
+  industries: IndustryItem[];
+  /** Optional small label above the H2. Defaults to "Industries we serve". */
+  kicker?: string;
+  /** Section H2. Defaults to "Industries & applications we serve". */
+  heading?: string;
+  /**
+   * Optional intro paragraph under the H2. 1–2 sentences max — the cards
+   * carry the weight, the intro is just orientation.
+   */
+  intro?: string;
+  /** Anchor id for in-page jumps. Defaults to "industries". */
+  id?: string;
+  /** Extra class for outer <section>. */
+  class?: string;
+}
+
+const {
+  industries,
+  kicker = 'Industries we serve',
+  heading = 'Industries & applications we serve',
+  intro,
+  id = 'industries',
+  class: className,
+} = Astro.props;
+
+/* ------------------------------------------------------------------------
+ * Soft validation — spec calls for 6–9 cards. We warn in dev rather than
+ * throwing so a CMS author saving a draft with 4 cards doesn't brick the
+ * page; the warning lands in the build log and the editor's preview.
+ * ---------------------------------------------------------------------- */
+if (import.meta.env.DEV) {
+  const count = industries?.length ?? 0;
+  if (count < 6 || count > 9) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[IndustriesGrid] Spec calls for 6–9 cards; got ${count}. ` +
+        `Pillar pages especially should hit the upper end for long-tail capture.`,
+    );
+  }
+}
+
+const hasIndustries = Array.isArray(industries) && industries.length > 0;
+---
+
+{hasIndustries && (
+  <Section
+    id={id}
+    background="surface-1"
+    density="standard"
+    class={className}
+    aria-labelledby={`${id}-heading`}
+  >
+    <Container>
+      <header class="industries__header">
+        <Kicker as="p">{kicker}</Kicker>
+        <Heading as="h2" id={`${id}-heading`}>{heading}</Heading>
+        {intro && <p class="industries__intro">{intro}</p>}
+      </header>
+
+      <ul class="industries__grid" role="list">
+        {industries.map((item) => (
+          <li class="industries__item">
+            <IndustryCard
+              iconSlug={item.iconSlug}
+              sectorName={item.sectorName}
+              body={item.body}
+              optionalLink={item.optionalLink ?? null}
+            />
+          </li>
+        ))}
+      </ul>
+    </Container>
+  </Section>
+)}
+
+<style>
+  /* ── Header rhythm ───────────────────────────────────────────────────
+     Kicker → H2 → intro lockup. Margin lives on the header (not on the
+     Heading/Kicker primitives) so a different section using the same
+     primitives can choose its own rhythm. */
+  .industries__header {
+    margin-bottom: clamp(28px, 4vw, 48px);
+    max-width: 56ch;
+  }
+
+  .industries__intro {
+    margin: 12px 0 0;
+    font-family: var(--d-body);
+    font-size: 1.0625rem;        /* 17px — slightly above body */
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+
+  /* ── Grid ─────────────────────────────────────────────────────────────
+     Mobile-first: 1 column → 2 at tablet → 3 at desktop, exactly per spec.
+     `list-style: none` + `role="list"` keeps the <ul> semantics for
+     assistive tech while suppressing the bullet glyph (VoiceOver bug
+     workaround for lists with `list-style: none`). */
+  .industries__grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: clamp(16px, 2vw, 24px);
+    grid-template-columns: 1fr;             /* mobile: 1-col */
+  }
+
+  @media (min-width: 640px) {
+    .industries__grid {
+      grid-template-columns: repeat(2, 1fr); /* tablet: 2-col */
+    }
+  }
+
+  @media (min-width: 960px) {
+    .industries__grid {
+      grid-template-columns: repeat(3, 1fr); /* desktop: 3-col */
+    }
+  }
+
+  /* Each <li> is just a positioning shim — IndustryCard owns its own
+     surface, border and padding. Stretching the card to the cell height
+     keeps the grid rows visually flush even when body copy varies. */
+  .industries__item {
+    display: flex;
+  }
+
+  .industries__item > :global(.industry-card) {
+    width: 100%;
+  }
+</style>

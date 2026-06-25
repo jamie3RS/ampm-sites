@@ -1,0 +1,67 @@
+---
+/**
+ * Gemini AMPM — top nav.
+ *
+ * Mirrors the prototype's .nav rules (sticky, day/night colour by .dark, phone
+ * CTA tracks the day-arc colour sweep on home). The mark is the moon glyph
+ * (Gemini owns the night); on the Group / Building Services skin it swaps
+ * back to the sun mark. DDI lives in g-data.jsx as "0330 043 0080".
+ */
+interface Props {
+  dark?: boolean;
+}
+const { dark = true } = Astro.props;
+
+const routes = [
+  { href: '/services/',      label: 'Services' },
+  { href: '/sectors/',       label: 'Sectors' },
+  { href: '/case-studies/',  label: 'Case studies' },
+  { href: '/clients/',       label: 'Clients' },
+  { href: '/manufacturers/', label: 'Manufacturers' },
+  { href: '/about/',         label: 'About' },
+  { href: '/contact/',       label: 'Contact' },
+];
+
+const DDI = '0330 043 0080';
+const ddiHref = `tel:${DDI.replace(/\s+/g, '')}`;
+---
+<header
+  class:list={['nav', { dark }]}
+  data-nav-dark={dark ? 'true' : null}
+>
+  <a href="/" class="glogo" aria-label="Gemini AMPM — home">
+    <img
+      class="glogo-img glogo-img--light"
+      src="/assets/gemini-logo.png"
+      alt=""
+      width="170"
+      height="34"
+      decoding="async"
+    />
+    <img
+      class="glogo-img glogo-img--dark"
+      src="/assets/gemini-logo-rev.png"
+      alt=""
+      width="170"
+      height="34"
+      decoding="async"
+    />
+  </a>
+
+  <span class="est" aria-hidden="true">Est. 1997 &middot; Employee-owned</span>
+
+  <nav class="links" aria-label="Primary">
+    {routes.map((r) => (
+      <a
+        href={r.href}
+        aria-current={Astro.url.pathname === r.href ? 'page' : undefined}
+      >
+        {r.label}
+      </a>
+    ))}
+  </nav>
+
+  <a class="phone" href={ddiHref} aria-label={`Call Gemini AMPM on ${DDI}`}>
+    {DDI}
+  </a>
+</header>

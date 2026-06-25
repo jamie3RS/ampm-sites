@@ -1,0 +1,496 @@
+---
+/**
+ * Gemini AMPM — Section 6: Honest Pricing Bands + What Changes the Price
+ *
+ * Spec: SERVICE_VERTICAL_TEMPLATE.md §"Section 6 — Honest Pricing Bands"
+ *
+ * Purpose
+ * -------
+ * The single biggest commercial differentiator on the service-vertical
+ * template. Almost no UK trade-services competitor publishes ranges, so this
+ * section converts buyers who've bounced off the "request a quote" walls
+ * elsewhere. It is deliberately hedged: every band is a range or a "from £X",
+ * never a single quote-back-able number, and the "what changes the price"
+ * callout reframes any future surveyor quote that lands outside the band.
+ *
+ * Structure (top → bottom)
+ *   1. H2 + intro paragraph (buyer-intent phrasing: "How much does X cost?").
+ *   2. Pricing table — 3-4 <PricingBand> rows in a responsive grid (desktop:
+ *      table-like 4-col layout via column header strip; mobile: card stack).
+ *      Header strip is rendered locally (not in the PricingBand primitive)
+ *      so screen-reader users hear it once per table, not per row.
+ *   3. "What changes the price" callout — 3-5 driver bullets.
+ *   4. Human caveat paragraph — surveyor-hedge so sales aren't boxed in.
+ *   5. Maintenance price callout — secondary band for the service-contract
+ *      buyer that's not part of the install bands.
+ *   6. Secondary CTA — anchor-jumps UP to Form #1 (consultation), NOT down
+ *      to the quote form. Buyer at this point is mid-budget-evaluation; the
+ *      right next action is a 30-min consult, not an 8-field quote ask.
+ *
+ * Density / visual hierarchy
+ *   The section sits on `surface-1` (--paper-2) to differentiate the
+ *   commercial block from the surrounding white-paper sections, and earns
+ *   "long" density on long-preset pillars and "standard" elsewhere — but
+ *   density is owned by the parent page composer, not here. We default to
+ *   "standard" and let the parent override via density-passing if needed.
+ *
+ * Payload fields consumed (from `services` collection):
+ *   - pricingBands               (array of bands — required, 3-4 rows)
+ *   - priceDriversList           (array of {driver} — required, 3-5 items)
+ *   - humanCaveat                (textarea — required, surveyor-hedge prose)
+ *   - maintenancePriceCallout    (text — required, one-line price)
+ *   - secondaryCTAlabel          (text — required, button label)
+ *
+ * Plus contextual props from the page composer:
+ *   - sectionId    — used as the anchor id (defaults to "pricing")
+ *   - consultAnchor — id of Form #1 the secondary CTA jumps to
+ *                     (defaults to "#consultation")
+ */
+
+import Section from '../primitives/Section.astro';
+import Heading from '../primitives/Heading.astro';
+import Kicker from '../primitives/Kicker.astro';
+import Button from '../primitives/Button.astro';
+import PricingBand from '../primitives/PricingBand.astro';
+
+/**
+ * Mirrors the Payload `pricingBands` array entry shape. `whatsIncluded` /
+ * `whatsExtra` arrive from Payload as textareas (newline-separated bullet
+ * strings); we normalise to `string[]` before passing to the primitive.
+ * Allowing both `string` and `string[]` here keeps the type honest about
+ * what callers actually pass — the page composer may pre-split, the CMS
+ * loader may not.
+ */
+export interface PricingBandInput {
+  bandName: string;
+  scopeQualifier?: string;
+  priceRange: string;
+  whatsIncluded: string | string[];
+  whatsExtra?: string | string[];
+}
+
+/**
+ * Mirrors the Payload `priceDriversList` array entry shape — single field
+ * per row, matching the schema:
+ *   { name: 'priceDriversList', type: 'array',
+ *     fields: [{ name: 'driver', type: 'text' }] }
+ */
+export interface PriceDriver {
+  driver: string;
+}
+
+export interface Props {
+  /** Optional kicker label above the H2. Defaults to "Honest pricing". */
+  kicker?: string;
+  /** Section H2 — buyer's literal cost query for PAA/featured-snippet capture. */
+  h2: string;
+  /**
+   * Lede paragraph under the H2. 20-40 words framing the pricing approach
+   * (why we publish, why ranges, what to expect from a survey).
+   */
+  intro?: string;
+  /** 3-4 pricing bands from Payload — required. */
+  pricingBands: PricingBandInput[];
+  /** 3-5 drivers that change the final quote — required. */
+  priceDriversList: PriceDriver[];
+  /** Surveyor-hedge prose. Required by spec ("every site is different…"). */
+  humanCaveat: string;
+  /** Maintenance price one-liner. Required by spec. */
+  maintenancePriceCallout: string;
+  /** Secondary CTA label — defaults to "Book a free consultation". */
+  secondaryCTAlabel?: string;
+  /** Section anchor id — set if the page needs to deep-link here. */
+  sectionId?: string;
+  /**
+   * Anchor target for the secondary CTA. Should jump to the Section 2
+   * consultation form (Form #1) — spec calls for the secondary CTA, not
+   * primary, because the buyer at this point is mid-evaluation.
+   */
+  consultAnchor?: string;
+}
+
+const {
+  kicker = 'Honest pricing',
+  h2,
+  intro,
+  pricingBands,
+  priceDriversList,
+  humanCaveat,
+  maintenancePriceCallout,
+  secondaryCTAlabel = 'Book a free consultation',
+  sectionId = 'pricing',
+  consultAnchor = '#consultation',
+} = Astro.props;
+
+/**
+ * Normalise a "lines" field that may arrive as a single textarea string
+ * (Payload `textarea`) or already-split `string[]` (the page composer
+ * pre-split it). Splits on newlines AND bullet glyphs, drops blanks, trims.
+ * Kept local because the rule for "what counts as a bullet" is editorial
+ * to this section — other sections may want different splitting.
+ */
+function toBullets(input: string | string[] | undefined): string[] {
+  if (!input) return [];
+  if (Array.isArray(input)) return input.map((l) => l.trim()).filter(Boolean);
+  return input
+    .split(/\r?\n|[•·]/)
+    .map((line) => line.replace(/^[-*\s]+/, '').trim())
+    .filter(Boolean);
+}
+
+/** Pre-process bands once so the template stays declarative. */
+const bands = pricingBands.map((band) => ({
+  ...band,
+  whatsIncluded: toBullets(band.whatsIncluded),
+  whatsExtra: toBullets(band.whatsExtra),
+}));
+
+/** Drop empty rows so a half-edited CMS entry doesn't render a blank bullet. */
+const drivers = priceDriversList
+  .map((d) => d.driver?.trim())
+  .filter((d): d is string => Boolean(d));
+---
+
+<Section id={sectionId} background="surface-1" density="standard">
+  {/* ── Heading stack ───────────────────────────────────────────────
+      Kicker → H2 → intro lede. The H2 carries the buyer's literal
+      cost query so this block earns the featured-snippet bait per the
+      spec's visible-SERP strategy ("Honest pricing bands as
+      featured-snippet bait for cost queries"). */}
+  <header class="pricing__head">
+    <Kicker as="p" tone="accent">{kicker}</Kicker>
+    <Heading as="h2" size="lg" class="pricing__h2">{h2}</Heading>
+    {intro && <p class="pricing__intro">{intro}</p>}
+  </header>
+
+  {/* ── Pricing table ───────────────────────────────────────────────
+      role="table" wrapper + role="row" header so screen readers
+      announce a coherent grid; the PricingBand primitive emits
+      role="row" + cells inside. The header strip is shown only on
+      desktop (>=900px) because each card on mobile carries its own
+      inline labels — repeating the header would double the SR
+      announcement. */}
+  <div class="pricing__table" role="table" aria-labelledby={`${sectionId}-h2-label`}>
+    {/* Hidden caption tying the table to the H2 for AT users. */}
+    <span id={`${sectionId}-h2-label`} class="pricing__sr-only">
+      {h2}
+    </span>
+
+    <div class="pricing__header" role="row" aria-hidden="false">
+      <span class="pricing__header-cell" role="columnheader">Band</span>
+      <span class="pricing__header-cell" role="columnheader">Price</span>
+      <span class="pricing__header-cell" role="columnheader">What's included</span>
+      <span class="pricing__header-cell" role="columnheader">What's extra</span>
+    </div>
+
+    <div class="pricing__rows">
+      {bands.map((band) => (
+        <PricingBand
+          bandName={band.bandName}
+          scopeQualifier={band.scopeQualifier}
+          priceRange={band.priceRange}
+          whatsIncluded={band.whatsIncluded}
+          whatsExtra={band.whatsExtra}
+        />
+      ))}
+    </div>
+  </div>
+
+  {/* ── What changes the price ─────────────────────────────────────
+      Adversarial-2 hedge: every band could read as a fixed promise
+      without this block. The driver list reframes the band as a
+      starting point so any surveyor quote outside the band lands
+      with the buyer already primed for the variation. */}
+  <aside class="pricing__drivers" aria-labelledby={`${sectionId}-drivers-h`}>
+    <h3 id={`${sectionId}-drivers-h`} class="pricing__drivers-h">
+      What changes the price
+    </h3>
+    <ul class="pricing__drivers-list">
+      {drivers.map((driver) => (
+        <li class="pricing__drivers-item">{driver}</li>
+      ))}
+    </ul>
+  </aside>
+
+  {/* ── Human caveat ────────────────────────────────────────────────
+      Plain prose (no quote marks — it's house voice, not a
+      testimonial). Sits between the drivers and the maintenance
+      callout so it reads as the bridge from "what's in the install
+      band" to "what the contract band looks like". */}
+  <p class="pricing__caveat">{humanCaveat}</p>
+
+  {/* ── Maintenance price callout ──────────────────────────────────
+      Single-line band for the service-contract buyer. Separate from
+      the install bands because (a) the audience is different
+      (existing-system owner vs. fresh-install buyer) and (b) the
+      maths is different (per-visit, not per-project). Form #3 in
+      Section 8 is the real conversion path here — this just plants
+      the price anchor. */}
+  <aside class="pricing__maint" aria-labelledby={`${sectionId}-maint-h`}>
+    <span id={`${sectionId}-maint-h`} class="pricing__maint-label">
+      Maintenance
+    </span>
+    <p class="pricing__maint-value">{maintenancePriceCallout}</p>
+  </aside>
+
+  {/* ── Secondary CTA ───────────────────────────────────────────────
+      Spec explicitly says secondary CTA → Form #1 consultation, NOT
+      Form #2 quote. Buyer is mid-budget-evaluation; the lowest-
+      commitment next step (30-min call) converts better than the
+      8-field quote ask. */}
+  <div class="pricing__cta">
+    <Button
+      variant="secondary"
+      size="lg"
+      href={consultAnchor}
+      label={secondaryCTAlabel}
+      data-source="pricing"
+    />
+    <p class="pricing__cta-promise">
+      30-minute call within 24h. No obligation.
+    </p>
+  </div>
+</Section>
+
+<style>
+  /* ───────────────────────────── Heading stack ─────────────────────────────
+     Tight vertical rhythm — kicker, H2, intro lede stacked with token-driven
+     gaps so the section opens with a clear commercial promise before the
+     table appears. */
+  .pricing__head {
+    max-width: 56ch;
+    margin-bottom: clamp(2rem, 4vw, 3rem);
+  }
+
+  .pricing__h2 {
+    margin-top: 0.5rem;
+  }
+
+  .pricing__intro {
+    font-family: var(--d-body);
+    font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin: 1rem 0 0;
+    max-width: 56ch;
+    text-wrap: pretty;
+  }
+
+  /* ───────────────────────────── Table wrapper ─────────────────────────────
+     The "table" is a CSS grid not a real <table>, so role="table" is the
+     accessible bridge. Desktop shows the header row; mobile collapses to a
+     card stack with inline labels (the PricingBand primitive owns that). */
+  .pricing__table {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Visually-hidden caption tying the table to its H2 for AT — keeps the
+     section keyboard-/SR-navigable without leaking duplicate visible text. */
+  .pricing__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Header strip — hidden on mobile because each card carries its own
+     inline labels. Shown on desktop where the bands switch to a 4-col grid
+     and the labels would otherwise repeat per row (visual noise + SR dup). */
+  .pricing__header {
+    display: none;
+  }
+
+  .pricing__rows {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* ───────────────────────────── Drivers callout ─────────────────────────
+     Tinted panel that sits beneath the table — visually distinct from a
+     pricing band so buyers don't mistake it for a fifth band. Border-left
+     accent stripe nods to a "callout" pattern without needing a coloured
+     surface, which would clash with the surface-1 section background. */
+  .pricing__drivers {
+    margin-top: clamp(2rem, 4vw, 3rem);
+    padding: clamp(1.25rem, 2.5vw, 1.75rem) clamp(1.25rem, 3vw, 2rem);
+    background: var(--paper-card);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--g-accent);
+    border-radius: 8px;
+  }
+
+  .pricing__drivers-h {
+    font-family: var(--d-display);
+    font-weight: 700;
+    font-size: clamp(1.25rem, 1rem + 0.7vw, 1.5rem);
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0 0 1rem;
+    line-height: 1.2;
+  }
+
+  .pricing__drivers-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+
+  /* Tighter row leading on mobile, two-column flow on tablet+. The driver
+     items are short clauses (4-8 words each) so a 2-col layout reads cleanly
+     without orphan lines. */
+  @media (min-width: 640px) {
+    .pricing__drivers-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 2rem;
+    }
+  }
+
+  .pricing__drivers-item {
+    position: relative;
+    padding-left: 1.5rem;
+    font-family: var(--d-body);
+    font-size: var(--t-body, 1rem);
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  /* Bullet glyph: small filled circle in accent — same visual weight as the
+     PricingBand "included" ticks but distinct shape so the eye reads this
+     as "modifiers", not "more checklist items". */
+  .pricing__drivers-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--g-accent);
+  }
+
+  /* ───────────────────────────── Human caveat ─────────────────────────────
+     Prose, not a callout. Buyer needs a moment of plain-English honesty
+     between "here's what changes the price" and "here's the maintenance
+     band" — anything chrome-heavy would feel defensive. */
+  .pricing__caveat {
+    margin: clamp(1.5rem, 3vw, 2rem) 0 0;
+    font-family: var(--d-body);
+    font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+    line-height: 1.6;
+    color: var(--ink-2);
+    max-width: 64ch;
+    font-style: italic;
+    text-wrap: pretty;
+  }
+
+  /* ───────────────────────────── Maintenance callout ─────────────────────
+     One-line price band. Tighter than the drivers callout — it's an anchor,
+     not a list — and uses the accent stripe on top rather than left to
+     differentiate visually. Buyer scans this in <1s. */
+  .pricing__maint {
+    margin-top: clamp(2rem, 4vw, 2.5rem);
+    padding: 1rem 1.25rem;
+    background: var(--paper-card);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--g-accent);
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.75rem 1rem;
+  }
+
+  .pricing__maint-label {
+    font-family: var(--d-body);
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--g-accent);
+  }
+
+  .pricing__maint-value {
+    margin: 0;
+    font-family: var(--d-display);
+    font-weight: 700;
+    font-size: clamp(1.1rem, 0.9rem + 0.7vw, 1.4rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ───────────────────────────── Secondary CTA block ─────────────────────
+     Anchor-jumps UP to Form #1 consultation. Promise line below the button
+     mirrors the consult-form promise from Section 2 so the buyer arriving
+     at the form via this CTA sees the same wording twice (continuity =
+     trust). */
+  .pricing__cta {
+    margin-top: clamp(2rem, 4vw, 3rem);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .pricing__cta-promise {
+    margin: 0;
+    font-family: var(--d-body);
+    font-size: var(--t-body-s, 0.9375rem);
+    color: var(--ink-3);
+    line-height: 1.4;
+  }
+
+  /* ───────────────────────────── Desktop layout ──────────────────────────
+     >=900px switches the table to a header-row + grid-row pattern. Column
+     tracks here MUST match PricingBand's desktop grid (1.4fr 1fr 1.6fr 1.4fr
+     — see PricingBand.astro @media (min-width: 900px)) so headers align
+     with cells. If those ever drift, fix in both places. */
+  @media (min-width: 900px) {
+    .pricing__header {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1.6fr 1.4fr;
+      gap: var(--s-5, 1.25rem);
+      padding: 0 clamp(1.25rem, 3vw, 2rem);
+    }
+
+    .pricing__header-cell {
+      font-family: var(--d-body);
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    /* CTA row goes horizontal on desktop — button on left, promise inline
+       to the right so it sits adjacent like a tooltip rather than below. */
+    .pricing__cta {
+      flex-direction: row;
+      align-items: center;
+      gap: 1.5rem;
+    }
+  }
+
+  /* ───────────────────────────── Night-skin tuning ────────────────────────
+     Tokens carry most of the lift, but the drivers/maint callouts use
+     --paper-card which on night is a deeper navy. Bump the border opacity
+     so the callouts don't disappear into the section's --paper-2 band. */
+  :global(html[data-skin='night']) .pricing__drivers,
+  :global(html[data-skin='night']) .pricing__maint {
+    border-color: rgba(244, 234, 216, 0.22);
+  }
+</style>

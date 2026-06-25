@@ -1,0 +1,186 @@
+---
+/**
+ * AccreditationBadge — single accreditation logo + optional label.
+ *
+ * Used in the service-vertical template (per SERVICE_VERTICAL_TEMPLATE.md):
+ *   - Section 1 hero "Trust Strip": 3-4 highest-equity logos filtered by pillar
+ *     (BAFE for fire, NSI Gold for security, FIRAS for passive, FIA fallback
+ *     for gas).
+ *   - Section 9 "Why Gemini AMPM": full strip of 3-6 clickable logos per
+ *     pillar, each linking to its cert page (the orphan-page fix —
+ *     3+ inbound links to each of the 17 cert pages).
+ *
+ * The visual chrome (chip, tint, hover lift) is a presentational primitive;
+ * arrangement into a horizontal strip is the parent's job. A bare badge
+ * with no `href` renders a non-interactive <figure>; with an `href` it
+ * becomes an <a> that the keyboard + screen reader pick up cleanly.
+ *
+ * Logo files live in /public/certs/thumbs/{slug}.png. PNG over SVG because
+ * the source artwork on most cert bodies (BAFE, FIRAS, NSI, FIA, SSAIB,
+ * Constructionline, CHAS, Safecontractor) ships as a bitmap with brand-
+ * locked colour that we shouldn't recolour. Hardcoded width/height per the
+ * brief's CLS rule; intrinsic ratio is 1:1 for the chip face.
+ *
+ * Sizing:
+ *   sm — 36px chip · hero trust strip on mobile, footer mini-strip
+ *   md — 56px chip · default, hero trust strip on desktop
+ *   lg — 80px chip · Section 9 full strip, cert-page index cards
+ *
+ * Usage:
+ *   <AccreditationBadge slug="bafe-sp203-1" label="BAFE SP203-1" />
+ *   <AccreditationBadge slug="firas" label="FIRAS" href="/accreditations/firas/" size="lg" />
+ *   <AccreditationBadge slug="nsi-gold" label="NSI Gold" size="sm" />
+ */
+
+type Size = "sm" | "md" | "lg";
+
+interface Props {
+  /** Filename stem under /public/certs/thumbs/{slug}.png — kebab-case, matches the cert page slug. */
+  slug: string;
+  /** Human-readable accreditation name. Doubles as the <img> alt + visible caption. Required for a11y. */
+  label: string;
+  /** Optional link target — typically the cert detail page (e.g. /accreditations/bafe/). Omit for non-clickable strip. */
+  href?: string;
+  /** Visual size. Defaults to md. */
+  size?: Size;
+  /** Extra Tailwind utilities for parent-driven layout tweaks. */
+  class?: string;
+}
+
+const {
+  slug,
+  label,
+  href,
+  size = "md",
+  class: className = "",
+} = Astro.props;
+
+/** Chip face (square logo plate) dimensions in px — fed into width/height
+ *  attrs on the <img> to lock CLS, and into the scoped style block via
+ *  CSS vars so the wrapping chip matches. */
+const chipPx: Record<Size, number> = {
+  sm: 36,
+  md: 56,
+  lg: 80,
+};
+
+const labelFontPx: Record<Size, number> = {
+  sm: 11,
+  md: 12,
+  lg: 13,
+};
+
+const src = `/certs/thumbs/${slug}.png`;
+const px = chipPx[size];
+const labelPx = labelFontPx[size];
+const isLink = Boolean(href);
+
+/** Slot the same inner markup whether we render <a> or <figure>. */
+const Tag = isLink ? "a" : "figure";
+---
+
+<Tag
+  class:list={["accred-badge", `accred-badge--${size}`, className]}
+  data-slug={slug}
+  {...(isLink
+    ? { href, "aria-label": label }
+    : { role: "img", "aria-label": label })}
+>
+  <span class="accred-badge__chip" aria-hidden="true">
+    <img
+      class="accred-badge__img"
+      src={src}
+      alt={isLink ? "" : label}
+      width={px}
+      height={px}
+      loading="lazy"
+      decoding="async"
+    />
+  </span>
+  {/* Label is rendered for sighted users + sits inside <a>; aria-label on
+      the link still owns the accessible name so screen readers don't double-
+      announce. For the non-link variant, the <img> alt carries the name and
+      we hide the visible caption from AT. */}
+  <span class="accred-badge__label" aria-hidden={isLink ? undefined : "true"}>
+    {label}
+  </span>
+</Tag>
+
+<style define:vars={{
+  chipSize: `${px}px`,
+  labelSize: `${labelPx}px`,
+}}>
+  .accred-badge {
+    /* Tailwind handles the inline-flex column layout; everything visual
+       below is brand-token bound so a future skin flip carries through. */
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s-2, 8px);
+    text-decoration: none;
+    color: var(--text, #f4ead8);
+    font-family: var(--f-body, "Archivo", sans-serif);
+    transition: transform 0.15s var(--ease, cubic-bezier(0.2, 0.7, 0.2, 1));
+  }
+
+  /* Only links get the hover lift + accent treatment — the figure variant
+     is a static trust mark, not a target. */
+  a.accred-badge:hover,
+  a.accred-badge:focus-visible {
+    transform: translateY(-1px);
+  }
+  a.accred-badge:hover .accred-badge__label,
+  a.accred-badge:focus-visible .accred-badge__label {
+    color: var(--accent, #E8742C);
+  }
+  a.accred-badge:hover .accred-badge__chip,
+  a.accred-badge:focus-visible .accred-badge__chip {
+    border-color: var(--accent, #E8742C);
+  }
+
+  .accred-badge__chip {
+    /* Light plate behind the logo so brand-coloured marks (BAFE red,
+       NSI blue, FIRAS green) stay legible on the night background. */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--chipSize);
+    height: var(--chipSize);
+    padding: 6px;
+    background: #ffffff;
+    border: 1px solid var(--line-strong, rgba(255, 255, 255, 0.16));
+    border-radius: var(--radius-sm, 6px);
+    box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.4));
+    transition: border-color 0.15s var(--ease, cubic-bezier(0.2, 0.7, 0.2, 1));
+  }
+
+  .accred-badge__img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Override the global `img { height: auto }` from base.css — we need
+       the intrinsic chip ratio to hold for CLS. */
+  }
+
+  .accred-badge__label {
+    font-size: var(--labelSize);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--text-soft, #bacbff);
+    text-align: center;
+    max-width: 12ch;
+    line-height: 1.2;
+    transition: color 0.15s var(--ease, cubic-bezier(0.2, 0.7, 0.2, 1));
+  }
+
+  /* Day-skin variant — when the badge ends up on a light surface
+     (Group / Building Services skin, or cert-page hero), drop the white
+     plate to a paper tone and switch the label to ink. */
+  :global(html[data-skin="day"]) .accred-badge__chip {
+    background: var(--paper, #fdfaf2);
+    border-color: rgba(28, 24, 18, 0.12);
+  }
+  :global(html[data-skin="day"]) .accred-badge__label {
+    color: var(--ink, #1c1812);
+  }
+</style>

@@ -1,0 +1,540 @@
+---
+/**
+ * Gemini AMPM — Section 2: Qualification Gate + Inline Form #1 (Consultation).
+ *
+ * Spec ref: SERVICE_VERTICAL_TEMPLATE.md §"Section 2 — Qualification Gate".
+ *
+ * Two blocks in one section:
+ *
+ *  1. Gate
+ *     - Buyer-question H2 (People-Also-Ask capture).
+ *     - 3-5 use-case "chips" (icon + scenario label + one-line trigger).
+ *       Optionally each chip links out to a sector page.
+ *     - One-line regulatory anchor (BS 5839-1 / BS EN 15004 / etc).
+ *     - "Not what you need?" sibling-redirect link — recycles equity
+ *       to the right sibling pillar instead of bouncing the visitor.
+ *
+ *  2. Inline Form #1 — Consultation, 4 fields (lowest-commitment ask):
+ *       name, email, phone, optional description.
+ *     - <form method="POST" action="/_actions/consult"> for HTML-only fallback.
+ *     - Hidden attribution fields (source, pillar, variantId, UTMs, pagePath).
+ *     - Turnstile placeholder picks up the sitekey from Cloudflare env at SSR.
+ *     - Submit label is Payload-driven so we can A/B copy per pillar.
+ *     - Promise line under the submit (24h callback) — friction-killer.
+ *
+ * Buyer-state framing: visitors who land on a pillar page have already
+ * told Google they want a service. This section pre-qualifies them
+ * (are you the right kind of buyer?) BEFORE asking for anything bigger
+ * than a 30-minute call. The big-commitment quote form lives in Section 7.
+ *
+ * Density-agnostic: the gate uses the standard <Section> rhythm and looks
+ * fine at compact through long. The form pads its own inner card.
+ */
+
+import Section from '../primitives/Section.astro';
+import Container from '../primitives/Container.astro';
+import Heading from '../primitives/Heading.astro';
+import Kicker from '../primitives/Kicker.astro';
+import Button from '../primitives/Button.astro';
+
+/* Aligns to the `useCases` array shape on the services Payload collection
+   — see SERVICE_VERTICAL_TEMPLATE.md §"services collection".
+   `optionalSectorPageLink` is resolved to a URL string by the page loader
+   before it reaches this component. */
+export interface UseCase {
+  iconSlug?: string;
+  scenarioLabel: string;
+  oneLineTrigger: string;
+  optionalSectorPageLink?: string;
+}
+
+/* The sibling-redirect target. Resolved to URL + label by the page loader.
+   Spec field name is `wrongFitRedirect` (relationTo services). */
+export interface WrongFitRedirect {
+  url: string;
+  label: string;
+}
+
+export interface Props {
+  /** Payload `pillar` — drives form routing + subject-prefix. */
+  pillar: string;
+  /** Payload `variantId` — A/B variant tag for attribution. */
+  variantId?: string;
+  /** Payload `gateHeadline` — buyer's literal question for PAA capture. */
+  gateHeadline: string;
+  /** Payload `useCases` — 3-5 entries. Anything outside [3,5] is allowed but flagged in dev. */
+  useCases: UseCase[];
+  /** Payload `regulatoryAnchor` — single-line BS/ADB reference. */
+  regulatoryAnchor?: string;
+  /** Payload `wrongFitRedirect` — pre-resolved. */
+  wrongFitRedirect?: WrongFitRedirect;
+  /** Payload `consultFormHeadline` — defaults to schema default in CMS. */
+  consultFormHeadline?: string;
+  /** Payload `consultSubmitLabel` — defaults "Book my consultation". */
+  consultSubmitLabel?: string;
+  /** Current page path, used as a hidden form field for attribution. */
+  pagePath: string;
+  /** Optional anchor id override (defaults to "consultation"). */
+  id?: string;
+}
+
+const {
+  pillar,
+  variantId = 'A',
+  gateHeadline,
+  useCases,
+  regulatoryAnchor,
+  wrongFitRedirect,
+  consultFormHeadline = 'Not sure if you need one? Book a free 30-minute consultation.',
+  consultSubmitLabel = 'Book my consultation',
+  pagePath,
+  id = 'consultation',
+} = Astro.props;
+
+/* Dev-only guard: spec says 3–5 chips. Don't throw in prod — just nudge in console. */
+if (import.meta.env.DEV && (useCases.length < 3 || useCases.length > 5)) {
+  console.warn(
+    `[QualificationGate] expected 3–5 useCases for pillar="${pillar}", got ${useCases.length}.`,
+  );
+}
+
+/* Turnstile sitekey resolves from Cloudflare runtime env. Empty fallback
+   keeps the widget mount in the DOM so the script can re-render after
+   client-side hydration if the env vars land late. */
+const turnstileSiteKey =
+  (Astro.locals as { runtime?: { env?: { TURNSTILE_SITE_KEY?: string } } })
+    ?.runtime?.env?.TURNSTILE_SITE_KEY ?? '';
+---
+
+<Section id={id} background="surface-1" density="standard">
+  <Container variant="narrow">
+    {/* ── Block 1: Qualification gate ─────────────────────────── */}
+    <div class="gate">
+      <Kicker as="p" tone="accent">Is this for you?</Kicker>
+      <Heading as="h2" size="lg" class="gate__h2">{gateHeadline}</Heading>
+
+      {useCases?.length > 0 && (
+        <ul class="gate__chips" role="list" aria-label="Use cases">
+          {useCases.map((uc) => {
+            const inner = (
+              <>
+                {uc.iconSlug && (
+                  <span class="gate__chip-icon" aria-hidden="true" data-icon={uc.iconSlug}></span>
+                )}
+                <span class="gate__chip-text">
+                  <span class="gate__chip-scenario">{uc.scenarioLabel}</span>
+                  <span class="gate__chip-trigger">{uc.oneLineTrigger}</span>
+                </span>
+              </>
+            );
+            return (
+              <li class="gate__chip">
+                {uc.optionalSectorPageLink ? (
+                  <a href={uc.optionalSectorPageLink} class="gate__chip-link">
+                    {inner}
+                  </a>
+                ) : (
+                  <div class="gate__chip-static">{inner}</div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {regulatoryAnchor && (
+        <p class="gate__regs">
+          <span class="gate__regs-label" aria-hidden="true">Standard:</span>
+          <span class="gate__regs-text">{regulatoryAnchor}</span>
+        </p>
+      )}
+
+      {wrongFitRedirect && (
+        <p class="gate__redirect">
+          Not what you need?
+          {' '}
+          <a href={wrongFitRedirect.url} class="gate__redirect-link">
+            {wrongFitRedirect.label}
+          </a>
+        </p>
+      )}
+    </div>
+
+    {/* ── Block 2: Inline Form #1 — Consultation (4 fields) ───── */}
+    <div class="consult" id="consult-form">
+      <div class="consult__card">
+        <Heading as="h3" size="md" class="consult__h3">{consultFormHeadline}</Heading>
+
+        <form
+          method="POST"
+          action="/_actions/consult"
+          class="consult__form"
+          novalidate
+        >
+          {/* Hidden attribution fields. The Astro Action expects exactly these
+              names — see src/actions/index.ts `commonHidden` schema. */}
+          <input type="hidden" name="source" value="gate" />
+          <input type="hidden" name="pillar" value={pillar} />
+          <input type="hidden" name="variantId" value={variantId} />
+          <input type="hidden" name="utmSource" value="" data-utm="utm_source" />
+          <input type="hidden" name="utmMedium" value="" data-utm="utm_medium" />
+          <input type="hidden" name="utmCampaign" value="" data-utm="utm_campaign" />
+          <input type="hidden" name="pagePath" value={pagePath} />
+
+          <div class="consult__row">
+            <label class="consult__field">
+              <span class="consult__label">Your name</span>
+              <input
+                type="text"
+                name="name"
+                required
+                autocomplete="name"
+                minlength="2"
+                class="consult__input"
+              />
+            </label>
+
+            <label class="consult__field">
+              <span class="consult__label">Email</span>
+              <input
+                type="email"
+                name="email"
+                required
+                autocomplete="email"
+                inputmode="email"
+                class="consult__input"
+              />
+            </label>
+          </div>
+
+          <div class="consult__row">
+            <label class="consult__field">
+              <span class="consult__label">Phone</span>
+              <input
+                type="tel"
+                name="phone"
+                required
+                autocomplete="tel"
+                inputmode="tel"
+                minlength="7"
+                class="consult__input"
+              />
+            </label>
+
+            <label class="consult__field">
+              <span class="consult__label">
+                What do you need? <span class="consult__optional">(optional)</span>
+              </span>
+              <input
+                type="text"
+                name="message"
+                autocomplete="off"
+                class="consult__input"
+                placeholder="e.g. server room, ~40 sqm"
+              />
+            </label>
+          </div>
+
+          {/* Cloudflare Turnstile invisible-ish challenge. Script tag loads
+              once globally in BaseLayout; the widget mounts here. */}
+          <div
+            class="cf-turnstile consult__turnstile"
+            data-sitekey={turnstileSiteKey}
+            data-theme="auto"
+          ></div>
+
+          <div class="consult__submit-row">
+            <Button
+              as="button"
+              variant="primary"
+              size="lg"
+              label={consultSubmitLabel}
+              type="submit"
+              class="consult__submit"
+            />
+            <p class="consult__promise">
+              30-minute call within 24h. No obligation.
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </Container>
+</Section>
+
+{/* Tiny progressive enhancement: hydrate UTM params from the current URL
+    into the hidden fields. Runs once on page load. SessionStorage write
+    means the values survive a single-page-app-style navigation if we ever
+    add one later. No-JS users still submit a valid form — backend just
+    sees empty UTM strings, which is treated as "direct". */}
+<script is:inline>
+  (function () {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var keys = ['utm_source', 'utm_medium', 'utm_campaign'];
+      var cached = {};
+      keys.forEach(function (k) {
+        var v = params.get(k);
+        if (v) {
+          cached[k] = v;
+          try { sessionStorage.setItem('gemini.' + k, v); } catch (e) {}
+        } else {
+          try { var c = sessionStorage.getItem('gemini.' + k); if (c) cached[k] = c; } catch (e) {}
+        }
+      });
+      document.querySelectorAll('input[data-utm]').forEach(function (el) {
+        var key = el.getAttribute('data-utm');
+        if (key && cached[key]) el.value = cached[key];
+      });
+    } catch (e) { /* no-op — hidden fields stay empty */ }
+  })();
+</script>
+
+<style>
+  /* ── Gate block ─────────────────────────────────────────── */
+
+  .gate {
+    /* Centered narrow column for the qualifying copy — long-form measure
+       so the H2 + chips + reg-anchor read as one coherent ask. */
+    text-align: center;
+    margin-bottom: clamp(40px, 6vw, 80px);
+  }
+
+  .gate__h2 {
+    margin-top: var(--s-3, 12px);
+    margin-bottom: var(--s-5, 24px);
+    text-wrap: balance;
+  }
+
+  .gate__chips {
+    /* Auto-fit so 3 chips sit in a row on desktop, 2-up on tablet, 1-up on
+       phone. min(280px) keeps trigger lines readable; 1fr lets the row
+       fill the rail. */
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--s-5, 24px);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--s-3, 12px);
+    text-align: left;
+  }
+
+  .gate__chip {
+    /* Card-ish container; reads as a chip on desktop, full-width tile on
+       phone. Background uses paper-card so it lifts off surface-1. */
+    background: var(--paper-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    transition: border-color 0.15s var(--ease), transform 0.15s var(--ease);
+  }
+
+  .gate__chip-link,
+  .gate__chip-static {
+    display: flex;
+    gap: var(--s-3, 12px);
+    align-items: flex-start;
+    padding: var(--s-4, 16px);
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .gate__chip:has(.gate__chip-link:hover),
+  .gate__chip:has(.gate__chip-link:focus-visible) {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .gate__chip-link:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--radius);
+  }
+
+  .gate__chip-icon {
+    /* Decorative slot only — icons resolve from an icon sprite by data-icon
+       at the layout level. Keep a deterministic box so chip rows align
+       even before the sprite loads. */
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--accent-soft, color-mix(in srgb, var(--accent) 18%, transparent));
+  }
+
+  .gate__chip-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .gate__chip-scenario {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: var(--t-body);
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+  }
+
+  .gate__chip-trigger {
+    font-family: var(--d-body);
+    font-size: var(--t-body-s);
+    line-height: 1.35;
+    color: var(--ink-2);
+  }
+
+  .gate__regs {
+    /* Single-line standard reference. Small and quiet — it's a credibility
+       footnote, not a feature. */
+    margin: 0 0 var(--s-3, 12px);
+    font-size: var(--t-body-s);
+    color: var(--ink-2);
+  }
+
+  .gate__regs-label {
+    font-family: var(--d-body);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-right: 6px;
+  }
+
+  .gate__redirect {
+    margin: 0;
+    font-size: var(--t-body-s);
+    color: var(--ink-2);
+  }
+
+  .gate__redirect-link {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .gate__redirect-link:hover,
+  .gate__redirect-link:focus-visible {
+    text-decoration-thickness: 2px;
+  }
+
+  /* ── Consult form block ─────────────────────────────────── */
+
+  .consult__card {
+    /* Lifts the form onto a deeper paper tier so it visually anchors as
+       the section's CTA. Padding scales with viewport. */
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: clamp(20px, 4vw, 36px);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 10px 30px -20px rgba(0, 0, 0, 0.25);
+  }
+
+  .consult__h3 {
+    margin: 0 0 var(--s-4, 16px);
+    text-wrap: balance;
+  }
+
+  .consult__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3, 12px);
+  }
+
+  .consult__row {
+    /* Two-up on desktop, stack on phone. minmax(0, 1fr) prevents long
+       email addresses from blowing the grid out. */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-3, 12px);
+  }
+
+  @media (min-width: 640px) {
+    .consult__row {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+  }
+
+  .consult__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .consult__label {
+    font-family: var(--d-body);
+    font-size: var(--t-body-s);
+    font-weight: 700;
+    color: var(--ink-2);
+    letter-spacing: 0.02em;
+  }
+
+  .consult__optional {
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+
+  .consult__input {
+    /* Native input — no JS dependency. Inherits font stack so it matches
+       body copy. 44px min-height for touch targets. */
+    appearance: none;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--paper-2);
+    color: var(--ink);
+    font-family: var(--d-body);
+    font-size: var(--t-body);
+    line-height: 1.3;
+    transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+  }
+
+  .consult__input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-color: var(--accent);
+  }
+
+  .consult__input::placeholder {
+    color: var(--ink-3);
+  }
+
+  .consult__input:invalid:not(:placeholder-shown) {
+    /* Soft error styling — only triggers once the user has typed something.
+       Avoids hostile red-on-empty-field on first paint. */
+    border-color: color-mix(in srgb, var(--accent) 60%, #b00020);
+  }
+
+  .consult__turnstile {
+    /* Reserve vertical space so the form doesn't shift when the widget
+       mounts. 65px = Turnstile compact size; widget will resize itself
+       if data-size changes later. */
+    min-height: 65px;
+  }
+
+  .consult__submit-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3, 12px);
+    margin-top: var(--s-2, 8px);
+  }
+
+  .consult__submit {
+    /* Defer to Button primitive for typography + colour; we only own layout. */
+    flex: 0 0 auto;
+  }
+
+  .consult__promise {
+    margin: 0;
+    font-size: var(--t-body-s);
+    color: var(--ink-2);
+    flex: 1 1 220px;
+  }
+
+  /* Honeypot field could be added here if the Turnstile + server-side
+     validation turn out insufficient. Leaving out by default — extra
+     fields hurt accessibility for screen-reader users. */
+</style>

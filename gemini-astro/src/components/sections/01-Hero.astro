@@ -1,0 +1,296 @@
+---
+/**
+ * Gemini AMPM — Section 1: Hero
+ *
+ * Per SERVICE_VERTICAL_TEMPLATE.md §1:
+ *  - Single buyer-intent H1 carrying focus keyword + commercial modifier + region
+ *  - Sub-headline 12–22 words
+ *  - Primary CTA (anchor-jump to Form #2 / quote)  → "#quote-form"
+ *  - Secondary CTA (anchor-jump to Process)        → "#process"
+ *  - Tertiary tel: CTA — regional DDI
+ *  - <TrustStrip> directly under the CTAs:
+ *      1. live Google rating chip (D1 reviews_cache)
+ *      2. 3–4 highest-equity pillar accreditation logos
+ *      3. "Since 1997" tenure marker
+ *      4. Employee-Owned (EOT) badge
+ *  - Hero image lazy-loaded BELOW the H1, never above (text-LCP).
+ *  - No carousel, no autoplay video.
+ *
+ * Field names mirror the Payload `services` collection in the spec doc. Where a
+ * field is a Payload `relationship` (regionalDDI → offices, accreditationsForHero
+ * → accreditations, heroImage → media) we accept the resolved/denormalised shape
+ * the page-level loader hands us — the page component is responsible for the
+ * `depth: 2` query.
+ *
+ * This component is Astro static (no island) — the H1 is text-LCP, so we keep
+ * the critical path JS-free.
+ */
+import Section from '../primitives/Section.astro';
+import Container from '../primitives/Container.astro';
+import Heading from '../primitives/Heading.astro';
+import Kicker from '../primitives/Kicker.astro';
+import Button from '../primitives/Button.astro';
+import TrustStrip, { type Accreditation } from '../primitives/TrustStrip.astro';
+
+/**
+ * Resolved shape of a Payload `offices` row referenced by `regionalDDI`.
+ * Only the surface the Hero actually needs is typed here.
+ */
+export interface OfficeRef {
+  ddi: string;                  // e.g. "020 4525 4040"
+  ddiHref?: string;             // optional override; default = "tel:" + digits
+  region?: string;              // e.g. "London", "South East"
+}
+
+/**
+ * Resolved shape of a Payload `media` row referenced by `heroImage`.
+ * Width/height MUST be present to keep CLS at 0 (hardcoded dimensions).
+ */
+export interface HeroMedia {
+  url: string;
+  width: number;
+  height: number;
+  /** Optional AVIF/WebP variants — falls back to `url` if absent. */
+  sources?: Array<{ srcset: string; type: 'image/avif' | 'image/webp' }>;
+}
+
+export interface Props {
+  // ── Section 1 Payload fields ───────────────────────────────────────────
+  /** SEO focus keyword for the service, e.g. "gas suppression system installation". */
+  focusKeyword: string;
+  /** H1 carrying focus keyword + commercial modifier + region. Max 80 chars. */
+  h1: string;
+  /** 12–22 word sub-headline. Max 200 chars. */
+  subHeadline: string;
+  /** Primary CTA label. Default per spec: "Get a free site survey". */
+  primaryCTAlabel?: string;
+  /** Secondary CTA label. Default per spec: "See how it works". */
+  secondaryCTAlabel?: string;
+  /** Resolved office row → regional DDI for the tel: link. */
+  regionalDDI: OfficeRef;
+  /** 3–4 pillar-filtered accreditation chips. Order is preserved. */
+  accreditationsForHero: Accreditation[];
+  /** Resolved hero image media row. Lazy-loaded below the H1. */
+  heroImage?: HeroMedia;
+  /** Alt text for the hero image. Under 125 chars. */
+  heroImageAlt?: string;
+
+  // ── Live trust signals (passed in by the page from D1 reviews_cache) ───
+  /** Live Google rating (refreshed weekly by Cloudflare Cron Trigger). */
+  googleRating: number;
+  /** Number of Google reviews backing the rating. */
+  reviewCount: number;
+
+  // ── Anchor targets ─────────────────────────────────────────────────────
+  /** Anchor id of Form #2 (quote). Defaults to "quote-form". */
+  quoteFormAnchor?: string;
+  /** Anchor id of the Process section. Defaults to "process". */
+  processAnchor?: string;
+
+  /** Optional extra classes for layout tweaks at the call site. */
+  class?: string;
+}
+
+const {
+  focusKeyword,
+  h1,
+  subHeadline,
+  primaryCTAlabel = 'Get a free site survey',
+  secondaryCTAlabel = 'See how it works',
+  regionalDDI,
+  accreditationsForHero,
+  heroImage,
+  heroImageAlt,
+  googleRating,
+  reviewCount,
+  quoteFormAnchor = 'quote-form',
+  processAnchor = 'process',
+  class: className = '',
+} = Astro.props;
+
+// tel: href — strip non-digit chars from the DDI for a robust dialler link.
+const telDigits = regionalDDI.ddi.replace(/[^\d+]/g, '');
+const telHref = regionalDDI.ddiHref ?? `tel:${telDigits}`;
+
+// Kicker text — focus keyword is overkill in the kicker (it's already in the H1),
+// so prefer a regional/tenure framing. Falls back to focusKeyword if no region.
+const kickerText = regionalDDI.region
+  ? `${regionalDDI.region} — since 1997`
+  : focusKeyword;
+---
+
+<Section
+  id="hero"
+  background="default"
+  density="long"
+  class={`g-hero ${className}`}
+>
+  <Container variant="default">
+    <div class="g-hero__grid">
+      {/* ── Copy column ────────────────────────────────────────────── */}
+      <div class="g-hero__copy">
+        <Kicker as="p" tone="accent" class="g-hero__kicker">
+          {kickerText}
+        </Kicker>
+
+        {/* H1 carries focus keyword + commercial modifier + region.
+            This is the text-LCP element — keep it above the image. */}
+        <Heading as="h1" size="xl" class="g-hero__h1">
+          {h1}
+        </Heading>
+
+        <p class="g-hero__lede">{subHeadline}</p>
+
+        {/* Dual CTA + tel: tertiary. No carousel. */}
+        <div class="g-hero__ctas" role="group" aria-label="Primary actions">
+          <Button
+            variant="primary"
+            size="lg"
+            href={`#${quoteFormAnchor}`}
+            label={primaryCTAlabel}
+            data-cta="hero-primary"
+          />
+          <Button
+            variant="secondary"
+            size="lg"
+            href={`#${processAnchor}`}
+            label={secondaryCTAlabel}
+            data-cta="hero-secondary"
+          />
+          <Button
+            variant="ghost"
+            size="lg"
+            href={telHref}
+            label={regionalDDI.ddi}
+            aria-label={`Call our ${regionalDDI.region ?? 'team'} on ${regionalDDI.ddi}`}
+            data-cta="hero-tel"
+          />
+        </div>
+
+        {/* TrustStrip below CTAs — Google rating, accreditations, tenure, EOT. */}
+        <TrustStrip
+          googleRating={googleRating}
+          reviewCount={reviewCount}
+          accreditations={accreditationsForHero}
+          tenureMarker="Since 1997"
+          eotBadge={true}
+          class="g-hero__trust"
+        />
+      </div>
+
+      {/* ── Image column — lazy-loaded, BELOW the H1 visually on mobile.
+           On desktop it sits to the right but loads lazily so it never
+           competes with the text-LCP H1. Hardcoded width/height for CLS. */}
+      {heroImage && (
+        <div class="g-hero__media">
+          <picture>
+            {heroImage.sources?.map((s) => (
+              <source srcset={s.srcset} type={s.type} />
+            ))}
+            <img
+              src={heroImage.url}
+              alt={heroImageAlt ?? ''}
+              width={heroImage.width}
+              height={heroImage.height}
+              loading="lazy"
+              decoding="async"
+              fetchpriority="low"
+              class="g-hero__img"
+            />
+          </picture>
+        </div>
+      )}
+    </div>
+  </Container>
+</Section>
+
+<style>
+  /* ── Layout ───────────────────────────────────────────────────────
+     Mobile-first single column. Image visually follows the copy (after
+     the CTAs + trust strip) on small screens, which matches the spec's
+     "Hero image lazy-loaded BELOW the H1, never above". On desktop the
+     image moves to the right column but still loads lazily so it never
+     competes with the H1 for LCP. */
+  .g-hero__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--s-6, 32px);
+    align-items: center;
+  }
+
+  @media (min-width: 960px) {
+    .g-hero__grid {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: var(--s-8, 56px);
+    }
+  }
+
+  /* Copy column owns text-LCP. Keep it tight on width for readable
+     measure (~60-70ch via clamp). */
+  .g-hero__copy {
+    max-width: 64ch;
+  }
+
+  .g-hero__kicker {
+    margin-bottom: var(--s-3, 12px);
+  }
+
+  /* H1 spacing — Heading primitive owns size/weight; we add the rhythm. */
+  .g-hero__h1 {
+    margin-bottom: var(--s-4, 16px);
+  }
+
+  .g-hero__lede {
+    margin: 0 0 var(--s-5, 24px);
+    font-family: var(--f-body);
+    font-size: var(--t-body-l, 1.125rem);
+    line-height: 1.5;
+    color: var(--text-soft, var(--ink-2));
+    text-wrap: pretty;
+  }
+
+  /* ── CTA row ──────────────────────────────────────────────────────
+     Flex-wrap so the trio (primary, secondary, tel) reflows on narrow
+     viewports without overflowing. Primary and secondary share a row on
+     desktop; tel: sits to the right or wraps to its own line. */
+  .g-hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3, 12px);
+    margin-bottom: var(--s-5, 24px);
+  }
+
+  /* On the smallest phones, stack CTAs full-width for thumb-reach. The
+     `.g-btn` primary/secondary buttons sit happily at 100% width here. */
+  @media (max-width: 479px) {
+    .g-hero__ctas :global(.g-btn--primary),
+    .g-hero__ctas :global(.g-btn--secondary) {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .g-hero__trust {
+    margin-top: var(--s-4, 16px);
+  }
+
+  /* ── Image column ─────────────────────────────────────────────────
+     Aspect-ratio reserved via width/height attrs on <img>; this wrapper
+     just sets max bounds + corner radius. No fixed height so the image
+     keeps its intrinsic ratio on every viewport. */
+  .g-hero__media {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--radius, 12px);
+    background: var(--paper-2, var(--surface));
+  }
+
+  .g-hero__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+</style>

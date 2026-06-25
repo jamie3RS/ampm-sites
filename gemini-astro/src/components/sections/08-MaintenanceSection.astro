@@ -1,0 +1,560 @@
+---
+/**
+ * Gemini AMPM — Section 8: Maintenance + Compliance Hook + Inline Form #3
+ *
+ * Captures the SECONDARY buyer family on every service-vertical page: people
+ * who already own the system and need someone to service / take it over.
+ * Routing on this form is deliberately split off the install funnel — leads
+ * land in `service@geminiampm.co.uk` (not the per-pillar quotes mailbox), so
+ * the office can prioritise install vs service correctly without triage.
+ *
+ * Spec reference:
+ *   /Users/jamiedawson/Documents/Claude/Projects/Gemini AMPM/01-website/
+ *     audits/SERVICE_VERTICAL_TEMPLATE.md — § "Section 8".
+ *
+ * Build constraints from the spec:
+ *  - Regulatory anchor line (BS standard relevant to the pillar).
+ *  - Contract inclusions list (response SLA, parts coverage, compliance cert).
+ *  - "Take-over" reassurance line for buyers leaving another contractor.
+ *  - 4-field form: name, email, postcode, currentSystem (optional).
+ *  - POST to /_actions/maintenance (Astro Actions endpoint).
+ *  - Hidden routing fields: source, pillar, variantId, utmSource/Medium/Campaign,
+ *    pagePath — matched 1:1 with the `commonHidden` schema in src/actions/index.ts.
+ *  - Cloudflare Turnstile placeholder. Site key is read at request-time from
+ *    `Astro.locals.runtime.env.TURNSTILE_SITE_KEY` (Cloudflare Pages binding) —
+ *    falls back to '' so local dev without bindings still renders the section.
+ *
+ * Friction-killers (per spec):
+ *  - Inline confirmation (no redirect) — handled by the Action; form just POSTs.
+ *  - Alternative-action tel: link sits BELOW the submit, matching Forms #1/#2.
+ *  - No visible captcha (Turnstile widget is invisible/managed mode by default).
+ *  - Honeypot field `companyName` hidden via CSS for bot floor.
+ */
+
+import Section from '../primitives/Section.astro';
+import Container from '../primitives/Container.astro';
+import Heading from '../primitives/Heading.astro';
+import Kicker from '../primitives/Kicker.astro';
+import Button from '../primitives/Button.astro';
+
+/**
+ * Props mirror the Payload `services` collection fields for Section 8
+ * (see SERVICE_VERTICAL_TEMPLATE.md § "Payload services Collection Schema").
+ * Field names align EXACTLY with the Payload schema so the page-level
+ * loader can spread the doc straight in.
+ */
+export interface Props {
+  /** Pillar slug — drives mailbox routing + subject prefix on the server side. */
+  pillar:
+    | 'gas-suppression'
+    | 'fire-alarm'
+    | 'passive-fire'
+    | 'security-access'
+    | 'ventilation'
+    | 'm-and-e'
+    | 'small-works';
+
+  /** Variant id for A/B attribution (defaults to 'A' in Payload). */
+  variantId?: string;
+
+  /**
+   * One-line BS / regulatory anchor for this pillar's maintenance regime.
+   * e.g. "BS 5839-1 — 6-monthly inspection and test of fire alarm systems".
+   */
+  maintenanceRegulatoryAnchor: string;
+
+  /**
+   * 1–3 contract inclusion bullets (response SLA, parts coverage, compliance
+   * certificate, etc). Payload caps at 3 rows.
+   */
+  contractInclusionsList: Array<{ inclusion: string }>;
+
+  /**
+   * Reassurance copy for buyers currently with another contractor — usually
+   * 1–2 sentences ending on "no gap in cover".
+   */
+  takeOverMessage: string;
+
+  /** Headline for the form block. */
+  maintenanceFormHeadline?: string;
+
+  /** Submit-button label. */
+  maintenanceSubmitLabel?: string;
+
+  /** Promise under the submit (response SLA / no-obligation reassurance). */
+  responsePromise?: string;
+
+  /** Tel: number for the alt-action fallback under the submit. */
+  altActionPhone?: string;
+
+  /** Kicker label sitting above the H2. */
+  kicker?: string;
+
+  /** Anchor id — defaults to `maintenance` so on-page CTAs can jump to it. */
+  id?: string;
+}
+
+const {
+  pillar,
+  variantId = 'A',
+  maintenanceRegulatoryAnchor,
+  contractInclusionsList = [],
+  takeOverMessage,
+  maintenanceFormHeadline = 'Already have a system? Take over the maintenance.',
+  maintenanceSubmitLabel = 'Request a maintenance quote',
+  responsePromise = 'We respond within one working day. No obligation.',
+  altActionPhone,
+  kicker = 'Maintenance & compliance',
+  id = 'maintenance',
+} = Astro.props;
+
+/* Cloudflare Pages exposes runtime bindings via Astro.locals.runtime.env.
+ * Read defensively — in local dev (`astro dev` without `wrangler pages dev`)
+ * the runtime object isn't populated, so falling back to '' keeps the page
+ * renderable. Real submissions still go through Turnstile because the Action
+ * verifies the token server-side; an empty site key in dev just means the
+ * widget renders in test mode if the dev key is wired in environment. */
+const turnstileSiteKey =
+  // @ts-expect-error — runtime is injected by @astrojs/cloudflare adapter
+  Astro.locals?.runtime?.env?.TURNSTILE_SITE_KEY ?? '';
+
+/* pagePath is captured server-side for attribution. Astro.url is the canonical
+ * source — it's the resolved request URL after middleware, so it reflects
+ * leaf-page paths correctly when this section is dropped into the shared
+ * <ServiceVerticalPage />. */
+const pagePath = Astro.url.pathname;
+---
+
+<Section id={id} background="surface-1" density="standard" as="section">
+  <Container variant="default">
+    <div class="maint">
+      {/* ── Left rail: regulatory anchor, inclusions, take-over reassurance ─ */}
+      <div class="maint__intro">
+        <Kicker as="p" tone="accent">{kicker}</Kicker>
+        <Heading as="h2" size="lg" class="maint__h2">
+          {maintenanceFormHeadline}
+        </Heading>
+
+        {maintenanceRegulatoryAnchor && (
+          <p class="maint__regulatory" data-role="regulatory-anchor">
+            <span class="maint__regulatory-label">Compliance basis</span>
+            <span class="maint__regulatory-body">{maintenanceRegulatoryAnchor}</span>
+          </p>
+        )}
+
+        {contractInclusionsList.length > 0 && (
+          <ul class="maint__inclusions" aria-label="What every maintenance contract includes">
+            {contractInclusionsList.map(({ inclusion }) => (
+              <li class="maint__inclusion">
+                <svg
+                  class="maint__inclusion-icon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span>{inclusion}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {takeOverMessage && (
+          <p class="maint__takeover">{takeOverMessage}</p>
+        )}
+      </div>
+
+      {/* ── Right rail: 4-field maintenance form ──────────────────────────── */}
+      <div class="maint__form-wrap">
+        <form
+          class="maint__form"
+          method="POST"
+          action="/_actions/maintenance"
+          novalidate
+          aria-labelledby={`${id}-form-heading`}
+        >
+          <h3 id={`${id}-form-heading`} class="maint__form-h3">
+            Tell us about your existing system
+          </h3>
+
+          {/* Honeypot — hidden from humans, bots fill it, server rejects. */}
+          <div class="maint__honeypot" aria-hidden="true">
+            <label>
+              Company name
+              <input
+                type="text"
+                name="companyName"
+                tabindex="-1"
+                autocomplete="off"
+              />
+            </label>
+          </div>
+
+          <div class="maint__field">
+            <label for={`${id}-name`} class="maint__label">
+              Your name <span class="maint__req" aria-hidden="true">*</span>
+            </label>
+            <input
+              id={`${id}-name`}
+              class="maint__input"
+              type="text"
+              name="name"
+              required
+              autocomplete="name"
+              minlength="2"
+              aria-required="true"
+            />
+          </div>
+
+          <div class="maint__field">
+            <label for={`${id}-email`} class="maint__label">
+              Email <span class="maint__req" aria-hidden="true">*</span>
+            </label>
+            <input
+              id={`${id}-email`}
+              class="maint__input"
+              type="email"
+              name="email"
+              required
+              autocomplete="email"
+              inputmode="email"
+              aria-required="true"
+            />
+          </div>
+
+          <div class="maint__field">
+            <label for={`${id}-postcode`} class="maint__label">
+              Site postcode <span class="maint__req" aria-hidden="true">*</span>
+            </label>
+            <input
+              id={`${id}-postcode`}
+              class="maint__input"
+              type="text"
+              name="postcode"
+              required
+              autocomplete="postal-code"
+              inputmode="text"
+              minlength="5"
+              maxlength="10"
+              aria-required="true"
+              placeholder="e.g. SE1 8AA"
+            />
+          </div>
+
+          <div class="maint__field">
+            <label for={`${id}-currentSystem`} class="maint__label">
+              What system do you have?
+              <span class="maint__optional">(optional)</span>
+            </label>
+            <input
+              id={`${id}-currentSystem`}
+              class="maint__input"
+              type="text"
+              name="currentSystem"
+              autocomplete="off"
+              placeholder="e.g. Apollo Discovery panel, installed 2018"
+            />
+          </div>
+
+          {/* ── Hidden routing + attribution fields ─────────────────────────
+              These map 1:1 onto the Astro Action's `commonHidden` Zod schema.
+              Values are populated server-side at render (pillar, variantId,
+              pagePath, source) or client-side via the inline UTM script
+              below (utmSource/Medium/Campaign), which is the same pattern
+              Forms #1, #2 and the footer mini-form use. */}
+          <input type="hidden" name="source" value="maintenance" />
+          <input type="hidden" name="pillar" value={pillar} />
+          <input type="hidden" name="variantId" value={variantId} />
+          <input type="hidden" name="pagePath" value={pagePath} />
+          <input type="hidden" name="utmSource" value="" data-utm="utmSource" />
+          <input type="hidden" name="utmMedium" value="" data-utm="utmMedium" />
+          <input type="hidden" name="utmCampaign" value="" data-utm="utmCampaign" />
+
+          {/* Turnstile placeholder. Site key is the public Cloudflare key —
+              safe to render inline. Widget loads via the global Turnstile
+              script in BaseLayout; this element is the mount point. */}
+          <div
+            class="cf-turnstile maint__turnstile"
+            data-sitekey={turnstileSiteKey}
+            data-theme="auto"
+            data-size="flexible"
+          ></div>
+
+          <Button
+            as="button"
+            type="submit"
+            variant="primary"
+            size="md"
+            label={maintenanceSubmitLabel}
+            class="maint__submit"
+          />
+
+          {responsePromise && (
+            <p class="maint__promise" role="note">{responsePromise}</p>
+          )}
+
+          {altActionPhone && (
+            <p class="maint__alt-action">
+              Prefer to talk?{' '}
+              <a class="maint__alt-link" href={`tel:${altActionPhone.replace(/\s+/g, '')}`}>
+                {altActionPhone}
+              </a>
+            </p>
+          )}
+        </form>
+      </div>
+    </div>
+  </Container>
+</Section>
+
+{/* UTM-capture hydrator — restores values stashed in sessionStorage by the
+    page-entry capture script (see Section 11 / global). Runs once on
+    DOMContentLoaded; no framework, no island. Keeps the form HTML-only by
+    default so JS-off clients still submit cleanly to the Action endpoint. */}
+<script is:inline>
+  (function () {
+    try {
+      var keys = ['utmSource', 'utmMedium', 'utmCampaign'];
+      keys.forEach(function (k) {
+        var v = sessionStorage.getItem(k) || '';
+        if (!v) return;
+        document
+          .querySelectorAll('input[data-utm="' + k + '"]')
+          .forEach(function (el) {
+            el.value = v;
+          });
+      });
+    } catch (e) {
+      /* sessionStorage may throw in private-browsing modes — fail silent. */
+    }
+  })();
+</script>
+
+<style>
+  /* ── Layout ────────────────────────────────────────────────────────────
+     Two-column on desktop, single column on mobile. Intro rail leads,
+     form rail follows — matches Forms #1 and #2 so the page reads as a
+     consistent rhythm. */
+  .maint {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(32px, 5vw, 64px);
+    align-items: start;
+  }
+
+  @media (min-width: 880px) {
+    .maint {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: clamp(48px, 6vw, 96px);
+    }
+  }
+
+  /* ── Intro rail ─────────────────────────────────────────────────────── */
+  .maint__h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .maint__regulatory {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 16px;
+    margin: 0 0 1.5rem;
+    border-left: 3px solid var(--g-accent);
+    background: color-mix(in srgb, var(--g-accent) 8%, var(--paper));
+    border-radius: 4px;
+  }
+
+  .maint__regulatory-label {
+    font-family: var(--d-body);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .maint__regulatory-body {
+    font-family: var(--d-body);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  .maint__inclusions {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .maint__inclusion {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-family: var(--d-body);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  .maint__inclusion-icon {
+    flex: 0 0 auto;
+    margin-top: 2px;
+    color: var(--g-accent);
+  }
+
+  .maint__takeover {
+    font-family: var(--d-body);
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin: 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+
+  /* ── Form rail ──────────────────────────────────────────────────────── */
+  .maint__form-wrap {
+    position: relative;
+  }
+
+  .maint__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: clamp(20px, 3vw, 32px);
+    background: var(--paper-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .maint__form-h3 {
+    font-family: var(--d-display, "Big Shoulders Display", "Archivo", sans-serif);
+    font-weight: 700;
+    font-size: clamp(1.25rem, 1.5vw + 0.6rem, 1.5rem);
+    line-height: 1.15;
+    color: var(--ink);
+    margin: 0 0 0.5rem;
+    text-wrap: balance;
+  }
+
+  /* Honeypot — visually hidden but still rendered + tabbable-skipped. */
+  .maint__honeypot {
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .maint__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .maint__label {
+    font-family: var(--d-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.01em;
+  }
+
+  .maint__req {
+    color: var(--g-accent);
+    margin-left: 2px;
+  }
+
+  .maint__optional {
+    font-weight: 400;
+    color: var(--ink-3);
+    margin-left: 4px;
+  }
+
+  .maint__input {
+    width: 100%;
+    padding: 12px 14px;
+    font-family: var(--d-body);
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+  }
+
+  .maint__input::placeholder {
+    color: var(--ink-3);
+    opacity: 0.7;
+  }
+
+  .maint__input:hover {
+    border-color: var(--line-strong);
+  }
+
+  .maint__input:focus,
+  .maint__input:focus-visible {
+    outline: none;
+    border-color: var(--g-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--g-accent) 25%, transparent);
+  }
+
+  .maint__input:invalid:not(:placeholder-shown):not(:focus) {
+    border-color: var(--danger, #c0392b);
+  }
+
+  .maint__turnstile {
+    margin-top: 0.25rem;
+    min-height: 65px;
+  }
+
+  .maint__submit {
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+
+  .maint__promise {
+    margin: 0;
+    font-family: var(--d-body);
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--ink-2);
+    text-align: center;
+  }
+
+  .maint__alt-action {
+    margin: 0;
+    font-family: var(--d-body);
+    font-size: 0.95rem;
+    text-align: center;
+    color: var(--ink-2);
+  }
+
+  .maint__alt-link {
+    font-weight: 700;
+    color: var(--g-accent);
+    text-decoration: none;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+
+  .maint__alt-link:hover,
+  .maint__alt-link:focus-visible {
+    text-decoration: underline;
+  }
+</style>

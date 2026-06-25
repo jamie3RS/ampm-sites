@@ -1,0 +1,77 @@
+---
+import '@/styles/global.css';
+import Nav from '@/components/Nav.astro';
+import Footer from '@/components/Footer.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  skin?: 'night' | 'day';
+  navDark?: boolean;
+  bodyClass?: string;
+}
+
+const {
+  title,
+  description,
+  canonical,
+  skin = 'night',
+  navDark = true,
+  bodyClass = '',
+} = Astro.props;
+
+const canonicalHref = canonical ?? new URL(Astro.url.pathname, Astro.site ?? 'https://geminiampm.co.uk').toString();
+---
+<!doctype html>
+<html lang="en-GB" data-skin={skin}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0e1c" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalHref} />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:url" content={canonicalHref} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {/* Favicons — wired up properly once the asset set lands in /public. */}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    {/* Fonts — Big Shoulders Display (headlines), Archivo (body), Quicksand +
+        Fredoka are reserved for the academy / sister-brand crossover tiles. */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;700;800&family=Archivo:wght@400;500;600;700&family=Quicksand:wght@500;600;700&family=Fredoka:wght@500;600;700&display=swap"
+    />
+
+    <slot name="head" />
+  </head>
+  <body class={bodyClass}>
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-ink focus:text-cream focus:px-3 focus:py-2">
+      Skip to content
+    </a>
+
+    <slot name="nav">
+      <Nav dark={navDark} />
+    </slot>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <slot name="footer">
+      <Footer />
+    </slot>
+  </body>
+</html>

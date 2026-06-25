@@ -1,0 +1,338 @@
+---
+/**
+ * Gemini AMPM — <CaseStudyCard>
+ *
+ * Case study tile used in Section 7 of every service-vertical page (the
+ * Social Proof block — see SERVICE_VERTICAL_TEMPLATE.md §7).
+ *
+ *   size="flagship" — ONE large lead-in tile per page. 16:9 hero image,
+ *     prominent display title, 80-word summary, optional outcome stat.
+ *     Sits immediately above the 8-field quote form so the reader is
+ *     primed with real-project proof before the ask.
+ *
+ *   size="mini" — 2-3 secondary tiles in a related-projects row beneath
+ *     the flagship. 4:3 image, condensed type, summary truncated to a
+ *     single line via overflow rules. Outcome is hidden in this size to
+ *     keep the row visually quiet next to the flagship.
+ *
+ * Renders as an <a> when `href` is provided so the entire card is one
+ * keyboard target; otherwise a non-interactive <article>. The whole card
+ * surface is the link affordance — there is no secondary "Read more"
+ * button to compete with the primary quote-form CTA further down.
+ *
+ * Image sizing is hardcoded (width/height attrs) per the brief's CLS rule.
+ * The intrinsic ratio is enforced via `aspect-ratio` so the chip never
+ * collapses if the asset 404s before paint. Loading is lazy — these tiles
+ * always live below the fold of Section 7.
+ *
+ * Tokens consumed (from src/styles/tokens.css):
+ *   --surface, --bg-elev, --bg-elev-2, --line, --line-strong,
+ *   --text, --text-soft, --text-muted, --accent, --accent-soft,
+ *   --radius, --radius-sm, --shadow, --shadow-lg,
+ *   --s-2..--s-6, --t-body, --t-body-s, --t-kicker,
+ *   --t-display-m, --t-display-s, --f-display, --f-body, --ease
+ */
+
+type Size = 'flagship' | 'mini';
+
+export interface Props {
+  /** Project name / case study title — e.g. "Heathrow T5 Gas Suppression Refit". */
+  title: string;
+  /** Root-relative or absolute URL to the case study hero image. */
+  image: string;
+  /** 60-90 word project summary (flagship) or 40-60 word teaser (mini). */
+  summary: string;
+  /** Optional outcome stat / pull-quote — flagship only. e.g. "Zero downtime · delivered 3 weeks early". */
+  outcome?: string | null;
+  /** Optional deep-link to the full case study page. Whole card becomes a link if set. */
+  href?: string | null;
+  /** Visual size. Defaults to flagship. */
+  size?: Size;
+  /** Optional alt override; defaults to the title (which is what we want 99% of the time). */
+  imageAlt?: string;
+  /** Extra utility classes for parent-driven layout (margins, grid placement). */
+  class?: string;
+}
+
+const {
+  title,
+  image,
+  summary,
+  outcome = null,
+  href = null,
+  size = 'flagship',
+  imageAlt,
+  class: className = '',
+} = Astro.props;
+
+const isLink = Boolean(href);
+const Tag = isLink ? 'a' : 'article';
+
+/* Image dimensions are intrinsic to the chip — fed into the <img> width/
+   height attrs to lock CLS, and into the scoped style block via CSS vars
+   so the wrapper enforces the same aspect ratio. */
+const imgDims: Record<Size, { w: number; h: number; ratio: string }> = {
+  flagship: { w: 800, h: 450, ratio: '16 / 9' }, // hero proportion
+  mini:     { w: 480, h: 360, ratio: '4 / 3' },  // tighter row tile
+};
+const { w: imgW, h: imgH, ratio: imgRatio } = imgDims[size];
+
+const linkAttrs = isLink
+  ? { href: href!, 'aria-label': `Read the ${title} case study` }
+  : {};
+---
+
+<Tag
+  class:list={['cs-card', `cs-card--${size}`, className]}
+  data-size={size}
+  {...linkAttrs}
+>
+  <div class="cs-card__media">
+    <img
+      class="cs-card__img"
+      src={image}
+      alt={imageAlt ?? title}
+      width={imgW}
+      height={imgH}
+      loading="lazy"
+      decoding="async"
+    />
+  </div>
+
+  <div class="cs-card__body">
+    {/* Visual <h3> for flagship, <h4> for mini — but rendered as a <h3>
+        in both because the surrounding Section 7 owns the <h2> outline.
+        Both display sizes come from the Big Shoulders Display scale. */}
+    <h3 class="cs-card__title">{title}</h3>
+
+    <p class="cs-card__summary">{summary}</p>
+
+    {/* Outcome stat is flagship-only — keeping mini tiles visually quiet. */}
+    {size === 'flagship' && outcome && (
+      <p class="cs-card__outcome">
+        <span class="cs-card__outcome-kicker">Outcome</span>
+        <span class="cs-card__outcome-text">{outcome}</span>
+      </p>
+    )}
+
+    {/* Affordance hint for the link variant — not a button, just a chevron
+        cue so the whole-card hit area still reads as clickable. */}
+    {isLink && (
+      <span class="cs-card__cue" aria-hidden="true">
+        Read case study
+        <svg viewBox="0 0 16 16" width="14" height="14" focusable="false">
+          <path
+            d="M5 3l5 5-5 5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </span>
+    )}
+  </div>
+</Tag>
+
+<style define:vars={{ imgRatio }}>
+  .cs-card {
+    /* Column layout — image plate on top, body below. The link variant
+       absorbs the whole card as a single tap/keyboard target. */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--text);
+    text-decoration: none;
+    font-family: var(--f-body);
+    transition:
+      transform 0.2s var(--ease),
+      border-color 0.2s var(--ease),
+      box-shadow 0.2s var(--ease),
+      background 0.2s var(--ease);
+  }
+
+  /* Only the link variant gets the hover lift. The plain <article> is a
+     static proof tile so it stays put. */
+  a.cs-card:hover,
+  a.cs-card:focus-visible {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-lg);
+    background: var(--bg-elev);
+  }
+  a.cs-card:focus-visible {
+    /* Override the global :focus-visible outline — the border colour is
+       already doing the work and an extra ring on a rounded rect looks busy. */
+    outline: none;
+  }
+
+  /* ── Media plate ─────────────────────────────────────────────────── */
+
+  .cs-card__media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: var(--imgRatio);
+    background: var(--bg-elev-2); /* placeholder fill if asset 404s */
+    overflow: hidden;
+  }
+
+  .cs-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Override the global `img { height: auto }` from base.css — we want
+       the wrapper's aspect-ratio to hold the chip dimensions for CLS. */
+    display: block;
+    transition: transform 0.35s var(--ease);
+  }
+  a.cs-card:hover .cs-card__img,
+  a.cs-card:focus-visible .cs-card__img {
+    transform: scale(1.03);
+  }
+
+  /* ── Body ────────────────────────────────────────────────────────── */
+
+  .cs-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    padding: var(--s-5);
+    flex: 1; /* let body stretch so card rows align in a grid */
+  }
+
+  .cs-card__title {
+    /* Local override on the global h3 — base.css gives h3 the section-
+       sized clamp; here we tighten it for the card context. */
+    font-family: var(--f-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.08;
+    margin: 0;
+    color: var(--text);
+  }
+
+  .cs-card__summary {
+    margin: 0;
+    color: var(--text-soft);
+    font-size: var(--t-body);
+    line-height: 1.55;
+  }
+
+  .cs-card__outcome {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+    margin: 0;
+    margin-top: var(--s-2);
+    padding: var(--s-3) var(--s-4);
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
+  .cs-card__outcome-kicker {
+    font-size: var(--t-kicker);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .cs-card__outcome-text {
+    color: var(--text);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .cs-card__cue {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    margin-top: auto; /* pin to bottom of body so cards align in a row */
+    padding-top: var(--s-3);
+    color: var(--accent);
+    font-size: var(--t-body-s);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: gap 0.15s var(--ease);
+  }
+  a.cs-card:hover .cs-card__cue,
+  a.cs-card:focus-visible .cs-card__cue {
+    gap: 10px; /* nudges the chevron right on hover */
+  }
+
+  /* ── Size — flagship (hero tile) ─────────────────────────────────── */
+
+  .cs-card--flagship .cs-card__title {
+    font-size: var(--t-display-m);
+  }
+  .cs-card--flagship .cs-card__summary {
+    font-size: var(--t-body-l);
+    /* 60-90 words wants room to breathe; cap line length for readability. */
+    max-width: 60ch;
+  }
+  .cs-card--flagship .cs-card__body {
+    padding: var(--s-6);
+    gap: var(--s-4);
+  }
+
+  /* ── Size — mini (related row tile) ──────────────────────────────── */
+
+  .cs-card--mini .cs-card__title {
+    font-size: var(--t-display-s);
+  }
+  .cs-card--mini .cs-card__summary {
+    font-size: var(--t-body-s);
+    color: var(--text-muted);
+    /* Two-line clamp keeps the row visually tidy next to the flagship. */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .cs-card--mini .cs-card__body {
+    padding: var(--s-4);
+    gap: var(--s-2);
+  }
+
+  /* ── Reduced motion ──────────────────────────────────────────────── */
+
+  @media (prefers-reduced-motion: reduce) {
+    .cs-card,
+    .cs-card__img,
+    .cs-card__cue {
+      transition: none;
+    }
+    a.cs-card:hover,
+    a.cs-card:focus-visible {
+      transform: none;
+    }
+    a.cs-card:hover .cs-card__img,
+    a.cs-card:focus-visible .cs-card__img {
+      transform: none;
+    }
+  }
+
+  /* ── Day-skin variant ────────────────────────────────────────────── */
+
+  :global(html[data-skin='day']) .cs-card {
+    background: var(--paper, #fdfaf2);
+    border-color: rgba(28, 24, 18, 0.12);
+    color: var(--ink, #1c1812);
+  }
+  :global(html[data-skin='day']) .cs-card__title {
+    color: var(--ink, #1c1812);
+  }
+  :global(html[data-skin='day']) .cs-card__summary {
+    color: rgba(28, 24, 18, 0.78);
+  }
+  :global(html[data-skin='day']) .cs-card--mini .cs-card__summary {
+    color: rgba(28, 24, 18, 0.62);
+  }
+  :global(html[data-skin='day']) a.cs-card:hover,
+  :global(html[data-skin='day']) a.cs-card:focus-visible {
+    background: #ffffff;
+  }
+</style>

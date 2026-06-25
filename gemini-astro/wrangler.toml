@@ -1,0 +1,23 @@
+# Gemini AMPM — Cloudflare Pages config.
+# Astro builds to ./dist/_worker.js + ./dist/_routes.json via @astrojs/cloudflare.
+# `nodejs_compat` is required by the adapter so Node built-ins (Buffer, etc.)
+# work in the Workers runtime.
+
+name = "gemini-astro"
+pages_build_output_dir = "./dist"
+compatibility_date = "2026-06-25"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Bind real values via `wrangler pages secret put <NAME>` or the Pages dashboard.
+# Local dev reads .dev.vars (gitignored). DO NOT commit secrets here.
+# RESEND_API_KEY      = ""   # transactional + lead-routing email (Resend)
+# TURNSTILE_SITE_KEY  = ""   # public — embedded in form pages
+# TURNSTILE_SECRET_KEY = ""  # server-only — used by Astro Actions to verify
+
+# Lead submissions go to D1. Uncomment + run `wrangler d1 create lead_submissions`
+# then paste the returned database_id below.
+# [[d1_databases]]
+# binding = "LEAD_DB"
+# database_name = "lead_submissions"
+# database_id = "00000000-0000-0000-0000-000000000000"

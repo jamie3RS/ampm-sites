@@ -1,0 +1,320 @@
+---
+/**
+ * Gemini AMPM — <TrustStrip>
+ *
+ * Horizontal hero trust strip that sits directly under the Hero H1+CTAs on
+ * every service-vertical page (see SERVICE_VERTICAL_TEMPLATE.md §1 / "Hero").
+ *
+ * Fixed reading order (per adversarial-2 finding in the template doc):
+ *   1. Live Google rating chip   (rating value + review count, ★ glyph)
+ *   2. Accreditation logos       (3-4 highest-equity certs for THIS pillar)
+ *   3. Tenure marker             ("Since 1997" by default)
+ *   4. Employee-Owned badge      (EOT — Gemini's commercial differentiator)
+ *
+ * Layout is a single flex row on >=640px and stacks to a column on mobile.
+ * Accreditation logos themselves remain inline so we keep one tap-target each
+ * even when the strip wraps. No carousel, no hover-only content — anything
+ * that needs to be read by a buyer in 2 seconds is rendered as text.
+ *
+ * The rating chip is intentionally static markup: the LIVE value is wired in
+ * by the parent page from D1 `reviews_cache` (refreshed weekly by Cloudflare
+ * Cron Trigger) and passed in as props. This primitive does no fetching.
+ *
+ * Tokens consumed (from src/styles/tokens.css):
+ *   --surface, --bg-elev, --line, --line-strong, --accent, --accent-soft,
+ *   --text, --text-soft, --text-muted, --warn, --radius, --radius-sm,
+ *   --s-1, --s-2, --s-3, --s-4, --t-body, --t-body-s, --t-kicker,
+ *   --f-body, --f-display, --ease
+ */
+
+export interface Accreditation {
+  /** URL-safe slug, e.g. "bafe", "nsi-gold", "firas". Used for logo lookup. */
+  slug: string;
+  /** Short display label, e.g. "BAFE", "NSI Gold". Always shown for SR. */
+  label: string;
+  /** Optional logo URL. Defaults to /assets/certs/thumbs/{slug}.png. */
+  logo?: string;
+  /** Optional cert-page link. Defaults to /accreditations/{slug}/. */
+  href?: string;
+}
+
+export interface Props {
+  /** Live Google star rating, e.g. 4.9. One decimal recommended. */
+  googleRating: number;
+  /** Number of Google reviews backing the rating, e.g. 87. */
+  reviewCount: number;
+  /** Accreditation chips (logo + label). Order is preserved — pillar-relevant first. */
+  accreditations: Accreditation[];
+  /** Tenure text shown after the accreditations. Defaults to "Since 1997". */
+  tenureMarker?: string;
+  /** Show the Employee-Owned (EOT) badge at the end. Defaults to true. */
+  eotBadge?: boolean;
+  /** Extra classes (Tailwind utilities) for layout tweaks at the call site. */
+  class?: string;
+}
+
+const {
+  googleRating,
+  reviewCount,
+  accreditations,
+  tenureMarker = 'Since 1997',
+  eotBadge = true,
+  class: className = '',
+} = Astro.props;
+
+// Fixed display: one decimal, never round below the rating we actually have.
+const ratingDisplay = Number.isFinite(googleRating)
+  ? googleRating.toFixed(1)
+  : '—';
+const reviewCountDisplay = Number.isFinite(reviewCount)
+  ? new Intl.NumberFormat('en-GB').format(reviewCount)
+  : '0';
+const ratingAriaLabel = `Rated ${ratingDisplay} out of 5 on Google, based on ${reviewCountDisplay} reviews`;
+---
+
+<div
+  class:list={['trust-strip', className]}
+  role="list"
+  aria-label="Trust signals"
+>
+  {/* 1. Google rating chip */}
+  <div class="trust-strip__item trust-strip__rating" role="listitem">
+    <span class="trust-strip__rating-icon" aria-hidden="true">
+      {/* Inline SVG star — no extra asset request, brand --warn fill. */}
+      <svg viewBox="0 0 24 24" width="16" height="16" focusable="false">
+        <path
+          fill="currentColor"
+          d="M12 2.5l2.95 6.34 6.99.69-5.27 4.72 1.55 6.85L12 17.77l-6.22 3.33 1.55-6.85L2.06 9.53l6.99-.69L12 2.5z"
+        />
+      </svg>
+    </span>
+    <span class="trust-strip__rating-value" aria-hidden="true">
+      {ratingDisplay}
+    </span>
+    <span class="trust-strip__rating-meta" aria-hidden="true">
+      Google &middot; {reviewCountDisplay} reviews
+    </span>
+    <span class="sr-only">{ratingAriaLabel}</span>
+  </div>
+
+  {/* 2. Accreditation logos */}
+  {accreditations.length > 0 && (
+    <ul class="trust-strip__accreds" aria-label="Accreditations">
+      {accreditations.map((a) => {
+        const logoSrc = a.logo ?? `/assets/certs/thumbs/${a.slug}.png`;
+        const href = a.href ?? `/accreditations/${a.slug}/`;
+        return (
+          <li class="trust-strip__accred-item">
+            <a
+              class="trust-strip__accred"
+              href={href}
+              data-slug={a.slug}
+              aria-label={`${a.label} — accreditation details`}
+            >
+              <img
+                src={logoSrc}
+                alt=""
+                width="36"
+                height="36"
+                loading="eager"
+                decoding="async"
+              />
+              <span class="sr-only">{a.label}</span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  )}
+
+  {/* 3. Tenure marker */}
+  {tenureMarker && (
+    <span class="trust-strip__item trust-strip__tenure" role="listitem">
+      <span class="trust-strip__dot" aria-hidden="true"></span>
+      {tenureMarker}
+    </span>
+  )}
+
+  {/* 4. Employee-Owned badge */}
+  {eotBadge && (
+    <span
+      class="trust-strip__item trust-strip__eot"
+      role="listitem"
+      title="Owned by the team who run the jobs"
+    >
+      <span class="trust-strip__eot-mark" aria-hidden="true">EOT</span>
+      Employee&#8209;Owned
+    </span>
+  )}
+</div>
+
+<style>
+  /* ── Strip layout ─────────────────────────────────────────────── */
+  .trust-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3) var(--s-4);
+    margin-top: var(--s-5);
+    font-family: var(--f-body);
+    font-size: var(--t-body-s);
+    color: var(--text-soft);
+  }
+
+  /* Mobile-first: stack to a vertical list under 640px. The chips remain
+     horizontally aligned by default but each takes a full row when the
+     viewport is too narrow for the rating + 4 logos to fit. */
+  @media (max-width: 639px) {
+    .trust-strip {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--s-3);
+    }
+    .trust-strip__accreds {
+      width: 100%;
+    }
+  }
+
+  .trust-strip__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  /* ── Google rating chip ───────────────────────────────────────── */
+  .trust-strip__rating {
+    padding: var(--s-2) var(--s-3);
+    background: var(--bg-elev);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    color: var(--text);
+  }
+
+  .trust-strip__rating-icon {
+    display: inline-flex;
+    align-items: center;
+    color: var(--warn); /* amber star — universal Google review affordance */
+  }
+
+  .trust-strip__rating-value {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: var(--t-body);
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .trust-strip__rating-meta {
+    color: var(--text-muted);
+    font-size: var(--t-kicker);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── Accreditation logos ──────────────────────────────────────── */
+  .trust-strip__accreds {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-2);
+  }
+
+  .trust-strip__accred-item { margin: 0; }
+  /* Override base.css `li + li { margin-top: var(--s-2) }` inside this row. */
+  .trust-strip__accred-item + .trust-strip__accred-item { margin-top: 0; }
+
+  .trust-strip__accred {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: var(--s-1);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition:
+      border-color 0.15s var(--ease),
+      background 0.15s var(--ease),
+      transform 0.15s var(--ease);
+  }
+
+  .trust-strip__accred:hover,
+  .trust-strip__accred:focus-visible {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    transform: translateY(-1px);
+  }
+
+  .trust-strip__accred img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    /* Cert logos are delivered on light backgrounds — invert on night skin
+       so the marks read against the deep navy. Day skin reverts below. */
+    filter: brightness(0) invert(1);
+    opacity: 0.92;
+    transition: opacity 0.15s var(--ease), filter 0.15s var(--ease);
+  }
+
+  .trust-strip__accred:hover img,
+  .trust-strip__accred:focus-visible img {
+    opacity: 1;
+  }
+
+  :global(html[data-skin='day']) .trust-strip__accred img {
+    filter: none;
+    opacity: 1;
+  }
+
+  /* ── Tenure marker ────────────────────────────────────────────── */
+  .trust-strip__tenure {
+    color: var(--text-soft);
+    font-weight: 600;
+  }
+
+  .trust-strip__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  /* ── Employee-Owned badge ─────────────────────────────────────── */
+  .trust-strip__eot {
+    padding: var(--s-1) var(--s-3);
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    border-radius: 999px;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .trust-strip__eot-mark {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: var(--t-kicker);
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+
+  /* ── SR-only ──────────────────────────────────────────────────── */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

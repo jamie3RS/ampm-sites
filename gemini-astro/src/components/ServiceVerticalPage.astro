@@ -1,0 +1,444 @@
+---
+/**
+ * Gemini AMPM — <ServiceVerticalPage /> composer.
+ *
+ * One Astro component renders all ~50 service pages (7 pillars + ~43 leaves).
+ * Per-page variation lives entirely in the Payload `services` document the
+ * caller passes in via the `service` prop. The 11 sections render in a
+ * spec-fixed order — there is no conditional re-ordering. Density and
+ * specifier-mode flex through Payload knobs (`densityPreset`,
+ * `specifierMode`) and are surfaced on the wrapping element so section-
+ * level CSS rhythm can respond if needed.
+ *
+ * Spec ref: SERVICE_VERTICAL_TEMPLATE.md (sections §1–§11) and
+ * "Payload services Collection Schema" (TS).
+ *
+ * Section order is load-bearing — do not re-arrange:
+ *   1.  Hero
+ *   2.  Qualification Gate + Form #1 (consultation)
+ *   3.  System Types
+ *   4.  Industries Grid
+ *   5.  Process
+ *   6.  Pricing
+ *   7.  Social Proof + Form #2 (quote / specifier handover)
+ *   8.  Maintenance + Form #3
+ *   9.  Why Gemini AMPM
+ *   10. FAQ
+ *   11. Footer CTA + mini-form
+ *
+ * Schema JSON-LD is generated at the bottom of the body by
+ * `generateServiceSchema(service)` — the helper lives in `src/lib/schema.ts`
+ * (built by the schema agent in parallel; this is a build-time import so
+ * the ordering is fine).
+ */
+
+import HeroSection from './sections/01-Hero.astro';
+import type { OfficeRef as HeroOfficeRef, HeroMedia } from './sections/01-Hero.astro';
+import QualificationGate from './sections/02-QualificationGate.astro';
+import type {
+  UseCase as GateUseCase,
+  WrongFitRedirect as GateWrongFitRedirect,
+} from './sections/02-QualificationGate.astro';
+import SystemTypes from './sections/03-SystemTypes.astro';
+import type { SystemTypeCard } from './sections/03-SystemTypes.astro';
+import IndustriesGrid from './sections/04-IndustriesGrid.astro';
+import type { IndustryItem } from './sections/04-IndustriesGrid.astro';
+import ProcessSection from './sections/05-ProcessSection.astro';
+import type { LinkedCaseStudy } from './sections/05-ProcessSection.astro';
+import PricingSection from './sections/06-PricingSection.astro';
+import type {
+  PricingBandInput,
+  PriceDriver,
+} from './sections/06-PricingSection.astro';
+import SocialProofAndQuote from './sections/07-SocialProofAndQuote.astro';
+import MaintenanceSection from './sections/08-MaintenanceSection.astro';
+import WhyGeminiAMPM from './sections/09-WhyGeminiAMPM.astro';
+import type {
+  TrustPillarItem,
+  AccreditationRef,
+  TeamMemberRef,
+  OfficeRef as WhyOfficeRef,
+} from './sections/09-WhyGeminiAMPM.astro';
+import FAQSection from './sections/10-FAQSection.astro';
+import type { FAQChildPageLink } from './sections/10-FAQSection.astro';
+import type { FAQ } from './primitives/FAQAccordion.astro';
+import FooterCTASection from './sections/11-FooterCTASection.astro';
+import type {
+  CoveragePlace,
+  OfficeAddress,
+  RelatedService,
+  TeamMember,
+} from './sections/11-FooterCTASection.astro';
+import type { Accreditation } from './primitives/TrustStrip.astro';
+import type { ProcessStep } from './primitives/ProcessDiagram.astro';
+
+import { generateServiceSchema } from '../lib/schema';
+
+/**
+ * Pillar identifier — same enum used by every form-bearing section and by
+ * the Astro Action handlers downstream. Surfacing it here lets TypeScript
+ * forward the literal type through to each child section so a mistyped
+ * pillar is a build error rather than a silent attribution miss.
+ */
+export type Pillar = 'gas-suppression' | 'fire-alarm' | 'passive-fire' | 'security-access' | 'ventilation' | 'm-and-e' | 'small-works';
+
+/**
+ * Density preset — mirrors the Payload `densityPreset` enum. Surfaced as a
+ * `data-density` attribute on the page wrapper so section CSS can respond.
+ * Pillar-level cadence is set in CMS (gas-suppression + fire-alarm = long,
+ * passive-fire / security-access / ventilation = standard, m-and-e +
+ * small-works = compact).
+ */
+export type DensityPreset = 'long' | 'standard' | 'compact';
+
+/**
+ * Section 7 ships its `Props` interface but keeps the row-level types
+ * (`CaseStudyRef`, `ClientLogo`, `Testimonial`, `SpaceTypeOption`,
+ * `OfficeRef`) module-private. Mirroring them structurally here keeps the
+ * composer self-typed without forcing the section to widen its exports
+ * (which would risk drift if the section's row shape evolves). Field names
+ * must stay in lock-step with the section file.
+ */
+interface SocialProofCaseStudyRef {
+  title: string;
+  image: string;
+  summary: string;
+  outcome?: string | null;
+  href?: string | null;
+}
+interface SocialProofClientLogo {
+  name: string;
+  logo: string;
+  href?: string | null;
+}
+interface SocialProofTestimonial {
+  quote: string;
+  authorName: string;
+  authorRole: string;
+  authorOrg: string;
+  authorAvatar?: string | null;
+}
+interface SocialProofSpaceTypeOption {
+  value: string;
+  label: string;
+}
+interface SocialProofOfficeRef {
+  ddiDisplay: string;
+  ddiTel: string;
+}
+
+/**
+ * The `service` shape mirrors the Payload `services` collection after the
+ * page loader has run `depth: 2` to resolve all relationships. We keep this
+ * as a structural type rather than re-importing a Payload-generated type
+ * so the composer can be unit-tested without a live CMS, and so a Payload
+ * schema tweak doesn't ripple through every section's prop type tree.
+ *
+ * Each field maps 1:1 to the schema. Fields the Payload schema marks as
+ * `relationship` arrive pre-resolved as the shape each child section
+ * expects — the page loader (`src/lib/payload-loader.ts`, separate task)
+ * does the denormalisation in one place.
+ */
+export interface ServiceDoc {
+  // ── Taxonomy ──────────────────────────────────────────────────────────
+  slug: string;
+  pillar: Pillar;
+  isPillar?: boolean;
+  densityPreset?: DensityPreset;
+  specifierMode?: boolean;
+  variantId?: string;
+
+  // ── SEO (consumed by BaseLayout, not by this component directly) ──────
+  focusKeyword: string;
+  metaTitle?: string;
+  metaDescription?: string;
+
+  // ── Section 1: Hero ───────────────────────────────────────────────────
+  h1: string;
+  subHeadline: string;
+  primaryCTAlabel?: string;
+  secondaryCTAlabel?: string;
+  regionalDDI: HeroOfficeRef;
+  accreditationsForHero: Accreditation[];
+  heroImage?: HeroMedia;
+  heroImageAlt?: string;
+  /** Live Google rating injected by the page loader from D1 reviews_cache. */
+  googleRating: number;
+  reviewCount: number;
+
+  // ── Section 2: Qualification Gate + Form #1 ───────────────────────────
+  gateHeadline: string;
+  useCases: GateUseCase[];
+  regulatoryAnchor?: string;
+  wrongFitRedirect?: GateWrongFitRedirect;
+  consultFormHeadline?: string;
+  consultSubmitLabel?: string;
+
+  // ── Section 3: System Types ───────────────────────────────────────────
+  systemTypes: SystemTypeCard[];
+
+  // ── Section 4: Industries Grid ────────────────────────────────────────
+  industries: IndustryItem[];
+  industriesIntro?: string;
+
+  // ── Section 5: Process ────────────────────────────────────────────────
+  steps: ProcessStep[];
+  processClosingLine?: string;
+  optionalLinkedCaseStudy?: LinkedCaseStudy;
+
+  // ── Section 6: Pricing ────────────────────────────────────────────────
+  pricingH2: string;
+  pricingIntro?: string;
+  pricingBands: PricingBandInput[];
+  priceDriversList: PriceDriver[];
+  humanCaveat: string;
+  maintenancePriceCallout: string;
+
+  // ── Section 7: Social Proof + Form #2 ─────────────────────────────────
+  flagshipCaseStudy?: SocialProofCaseStudyRef | null;
+  namedClientLogos?: SocialProofClientLogo[];
+  testimonial?: SocialProofTestimonial | null;
+  outcomeStat?: string | null;
+  relatedCaseStudies?: SocialProofCaseStudyRef[];
+  quoteFormHeadline?: string;
+  spaceTypeOptions?: SocialProofSpaceTypeOption[];
+  quoteSubmitLabel?: string;
+  quoteResponsePromise?: string;
+  quoteAltActionPhone?: SocialProofOfficeRef | null;
+  thanksPageRedirect?: string;
+  capabilityStatementPDF?: string | null;
+
+  // ── Section 8: Maintenance + Form #3 ──────────────────────────────────
+  maintenanceRegulatoryAnchor: string;
+  contractInclusionsList: Array<{ inclusion: string }>;
+  takeOverMessage: string;
+  maintenanceFormHeadline?: string;
+  maintenanceSubmitLabel?: string;
+  maintenanceResponsePromise?: string;
+  maintenanceAltActionPhone?: string;
+
+  // ── Section 9: Why Gemini AMPM ────────────────────────────────────────
+  trustPillars: TrustPillarItem[];
+  accreditationStrip: AccreditationRef[];
+  eotCallout: string;
+  namedEngineer?: TeamMemberRef;
+  officeLocations: WhyOfficeRef[];
+  whyHeadline?: string;
+  whySubHeadline?: string;
+
+  // ── Section 10: FAQ ───────────────────────────────────────────────────
+  faqs: FAQ[];
+  faqChildPageLink?: FAQChildPageLink;
+  faqHeading?: string;
+
+  // ── Section 11: Footer CTA + mini-form ────────────────────────────────
+  coverageRegions: CoveragePlace[];
+  officeAddress: OfficeAddress;
+  relatedServices: RelatedService[];
+  authorByline?: TeamMember;
+  lastReviewedDate?: string;
+  footerMiniFormHeadline?: string;
+  footerMiniFormBody?: string;
+  footerMiniFormSubmitLabel?: string;
+  footerResponsePromise?: string;
+  footerAltActionPhone?: string;
+}
+
+export interface Props {
+  /** The resolved Payload services document for this page. */
+  service: ServiceDoc;
+  /** Extra classes for the outer wrapper. Rarely needed. */
+  class?: string;
+}
+
+const { service, class: extraClass } = Astro.props;
+
+/* ── Per-page wiring derived once ──────────────────────────────────────────
+ * `pagePath` powers the hidden `pagePath` field on every form so the lead
+ * carries page attribution into the D1 lead_submissions table. Astro.url
+ * is canonical — it reflects the resolved leaf path after middleware so it
+ * works the same for pillars and leaves without per-call wiring.
+ *
+ * `densityPreset` and `specifierMode` fall back to spec defaults so a CMS
+ * row mid-edit still renders something sensible.
+ *
+ * `variantId` defaults to 'A' to match the Payload schema default — keeps
+ * attribution coherent if the editor unsets the field.
+ */
+const pagePath = Astro.url.pathname;
+const densityPreset: DensityPreset = service.densityPreset ?? 'standard';
+const specifierMode = service.specifierMode ?? false;
+const variantId = service.variantId ?? 'A';
+
+/* JSON-LD payload. Helper is build-time import from src/lib/schema.ts.
+ * We stringify here (not inside the helper) so the helper can stay a pure
+ * object-builder and tests can snapshot it directly. */
+const schemaObject = generateServiceSchema(service);
+const schemaJson = JSON.stringify(schemaObject);
+---
+
+<div
+  class:list={['service-vertical-page', extraClass]}
+  data-pillar={service.pillar}
+  data-slug={service.slug}
+  data-density={densityPreset}
+  data-specifier-mode={specifierMode ? 'true' : 'false'}
+  data-variant={variantId}
+>
+  {/* ── 1. Hero ─────────────────────────────────────────────────────── */}
+  <HeroSection
+    focusKeyword={service.focusKeyword}
+    h1={service.h1}
+    subHeadline={service.subHeadline}
+    primaryCTAlabel={service.primaryCTAlabel}
+    secondaryCTAlabel={service.secondaryCTAlabel}
+    regionalDDI={service.regionalDDI}
+    accreditationsForHero={service.accreditationsForHero}
+    heroImage={service.heroImage}
+    heroImageAlt={service.heroImageAlt}
+    googleRating={service.googleRating}
+    reviewCount={service.reviewCount}
+    quoteFormAnchor="quote"
+    processAnchor="process"
+  />
+
+  {/* ── 2. Qualification Gate + Form #1 (consult) ───────────────────── */}
+  <QualificationGate
+    pillar={service.pillar}
+    variantId={variantId}
+    gateHeadline={service.gateHeadline}
+    useCases={service.useCases}
+    regulatoryAnchor={service.regulatoryAnchor}
+    wrongFitRedirect={service.wrongFitRedirect}
+    consultFormHeadline={service.consultFormHeadline}
+    consultSubmitLabel={service.consultSubmitLabel}
+    pagePath={pagePath}
+    id="consultation"
+  />
+
+  {/* ── 3. System Types ─────────────────────────────────────────────── */}
+  <SystemTypes
+    pillar={service.pillar}
+    systemTypes={service.systemTypes}
+    consultFormAnchor="consultation"
+  />
+
+  {/* ── 4. Industries Grid ──────────────────────────────────────────── */}
+  <IndustriesGrid
+    industries={service.industries}
+    intro={service.industriesIntro}
+  />
+
+  {/* ── 5. Process ──────────────────────────────────────────────────── */}
+  <ProcessSection
+    steps={service.steps}
+    processClosingLine={service.processClosingLine}
+    optionalLinkedCaseStudy={service.optionalLinkedCaseStudy}
+  />
+
+  {/* ── 6. Pricing ──────────────────────────────────────────────────── */}
+  <PricingSection
+    h2={service.pricingH2}
+    intro={service.pricingIntro}
+    pricingBands={service.pricingBands}
+    priceDriversList={service.priceDriversList}
+    humanCaveat={service.humanCaveat}
+    maintenancePriceCallout={service.maintenancePriceCallout}
+    consultAnchor="#consultation"
+  />
+
+  {/* ── 7. Social Proof + Form #2 ───────────────────────────────────────
+       Specifier-mode (Passive Fire) flips the submit label + makes the
+       file upload required inside this section. We pass `specifierMode`
+       and `capabilityStatementPDF` straight through — the section owns
+       the affordance. */}
+  <SocialProofAndQuote
+    flagshipCaseStudy={service.flagshipCaseStudy}
+    namedClientLogos={service.namedClientLogos}
+    testimonial={service.testimonial}
+    outcomeStat={service.outcomeStat}
+    relatedCaseStudies={service.relatedCaseStudies}
+    quoteFormHeadline={service.quoteFormHeadline}
+    spaceTypeOptions={service.spaceTypeOptions}
+    quoteSubmitLabel={service.quoteSubmitLabel}
+    responsePromise={service.quoteResponsePromise}
+    altActionPhone={service.quoteAltActionPhone}
+    thanksPageRedirect={service.thanksPageRedirect}
+    specifierMode={specifierMode}
+    capabilityStatementPDF={service.capabilityStatementPDF}
+    pillar={service.pillar}
+    variantId={variantId}
+    pagePath={pagePath}
+  />
+
+  {/* ── 8. Maintenance + Form #3 ────────────────────────────────────── */}
+  <MaintenanceSection
+    pillar={service.pillar}
+    variantId={variantId}
+    maintenanceRegulatoryAnchor={service.maintenanceRegulatoryAnchor}
+    contractInclusionsList={service.contractInclusionsList}
+    takeOverMessage={service.takeOverMessage}
+    maintenanceFormHeadline={service.maintenanceFormHeadline}
+    maintenanceSubmitLabel={service.maintenanceSubmitLabel}
+    responsePromise={service.maintenanceResponsePromise}
+    altActionPhone={service.maintenanceAltActionPhone}
+  />
+
+  {/* ── 9. Why Gemini AMPM ──────────────────────────────────────────── */}
+  <WhyGeminiAMPM
+    headline={service.whyHeadline}
+    subHeadline={service.whySubHeadline}
+    trustPillars={service.trustPillars}
+    accreditationStrip={service.accreditationStrip}
+    eotCallout={service.eotCallout}
+    namedEngineer={service.namedEngineer}
+    officeLocations={service.officeLocations}
+    quoteFormAnchor="quote"
+  />
+
+  {/* ── 10. FAQ ─────────────────────────────────────────────────────── */}
+  <FAQSection
+    faqs={service.faqs}
+    faqChildPageLink={service.faqChildPageLink}
+    heading={service.faqHeading}
+  />
+
+  {/* ── 11. Footer CTA + mini-form ──────────────────────────────────── */}
+  <FooterCTASection
+    pillar={service.pillar}
+    variantId={variantId}
+    coverageRegions={service.coverageRegions}
+    officeAddress={service.officeAddress}
+    relatedServices={service.relatedServices}
+    authorByline={service.authorByline}
+    lastReviewedDate={service.lastReviewedDate}
+    miniFormHeadline={service.footerMiniFormHeadline}
+    miniFormBody={service.footerMiniFormBody}
+    miniFormSubmitLabel={service.footerMiniFormSubmitLabel}
+    responsePromise={service.footerResponsePromise}
+    altActionPhone={service.footerAltActionPhone}
+  />
+
+  {/* ── JSON-LD ──────────────────────────────────────────────────────────
+       Built from the resolved service doc. Helper is build-time only so
+       there's no runtime cost. We use `set:html` because the JSON string
+       must not be HTML-escaped (Astro would otherwise convert `"` to
+       `&quot;`, breaking JSON-LD parsing). The string is produced by
+       JSON.stringify so it's already safe — no user-controlled HTML
+       enters this branch. */}
+  <script type="application/ld+json" set:html={schemaJson} />
+</div>
+
+<style>
+  /* Layout chrome belongs to the wrapping <BaseLayout />. This component is
+     intentionally style-light — each section owns its own visual rhythm so
+     the composer can stay a pure ordering surface. The single rule below
+     gives each section breathing room when stacked without an outer Layout
+     (e.g. during isolated component tests). */
+  .service-vertical-page > :global(section + section) {
+    /* Sections already apply their own padding via the <Section> primitive
+       (density-aware). This is a no-op in production but documents the
+       composer's contract: sections supply vertical rhythm, the page does
+       not impose its own. */
+  }
+</style>

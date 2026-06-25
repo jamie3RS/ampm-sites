@@ -1,0 +1,134 @@
+---
+/**
+ * Gemini AMPM — footer.
+ *
+ * Four link columns + a social/contact strip + accreditation thumbs.
+ * Permanently dark (data-nav-dark) regardless of page skin so the cream
+ * artwork variant of the logo is the one that surfaces.
+ */
+const DDI = '0330 043 0080';
+const ddiHref = `tel:${DDI.replace(/\s+/g, '')}`;
+
+const cols = [
+  {
+    title: 'Services',
+    links: [
+      { href: '/services/gas-suppression/',    label: 'Gas suppression' },
+      { href: '/services/fire-alarm/',         label: 'Fire alarm' },
+      { href: '/services/passive-fire/',       label: 'Passive fire' },
+      { href: '/services/security-access/',    label: 'Security & access' },
+      { href: '/services/ventilation/',        label: 'Ventilation / HVAC' },
+      { href: '/services/m-and-e/',            label: 'M&E' },
+      { href: '/services/small-works/',        label: 'Small works' },
+    ],
+  },
+  {
+    title: 'Sectors',
+    links: [
+      { href: '/sectors/data-centres/',         label: 'Data centres' },
+      { href: '/sectors/financial-services/',   label: 'Financial services' },
+      { href: '/sectors/healthcare/',           label: 'Healthcare' },
+      { href: '/sectors/education/',            label: 'Education' },
+      { href: '/sectors/public-sector/',        label: 'Public sector' },
+      { href: '/sectors/heritage/',             label: 'Heritage & listed' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { href: '/about/',          label: 'About us' },
+      { href: '/case-studies/',   label: 'Case studies' },
+      { href: '/clients/',        label: 'Clients' },
+      { href: '/manufacturers/',  label: 'Manufacturers' },
+      { href: '/accreditations/', label: 'Accreditations' },
+      { href: '/news/',           label: 'News' },
+      { href: '/careers/',        label: 'Careers' },
+    ],
+  },
+  {
+    title: 'Group',
+    links: [
+      { href: 'https://ampm.co.uk',                  label: 'AMPM Group',             external: true },
+      { href: 'https://building-services.ampm.co.uk', label: 'AMPM Building Services', external: true },
+      { href: '/contact/',                           label: 'Contact' },
+      { href: '/legal/privacy/',                     label: 'Privacy' },
+      { href: '/legal/terms/',                       label: 'Terms' },
+      { href: '/legal/modern-slavery/',              label: 'Modern slavery' },
+    ],
+  },
+];
+
+const accreditations = [
+  { src: '/assets/accred/bafe.png',     alt: 'BAFE registered (SP203-1)' },
+  { src: '/assets/accred/nsi-gold.png', alt: 'NSI Gold' },
+  { src: '/assets/accred/firas.png',    alt: 'FIRAS approved' },
+  { src: '/assets/accred/fia.png',      alt: 'FIA member' },
+  { src: '/assets/accred/niceic.png',   alt: 'NICEIC approved' },
+  { src: '/assets/accred/refcom.png',   alt: 'REFCOM F-Gas' },
+];
+
+const year = new Date().getFullYear();
+---
+<footer class="foot" data-nav-dark="true">
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <a href="/" class="glogo lg fwm" aria-label="Gemini AMPM — home">
+        <img
+          class="glogo-img glogo-img--dark"
+          src="/assets/gemini-logo-rev.png"
+          alt=""
+          width="240"
+          height="80"
+          decoding="async"
+        />
+      </a>
+      <p class="foot-lede">
+        Fire, security and building-services engineering since 1997.
+        Employee-owned. London &amp; the South&nbsp;East.
+      </p>
+      <a class="phone" href={ddiHref} aria-label={`Call Gemini AMPM on ${DDI}`}>
+        {DDI}
+      </a>
+    </div>
+
+    <nav class="foot-cols" aria-label="Footer">
+      {cols.map((col) => (
+        <div class="foot-col">
+          <h5>{col.title}</h5>
+          <ul>
+            {col.links.map((l) => (
+              <li>
+                <a
+                  href={l.href}
+                  {...('external' in l && l.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                >
+                  {l.label}{('external' in l && l.external) ? ' ↗' : ''}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </nav>
+  </div>
+
+  <div class="foot-accred" aria-label="Accreditations">
+    {accreditations.map((a) => (
+      <img
+        src={a.src}
+        alt={a.alt}
+        width="120"
+        height="60"
+        loading="lazy"
+        decoding="async"
+      />
+    ))}
+  </div>
+
+  <div class="foot-strip">
+    <small>&copy; {year} Gemini AMPM Ltd. Registered in England. Part of AMPM Group.</small>
+    <span class="foot-social">
+      <a href="https://www.linkedin.com/company/gemini-ampm/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+    </span>
+  </div>
+</footer>

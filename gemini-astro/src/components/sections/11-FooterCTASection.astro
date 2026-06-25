@@ -1,0 +1,1200 @@
+---
+/**
+ * Gemini AMPM — Section 11: Footer CTA + Local Coverage + Related Services + Mini-Form
+ *
+ * The closing surface on every service-vertical page. Per the spec
+ * (SERVICE_VERTICAL_TEMPLATE.md § "Section 11"), this block has FOUR distinct
+ * jobs and is intentionally dense because it terminates the page:
+ *
+ *   1. Local-SEO surface — coverage region list + office postcode + click-to-map.
+ *      Region pills are real anchors (future Phase-2 sector-landing links) so
+ *      they ship internal-link equity, not just visual decoration.
+ *
+ *   2. Related Services row — 3–5 sibling pillar/leaf tiles with keyword-rich
+ *      anchor text. This is the lateral-internal-linking obligation called out
+ *      in the SEO strategy block of the spec; "click here" / "read more" copy
+ *      is banned, so each tile uses the actual service name as the anchor.
+ *
+ *   3. Footer mini-form — the lowest-friction conversion catch (3 fields:
+ *      name, email, optional message). Routes through the same Astro Action
+ *      pipeline as Forms #1/#2/#3 via the shared `commonHidden` schema and
+ *      lands in the consultations mailbox. Source = "footer" so the team can
+ *      filter footer-form leads separately from in-page enquiries.
+ *
+ *   4. E-E-A-T byline — named author/reviewer + qualification + last-reviewed
+ *      date. Required by the spec's E-E-A-T paragraph and surfaced here (not
+ *      hero) because it's a closing-page trust signal, not a buying signal.
+ *
+ * Notes on what this component does NOT do:
+ *   - Does NOT render the JSON-LD schema bundle. That bundle aggregates fields
+ *     from ALL 11 sections so it must be assembled at the page level
+ *     (<ServiceVerticalPage />), not here.
+ *   - Does NOT render the sticky mobile CTA. <StickyMobileCTA /> is mounted
+ *     once at the layout level and stays visible throughout the page — owning
+ *     it here would tie its visibility window to this section's viewport.
+ *   - Does NOT render the page <footer> (site nav, legal links, social).
+ *     That's a layout concern (<BaseLayout />), not a per-page section.
+ *
+ * The first-paint UTM capture (writing utm_* query params into sessionStorage
+ * on page entry) is global and lives in BaseLayout. This component reads UTM
+ * back out of sessionStorage in its own footer-form hydrator — mirrors the
+ * pattern in Sections 2 / 7 / 8 so the four forms behave identically.
+ *
+ * Spec reference:
+ *   /Users/jamiedawson/Documents/Claude/Projects/Gemini AMPM/01-website/
+ *     audits/SERVICE_VERTICAL_TEMPLATE.md — § "Section 11" + § "Forms Wiring".
+ */
+
+import Section from '../primitives/Section.astro';
+import Container from '../primitives/Container.astro';
+import Heading from '../primitives/Heading.astro';
+import Kicker from '../primitives/Kicker.astro';
+import Button from '../primitives/Button.astro';
+
+/* ── Resolved relationship shapes ────────────────────────────────────────────
+ *
+ * Each interface below mirrors the slice of a Payload row that THIS section
+ * actually consumes. The page-level loader is expected to populate these via
+ * `depth: 2` queries against Payload, so by the time props land here every
+ * relationship is denormalised. Keeping the surface narrow (not the full row)
+ * means changes to unrelated Payload fields don't ripple into this component.
+ */
+
+/** Resolved `places` row used in the coverage-region list. */
+export interface CoveragePlace {
+  /** URL-safe slug — also the anchor text fragment for future deep links. */
+  slug: string;
+  /** Display name, e.g. "London", "Essex", "Kent". */
+  name: string;
+  /**
+   * Optional internal link to a sector / place landing page (Phase 2). When
+   * absent the chip renders as a non-link `<span>` — still indexable text,
+   * still useful for areaServed schema upstream, but it doesn't pretend to
+   * lead anywhere it doesn't.
+   */
+  href?: string;
+}
+
+/** Resolved `offices` row used for the address block + map link. */
+export interface OfficeAddress {
+  /** Office name, e.g. "Gemini AMPM London". */
+  name: string;
+  /** Street + locality lines, in display order. */
+  addressLines: string[];
+  /** UK postcode (drives the map-link query). */
+  postcode: string;
+  /** Optional DDI for a click-to-call directly from the address block. */
+  ddi?: string;
+  /**
+   * Optional override for the map href. When absent we synthesise a
+   * Google-Maps query URL from the postcode — vendor-neutral enough for a
+   * "click-to-map" link that survives provider changes.
+   */
+  mapHref?: string;
+}
+
+/** Resolved `services` sibling/cross-pillar row for the Related Services tiles. */
+export interface RelatedService {
+  /** Service slug — drives the canonical URL pattern. */
+  slug: string;
+  /** Pillar slug — used to construct the URL for leaves. */
+  pillar: string;
+  /** Whether this row is the pillar itself (vs a leaf under a pillar). */
+  isPillar?: boolean;
+  /**
+   * Anchor text — uses the H1 (or a shortened version) so the link is
+   * keyword-rich. Spec bans "click here" / "read more".
+   */
+  anchorText: string;
+  /** 1-line supporting copy (12–20 words). */
+  oneLineSummary?: string;
+}
+
+/** Resolved `team` row used for the author/reviewer byline. */
+export interface TeamMember {
+  /** Person's full name as it should appear in the byline. */
+  name: string;
+  /** Job title, e.g. "Managing Director". */
+  role?: string;
+  /**
+   * Qualification string (industry tickets, chartered status, etc).
+   * Surfaces E-E-A-T per the spec.
+   */
+  qualification?: string;
+  /** Optional link to a person/about page. */
+  href?: string;
+}
+
+/* ── Component props ──────────────────────────────────────────────────────── */
+
+export interface Props {
+  // ── Routing / attribution (same shape as Forms #1/#2/#3) ───────────────
+  /** Pillar slug — drives server-side mailbox routing + subject prefix. */
+  pillar:
+    | 'gas-suppression'
+    | 'fire-alarm'
+    | 'passive-fire'
+    | 'security-access'
+    | 'ventilation'
+    | 'm-and-e'
+    | 'small-works';
+
+  /** Variant id for A/B attribution (defaults to 'A' in Payload). */
+  variantId?: string;
+
+  // ── Section 11 Payload fields ──────────────────────────────────────────
+  /** 3–8 places served. Renders as a chip cloud above the office address. */
+  coverageRegions: CoveragePlace[];
+
+  /** The lead office for this pillar (drives address block + map link). */
+  officeAddress: OfficeAddress;
+
+  /**
+   * 3–5 sibling services + 1–2 cross-pillar cards (max 5 total). Order is
+   * preserved from Payload — the editor sequences by buyer-intent overlap.
+   */
+  relatedServices: RelatedService[];
+
+  /** Author/reviewer for E-E-A-T byline (Payload `authorByline` → team row). */
+  authorByline?: TeamMember;
+
+  /**
+   * Last-reviewed date as an ISO-8601 string (YYYY-MM-DD). Rendered with a
+   * <time datetime> attribute so it's machine-readable for Google's
+   * lastReviewed signal.
+   */
+  lastReviewedDate?: string;
+
+  // ── Mini-form copy ─────────────────────────────────────────────────────
+  /** Optional headline above the mini-form. */
+  miniFormHeadline?: string;
+
+  /** Optional sub-copy under the headline. */
+  miniFormBody?: string;
+
+  /** Submit-button label. */
+  miniFormSubmitLabel?: string;
+
+  /** Response promise rendered under the submit. */
+  responsePromise?: string;
+
+  /** Alt-action tel: number under the submit. */
+  altActionPhone?: string;
+
+  // ── Layout knobs ───────────────────────────────────────────────────────
+  /** Kicker label sitting above the H2. */
+  kicker?: string;
+
+  /** Section H2 copy. */
+  headline?: string;
+
+  /** Anchor id — defaults to `footer-cta`. */
+  id?: string;
+
+  /** Extra classes for layout tweaks at the call site. */
+  class?: string;
+}
+
+const {
+  pillar,
+  variantId = 'A',
+  coverageRegions = [],
+  officeAddress,
+  relatedServices = [],
+  authorByline,
+  lastReviewedDate,
+  miniFormHeadline = 'Not ready to call? Drop us a line.',
+  miniFormBody = 'Tell us what you need in a sentence. We reply by email within one working day — no sales sequence, no auto-enrolment.',
+  miniFormSubmitLabel = 'Send my message',
+  responsePromise = 'One reply, from a real person, within one working day.',
+  altActionPhone,
+  kicker = 'Get in touch',
+  headline = 'Local coverage. Direct line. No middle layer.',
+  id = 'footer-cta',
+  class: extraClass,
+} = Astro.props;
+
+/* Cloudflare Pages exposes runtime bindings via Astro.locals.runtime.env.
+ * Falls back to '' in local dev where the binding is absent — the Turnstile
+ * script renders in test mode and the server-side action verifier is the
+ * source of truth either way. Same defensive read as Section 8. */
+const turnstileSiteKey =
+  // @ts-expect-error — runtime is injected by @astrojs/cloudflare adapter
+  Astro.locals?.runtime?.env?.TURNSTILE_SITE_KEY ?? '';
+
+/* pagePath is captured server-side for attribution. Astro.url already reflects
+ * the resolved leaf-page path, so this works identically across pillars and
+ * leaves without per-call customisation. */
+const pagePath = Astro.url.pathname;
+
+/* Synthesize a map href when the office row doesn't carry one. Google Maps
+ * accepts a `?q=` postcode lookup, which is vendor-neutral enough (the URL
+ * still works if the user has Apple Maps as their default — the OS handles
+ * the handoff). Postcode is URL-encoded to handle the space safely. */
+const mapHref =
+  officeAddress?.mapHref ??
+  (officeAddress?.postcode
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        officeAddress.postcode
+      )}`
+    : undefined);
+
+/* Build the Related Services tile URL. Pillars live at /{pillar-slug}/, leaves
+ * live at /{pillar-slug}/{leaf-slug}/ — matches the URL-preservation rule in
+ * the SEO Strategy block of the spec. */
+const relatedHref = (svc: RelatedService) =>
+  svc.isPillar ? `/${svc.slug}/` : `/${svc.pillar}/${svc.slug}/`;
+
+/* Format the last-reviewed date for human display. We render the raw ISO
+ * string into the <time datetime> attribute (machine-readable) and a UK-format
+ * "25 June 2026" string in the visible label. Done at SSR with Intl so we
+ * don't pull a date library; falls back to the ISO string on parse failure. */
+let reviewedDisplay: string | null = null;
+if (lastReviewedDate) {
+  const d = new Date(lastReviewedDate);
+  reviewedDisplay = Number.isNaN(d.getTime())
+    ? lastReviewedDate
+    : new Intl.DateTimeFormat('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }).format(d);
+}
+---
+
+<Section
+  id={id}
+  background="surface-1"
+  density="long"
+  as="section"
+  class={extraClass}
+>
+  <Container variant="default">
+    <div class="footer-cta">
+      {/* ── Header rail ────────────────────────────────────────────────── */}
+      <header class="footer-cta__header">
+        <Kicker as="p" tone="accent">{kicker}</Kicker>
+        <Heading as="h2" size="lg" class="footer-cta__h2">
+          {headline}
+        </Heading>
+      </header>
+
+      {/* ── Coverage + office address + mini-form (3-col grid on desktop) ─ */}
+      <div class="footer-cta__grid">
+        {/* ── Coverage rail ───────────────────────────────────────────── */}
+        <div class="footer-cta__coverage">
+          <h3 class="footer-cta__h3">Coverage across the South East</h3>
+
+          {coverageRegions.length > 0 && (
+            <ul
+              class="footer-cta__regions"
+              aria-label="Regions Gemini AMPM serves"
+            >
+              {coverageRegions.map((place) => (
+                <li class="footer-cta__region">
+                  {place.href ? (
+                    <a
+                      class="footer-cta__region-link"
+                      href={place.href}
+                      data-place={place.slug}
+                    >
+                      {place.name}
+                    </a>
+                  ) : (
+                    <span
+                      class="footer-cta__region-text"
+                      data-place={place.slug}
+                    >
+                      {place.name}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Map placeholder — proper map dragged in by layout / island in
+              Phase 2 once we've decided on Mapbox vs OS DataHub. For now we
+              render a static SVG silhouette stub so the layout reserves the
+              space (zero CLS when the real map drops in) and a click-to-map
+              link below it routes to the OS map app via the postcode query. */}
+          <div
+            class="footer-cta__map-placeholder"
+            role="img"
+            aria-label={`Map placeholder showing Gemini AMPM coverage centred on ${
+              officeAddress?.postcode ?? 'the South East'
+            }`}
+            data-map-placeholder="true"
+          >
+            <svg
+              viewBox="0 0 480 280"
+              width="480"
+              height="280"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+              focusable="false"
+              preserveAspectRatio="xMidYMid slice"
+            >
+              {/* Stylised SE-England outline stand-in — abstract enough to
+                  not mislead the user that it's a real navigable map. */}
+              <rect width="480" height="280" fill="var(--paper)" />
+              <path
+                d="M40 200 L100 120 L180 90 L260 110 L340 80 L420 140 L440 220 L380 250 L260 240 L160 250 L80 240 Z"
+                fill="color-mix(in srgb, var(--g-accent) 14%, var(--paper))"
+                stroke="color-mix(in srgb, var(--g-accent) 40%, transparent)"
+                stroke-width="1.5"
+              />
+              {/* Office pin */}
+              <circle
+                cx="240"
+                cy="160"
+                r="8"
+                fill="var(--g-accent)"
+                stroke="var(--paper)"
+                stroke-width="2"
+              />
+              <circle
+                cx="240"
+                cy="160"
+                r="18"
+                fill="none"
+                stroke="var(--g-accent)"
+                stroke-opacity="0.4"
+                stroke-width="1.5"
+              />
+            </svg>
+          </div>
+
+          {mapHref && (
+            <a
+              class="footer-cta__map-link"
+              href={mapHref}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open in maps
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M7 17 17 7" />
+                <path d="M7 7h10v10" />
+              </svg>
+            </a>
+          )}
+        </div>
+
+        {/* ── Office address rail ─────────────────────────────────────── */}
+        <address class="footer-cta__office" data-pillar={pillar}>
+          <h3 class="footer-cta__h3">{officeAddress?.name ?? 'Our office'}</h3>
+
+          {officeAddress?.addressLines?.length > 0 && (
+            <div class="footer-cta__address-lines">
+              {officeAddress.addressLines.map((line) => (
+                <span class="footer-cta__address-line">{line}</span>
+              ))}
+              {officeAddress.postcode && (
+                <span class="footer-cta__address-line footer-cta__postcode">
+                  {officeAddress.postcode}
+                </span>
+              )}
+            </div>
+          )}
+
+          {officeAddress?.ddi && (
+            <p class="footer-cta__office-ddi">
+              <span class="footer-cta__office-ddi-label">Direct line</span>
+              <a
+                class="footer-cta__office-ddi-link"
+                href={`tel:${officeAddress.ddi.replace(/\s+/g, '')}`}
+              >
+                {officeAddress.ddi}
+              </a>
+            </p>
+          )}
+        </address>
+
+        {/* ── Mini-form rail (3 fields) ───────────────────────────────── */}
+        <div class="footer-cta__form-wrap">
+          <form
+            class="footer-cta__form"
+            method="POST"
+            action="/_actions/consult"
+            novalidate
+            aria-labelledby={`${id}-form-heading`}
+          >
+            <h3 id={`${id}-form-heading`} class="footer-cta__form-h3">
+              {miniFormHeadline}
+            </h3>
+
+            {miniFormBody && (
+              <p class="footer-cta__form-body">{miniFormBody}</p>
+            )}
+
+            {/* Honeypot — visually hidden, bots fill it, server rejects. */}
+            <div class="footer-cta__honeypot" aria-hidden="true">
+              <label>
+                Company name
+                <input
+                  type="text"
+                  name="companyName"
+                  tabindex="-1"
+                  autocomplete="off"
+                />
+              </label>
+            </div>
+
+            <div class="footer-cta__field">
+              <label for={`${id}-name`} class="footer-cta__label">
+                Your name
+                <span class="footer-cta__req" aria-hidden="true">*</span>
+              </label>
+              <input
+                id={`${id}-name`}
+                class="footer-cta__input"
+                type="text"
+                name="name"
+                required
+                autocomplete="name"
+                minlength="2"
+                aria-required="true"
+              />
+            </div>
+
+            <div class="footer-cta__field">
+              <label for={`${id}-email`} class="footer-cta__label">
+                Email
+                <span class="footer-cta__req" aria-hidden="true">*</span>
+              </label>
+              <input
+                id={`${id}-email`}
+                class="footer-cta__input"
+                type="email"
+                name="email"
+                required
+                autocomplete="email"
+                inputmode="email"
+                aria-required="true"
+              />
+            </div>
+
+            {/* The footer-form action endpoint is `consult` (low-commitment) —
+                the Zod schema there requires `phone`, but we treat that as
+                "phone or message" at the field level: a 7-digit phone OR a
+                message satisfies the action because the validator runs
+                phone.optional + message.optional with a server-side
+                refinement. The visible field below is a free-text message;
+                phone is captured as an empty hidden field so the schema
+                doesn't 400 on absence in JS-off submissions. */}
+            <div class="footer-cta__field">
+              <label for={`${id}-message`} class="footer-cta__label">
+                What do you need?
+                <span class="footer-cta__optional">(optional)</span>
+              </label>
+              <textarea
+                id={`${id}-message`}
+                class="footer-cta__input footer-cta__textarea"
+                name="message"
+                rows="3"
+                autocomplete="off"
+                placeholder="One sentence is fine."
+              ></textarea>
+            </div>
+
+            {/* Phone is required by the consult action's Zod schema but
+                deliberately not visible on the mini-form. We pass an empty
+                string here so the form payload shape stays consistent across
+                Forms #1 and this footer mini; the action's server handler
+                routes a no-phone submission through email-only reply rules. */}
+            <input type="hidden" name="phone" value="" />
+
+            {/* ── Hidden routing + attribution fields (commonHidden) ──── */}
+            <input type="hidden" name="source" value="footer" />
+            <input type="hidden" name="pillar" value={pillar} />
+            <input type="hidden" name="variantId" value={variantId} />
+            <input type="hidden" name="pagePath" value={pagePath} />
+            <input
+              type="hidden"
+              name="utmSource"
+              value=""
+              data-utm="utmSource"
+            />
+            <input
+              type="hidden"
+              name="utmMedium"
+              value=""
+              data-utm="utmMedium"
+            />
+            <input
+              type="hidden"
+              name="utmCampaign"
+              value=""
+              data-utm="utmCampaign"
+            />
+
+            {/* Turnstile mount point. Site key is the public Cloudflare key;
+                safe to render inline. Widget hydrates from the global
+                Turnstile script in BaseLayout. */}
+            <div
+              class="cf-turnstile footer-cta__turnstile"
+              data-sitekey={turnstileSiteKey}
+              data-theme="auto"
+              data-size="flexible"
+            ></div>
+
+            <Button
+              as="button"
+              type="submit"
+              variant="primary"
+              size="md"
+              label={miniFormSubmitLabel}
+              class="footer-cta__submit"
+            />
+
+            {responsePromise && (
+              <p class="footer-cta__promise" role="note">
+                {responsePromise}
+              </p>
+            )}
+
+            {altActionPhone && (
+              <p class="footer-cta__alt-action">
+                Prefer to call?{' '}
+                <a
+                  class="footer-cta__alt-link"
+                  href={`tel:${altActionPhone.replace(/\s+/g, '')}`}
+                >
+                  {altActionPhone}
+                </a>
+              </p>
+            )}
+          </form>
+        </div>
+      </div>
+
+      {/* ── Related Services row ───────────────────────────────────────── */}
+      {relatedServices.length > 0 && (
+        <div class="footer-cta__related">
+          <h3 class="footer-cta__h3 footer-cta__related-h3">
+            Related services
+          </h3>
+          <ul
+            class="footer-cta__related-grid"
+            aria-label="Related services from Gemini AMPM"
+          >
+            {relatedServices.slice(0, 5).map((svc) => (
+              <li class="footer-cta__related-item">
+                <a
+                  class="footer-cta__related-link"
+                  href={relatedHref(svc)}
+                  data-pillar={svc.pillar}
+                  data-is-pillar={svc.isPillar ? 'true' : 'false'}
+                >
+                  <span class="footer-cta__related-anchor">
+                    {svc.anchorText}
+                  </span>
+                  {svc.oneLineSummary && (
+                    <span class="footer-cta__related-summary">
+                      {svc.oneLineSummary}
+                    </span>
+                  )}
+                  <svg
+                    class="footer-cta__related-arrow"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <path d="M5 12h14" />
+                    <path d="m12 5 7 7-7 7" />
+                  </svg>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* ── E-E-A-T byline ─────────────────────────────────────────────── */}
+      {(authorByline || reviewedDisplay) && (
+        <footer
+          class="footer-cta__byline"
+          aria-label="Page authorship and review date"
+        >
+          {authorByline && (
+            <p class="footer-cta__byline-author">
+              <span class="footer-cta__byline-label">Reviewed by</span>
+              {authorByline.href ? (
+                <a
+                  class="footer-cta__byline-link"
+                  href={authorByline.href}
+                  rel="author"
+                >
+                  {authorByline.name}
+                </a>
+              ) : (
+                <span class="footer-cta__byline-name" rel="author">
+                  {authorByline.name}
+                </span>
+              )}
+              {authorByline.role && (
+                <span class="footer-cta__byline-role">
+                  , {authorByline.role}
+                </span>
+              )}
+              {authorByline.qualification && (
+                <span class="footer-cta__byline-qualification">
+                  {' '}
+                  · {authorByline.qualification}
+                </span>
+              )}
+            </p>
+          )}
+
+          {reviewedDisplay && lastReviewedDate && (
+            <p class="footer-cta__byline-date">
+              <span class="footer-cta__byline-label">Last reviewed</span>
+              <time datetime={lastReviewedDate}>{reviewedDisplay}</time>
+            </p>
+          )}
+        </footer>
+      )}
+    </div>
+  </Container>
+</Section>
+
+{/* UTM-capture hydrator — same shape as Sections 2/7/8 so the four forms on
+    the page rehydrate identically from one sessionStorage write. is:inline so
+    it runs early without dragging the React island runtime in. */}
+<script is:inline>
+  (function () {
+    try {
+      var keys = ['utmSource', 'utmMedium', 'utmCampaign'];
+      keys.forEach(function (k) {
+        var v = sessionStorage.getItem(k) || '';
+        if (!v) return;
+        document
+          .querySelectorAll('input[data-utm="' + k + '"]')
+          .forEach(function (el) {
+            el.value = v;
+          });
+      });
+    } catch (e) {
+      /* sessionStorage throws in private-browsing modes — fail silent. */
+    }
+  })();
+</script>
+
+<style>
+  /* ── Outer rhythm ───────────────────────────────────────────────────── */
+  .footer-cta {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(40px, 5vw, 72px);
+  }
+
+  .footer-cta__header {
+    max-width: 720px;
+  }
+
+  .footer-cta__h2 {
+    margin-top: 0.5rem;
+  }
+
+  /* Shared sub-heading style for the three column heads + related-services
+     row head. Sits a step below the section H2. */
+  .footer-cta__h3 {
+    font-family: var(--d-display, "Big Shoulders Display", "Archivo", sans-serif);
+    font-weight: 700;
+    font-size: clamp(1.15rem, 1.2vw + 0.6rem, 1.4rem);
+    line-height: 1.15;
+    color: var(--ink);
+    margin: 0 0 1rem;
+    letter-spacing: -0.005em;
+  }
+
+  /* ── Three-column grid (coverage / office / form) ──────────────────── */
+  .footer-cta__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(32px, 4vw, 56px);
+    align-items: start;
+  }
+
+  @media (min-width: 720px) {
+    .footer-cta__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    /* Mini-form pulls full-width under the two stacked rails on the
+       md breakpoint — easier to reach on a phone-rotated tablet. */
+    .footer-cta__form-wrap {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .footer-cta__grid {
+      /* Coverage gets the most horizontal room (map needs it), office and
+         form rails share the remainder. */
+      grid-template-columns: 1.2fr 0.8fr 1fr;
+    }
+    .footer-cta__form-wrap {
+      grid-column: auto;
+    }
+  }
+
+  /* ── Coverage rail ──────────────────────────────────────────────────── */
+  .footer-cta__regions {
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .footer-cta__region {
+    display: inline-flex;
+  }
+
+  .footer-cta__region-link,
+  .footer-cta__region-text {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-family: var(--d-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    text-decoration: none;
+    transition:
+      background 0.15s var(--ease),
+      border-color 0.15s var(--ease),
+      color 0.15s var(--ease);
+  }
+
+  .footer-cta__region-link:hover,
+  .footer-cta__region-link:focus-visible {
+    color: var(--g-accent);
+    border-color: var(--g-accent);
+    background: color-mix(in srgb, var(--g-accent) 6%, var(--paper));
+  }
+
+  .footer-cta__region-text {
+    color: var(--ink-2);
+    cursor: default;
+  }
+
+  /* Map placeholder — fixed aspect so it reserves layout space (CLS = 0).
+     The inner <svg> is sized via viewBox + width/height; the wrapper clips
+     overflow so the silhouette renders nicely at any column width. */
+  .footer-cta__map-placeholder {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 480 / 280;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+    background: var(--paper);
+  }
+
+  .footer-cta__map-placeholder svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .footer-cta__map-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--d-body);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--g-accent);
+    text-decoration: none;
+  }
+
+  .footer-cta__map-link:hover,
+  .footer-cta__map-link:focus-visible {
+    text-decoration: underline;
+  }
+
+  /* ── Office address rail ────────────────────────────────────────────── */
+  .footer-cta__office {
+    /* <address> defaults to italic — undo for our display stack. */
+    font-style: normal;
+  }
+
+  .footer-cta__address-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 1rem;
+  }
+
+  .footer-cta__address-line {
+    font-family: var(--d-body);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  .footer-cta__postcode {
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .footer-cta__office-ddi {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .footer-cta__office-ddi-label {
+    font-family: var(--d-body);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .footer-cta__office-ddi-link {
+    font-family: var(--d-display, "Big Shoulders Display", "Archivo", sans-serif);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .footer-cta__office-ddi-link:hover,
+  .footer-cta__office-ddi-link:focus-visible {
+    color: var(--g-accent);
+  }
+
+  /* ── Mini-form rail ─────────────────────────────────────────────────── */
+  .footer-cta__form-wrap {
+    position: relative;
+  }
+
+  .footer-cta__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: clamp(20px, 3vw, 32px);
+    background: var(--paper-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .footer-cta__form-h3 {
+    font-family: var(--d-display, "Big Shoulders Display", "Archivo", sans-serif);
+    font-weight: 700;
+    font-size: clamp(1.2rem, 1.4vw + 0.6rem, 1.4rem);
+    line-height: 1.15;
+    color: var(--ink);
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .footer-cta__form-body {
+    margin: 0 0 0.25rem;
+    font-family: var(--d-body);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+
+  /* Honeypot — visually hidden but tabbable-skipped + still in the form. */
+  .footer-cta__honeypot {
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .footer-cta__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .footer-cta__label {
+    font-family: var(--d-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.01em;
+  }
+
+  .footer-cta__req {
+    color: var(--g-accent);
+    margin-left: 2px;
+  }
+
+  .footer-cta__optional {
+    font-weight: 400;
+    color: var(--ink-3);
+    margin-left: 4px;
+  }
+
+  .footer-cta__input {
+    width: 100%;
+    padding: 12px 14px;
+    font-family: var(--d-body);
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    transition:
+      border-color 0.15s var(--ease),
+      box-shadow 0.15s var(--ease);
+  }
+
+  .footer-cta__textarea {
+    resize: vertical;
+    min-height: 78px;
+  }
+
+  .footer-cta__input::placeholder {
+    color: var(--ink-3);
+    opacity: 0.7;
+  }
+
+  .footer-cta__input:hover {
+    border-color: var(--line-strong);
+  }
+
+  .footer-cta__input:focus,
+  .footer-cta__input:focus-visible {
+    outline: none;
+    border-color: var(--g-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--g-accent) 25%, transparent);
+  }
+
+  .footer-cta__input:invalid:not(:placeholder-shown):not(:focus) {
+    border-color: var(--danger, #c0392b);
+  }
+
+  .footer-cta__turnstile {
+    margin-top: 0.25rem;
+    min-height: 65px;
+  }
+
+  .footer-cta__submit {
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+
+  .footer-cta__promise {
+    margin: 0;
+    font-family: var(--d-body);
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--ink-2);
+    text-align: center;
+  }
+
+  .footer-cta__alt-action {
+    margin: 0;
+    font-family: var(--d-body);
+    font-size: 0.95rem;
+    text-align: center;
+    color: var(--ink-2);
+  }
+
+  .footer-cta__alt-link {
+    font-weight: 700;
+    color: var(--g-accent);
+    text-decoration: none;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+
+  .footer-cta__alt-link:hover,
+  .footer-cta__alt-link:focus-visible {
+    text-decoration: underline;
+  }
+
+  /* ── Related Services row ───────────────────────────────────────────── */
+  .footer-cta__related-h3 {
+    margin-bottom: 1.25rem;
+  }
+
+  .footer-cta__related-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  @media (min-width: 640px) {
+    .footer-cta__related-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .footer-cta__related-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+  }
+
+  .footer-cta__related-item {
+    display: flex;
+  }
+
+  .footer-cta__related-link {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    column-gap: 12px;
+    row-gap: 4px;
+    width: 100%;
+    padding: 16px 18px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--ink);
+    transition:
+      transform 0.15s var(--ease),
+      border-color 0.15s var(--ease),
+      background 0.15s var(--ease);
+  }
+
+  .footer-cta__related-link:hover,
+  .footer-cta__related-link:focus-visible {
+    border-color: var(--g-accent);
+    background: color-mix(in srgb, var(--g-accent) 5%, var(--paper));
+    transform: translateY(-1px);
+  }
+
+  .footer-cta__related-link:focus-visible {
+    outline: 2px solid var(--g-accent);
+    outline-offset: 2px;
+  }
+
+  .footer-cta__related-anchor {
+    grid-column: 1;
+    grid-row: 1;
+    font-family: var(--d-display, "Big Shoulders Display", "Archivo", sans-serif);
+    font-weight: 700;
+    font-size: 1.05rem;
+    line-height: 1.2;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+
+  .footer-cta__related-summary {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    font-family: var(--d-body);
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+
+  .footer-cta__related-arrow {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    color: var(--g-accent);
+    flex: 0 0 auto;
+    transition: transform 0.15s var(--ease);
+  }
+
+  .footer-cta__related-link:hover .footer-cta__related-arrow,
+  .footer-cta__related-link:focus-visible .footer-cta__related-arrow {
+    transform: translateX(2px);
+  }
+
+  /* ── E-E-A-T byline ─────────────────────────────────────────────────── */
+  .footer-cta__byline {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--d-body);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+
+  @media (min-width: 720px) {
+    .footer-cta__byline {
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+  }
+
+  .footer-cta__byline-author,
+  .footer-cta__byline-date {
+    margin: 0;
+  }
+
+  .footer-cta__byline-label {
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    color: var(--ink-3);
+    margin-right: 8px;
+  }
+
+  .footer-cta__byline-link,
+  .footer-cta__byline-name {
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .footer-cta__byline-link:hover,
+  .footer-cta__byline-link:focus-visible {
+    color: var(--g-accent);
+    text-decoration: underline;
+  }
+
+  .footer-cta__byline-role {
+    color: var(--ink-2);
+  }
+
+  .footer-cta__byline-qualification {
+    color: var(--ink-3);
+    font-style: italic;
+  }
+</style>

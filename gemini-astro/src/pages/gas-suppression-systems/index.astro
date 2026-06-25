@@ -1,0 +1,42 @@
+---
+/**
+ * Gemini AMPM — Gas Suppression Systems (pillar route).
+ *
+ * First pillar shipped on the new <ServiceVerticalPage /> template (per
+ * SERVICE_VERTICAL_TEMPLATE.md §"Rollout"). High commercial intent, currently
+ * ~25k impressions / ~0% conversion on the legacy WP page — this route is the
+ * cutover target once Lighthouse + schema + form smoke-tests pass.
+ *
+ * The route itself is intentionally thin: title + description live on the page
+ * (so SEO/meta is auditable from the file system, not Payload), but the
+ * structural rendering is delegated to <ServiceVerticalPage />, which reads the
+ * resolved `service` object (Payload `depth: 2`) and dispatches all 11
+ * sections.
+ *
+ * Density preset for this pillar is `long` — the System Types + Industries +
+ * Pricing + FAQ + Maintenance sections all run in long-form mode. The preset
+ * is set on the service record in Payload (densityPreset: 'long'), not here.
+ *
+ * Canonical/meta description below matches the live WP rewrite so we don't
+ * lose the ranking signal during cutover. Title strictly under 60 chars where
+ * possible; description strictly <= 155 chars (Payload `metaDescription`
+ * maxLength) so the `service.metaDescription ?? '…'` fallback is also safe.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Nav from '@/components/Nav.astro';
+import Footer from '@/components/Footer.astro';
+import ServiceVerticalPage from '@/components/ServiceVerticalPage.astro';
+import service from '@/content/services/gas-suppression';
+
+const title = 'Gas Suppression Systems — Design, Install, Maintain | BAFE Gemini AMPM';
+const description =
+  'BAFE-accredited gas suppression design, install & maintenance across London and the South East. FM-200, Novec 1230, Inergen & CO2 for data centres, server rooms & critical plant. Since 1997.';
+---
+<BaseLayout
+  title={service.metaTitle ?? title}
+  description={service.metaDescription ?? description}
+>
+  <Nav />
+  <ServiceVerticalPage service={service} />
+  <Footer />
+</BaseLayout>

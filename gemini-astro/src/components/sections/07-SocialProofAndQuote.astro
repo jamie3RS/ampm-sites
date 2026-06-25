@@ -1,0 +1,938 @@
+---
+/**
+ * Gemini AMPM — Section 7: Social Proof + Inline Form #2 (PRIMARY CONVERSION)
+ *
+ * See SERVICE_VERTICAL_TEMPLATE.md §7 for the full spec. This is the
+ * highest-commercial-value block on every service-vertical page: trust-stack
+ * (flagship case study + named-client logos + testimonial + outcome stat +
+ * related case studies mini row) immediately followed by the 8-field quote
+ * form.
+ *
+ * The form posts directly to the `/quote` Astro Action via classic
+ * <form method="POST" action="/_actions/quote"> — works without JS so a
+ * partial hydration failure never silently drops a lead. Source attribution
+ * is wired via hidden fields (source/pillar/variantId/UTM/pagePath) that the
+ * action handler routes against to pick the per-pillar mailbox.
+ *
+ * Specifier-mode hook: when `specifierMode === true` (Passive Fire only at
+ * launch), a Capability Statement download card appears above the form and
+ * the file-upload input switches from optional to required, with the submit
+ * label swapped to a drawing-set-handover ask. Everything else stays
+ * identical — same primitives, same submit handler.
+ *
+ * Native HTML throughout (no React island here despite the spec mentioning
+ * "React island" — the form needs to survive JS failure to be honest with
+ * leads, and the rest is static proof markup). Image dims hardcoded for CLS.
+ */
+
+import Section from '../primitives/Section.astro';
+import Container from '../primitives/Container.astro';
+import Heading from '../primitives/Heading.astro';
+import Kicker from '../primitives/Kicker.astro';
+import Button from '../primitives/Button.astro';
+import CaseStudyCard from '../primitives/CaseStudyCard.astro';
+
+// ── Payload-aligned types ───────────────────────────────────────────────
+// Field names mirror SERVICE_VERTICAL_TEMPLATE.md §7 + the services schema.
+
+interface CaseStudyRef {
+  title: string;
+  image: string;
+  summary: string;
+  outcome?: string | null;
+  href?: string | null;
+}
+
+interface ClientLogo {
+  name: string;
+  logo: string;          // src URL for the logo asset
+  href?: string | null;  // optional outbound link
+}
+
+interface Testimonial {
+  quote: string;
+  authorName: string;
+  authorRole: string;
+  authorOrg: string;
+  authorAvatar?: string | null;
+}
+
+interface SpaceTypeOption {
+  value: string;
+  label: string;
+}
+
+interface OfficeRef {
+  ddiDisplay: string;   // human-readable, e.g. "020 7946 0123"
+  ddiTel: string;       // tel: form, e.g. "+442079460123"
+}
+
+export interface Props {
+  // Section 7 Payload fields
+  flagshipCaseStudy?: CaseStudyRef | null;
+  namedClientLogos?: ClientLogo[];
+  testimonial?: Testimonial | null;
+  outcomeStat?: string | null;
+  relatedCaseStudies?: CaseStudyRef[];
+  quoteFormHeadline?: string;
+  spaceTypeOptions?: SpaceTypeOption[];
+  quoteSubmitLabel?: string;
+  responsePromise?: string;
+  altActionPhone?: OfficeRef | null;
+  thanksPageRedirect?: string;
+
+  // Specifier-mode override (Passive Fire only at launch)
+  specifierMode?: boolean;
+  capabilityStatementPDF?: string | null;
+
+  // Hidden-field source attribution (set by parent page template)
+  pillar: string;
+  variantId?: string;
+  pagePath: string;
+}
+
+const {
+  flagshipCaseStudy = null,
+  namedClientLogos = [],
+  testimonial = null,
+  outcomeStat = null,
+  relatedCaseStudies = [],
+  quoteFormHeadline = 'Request your fixed quote',
+  spaceTypeOptions = [],
+  quoteSubmitLabel = 'Request my quote',
+  responsePromise = 'Survey arranged within 48h. Fixed quote within 5 working days. No obligation.',
+  altActionPhone = null,
+  thanksPageRedirect,
+  specifierMode = false,
+  capabilityStatementPDF = null,
+  pillar,
+  variantId = 'A',
+  pagePath,
+} = Astro.props;
+
+// Spec switches the submit label + makes the file upload required when the
+// page is in specifier mode. We don't override the caller's explicit label
+// unless they left the default; this lets Payload still customise per-page.
+const submitLabel = specifierMode && quoteSubmitLabel === 'Request my quote'
+  ? 'Send my drawing set for review'
+  : quoteSubmitLabel;
+
+// Turnstile site key surfaces via Cloudflare runtime env. Falling back to
+// empty string keeps the placeholder div valid for the no-JS form post —
+// the Action handler is what actually enforces the token verification.
+const turnstileSiteKey =
+  (Astro.locals as { runtime?: { env?: { TURNSTILE_SITE_KEY?: string } } })
+    ?.runtime?.env?.TURNSTILE_SITE_KEY ?? '';
+
+// Default `thanksPath` if the caller didn't override — routes to per-pillar
+// thanks page. The Action handler returns the canonical thanksPath in its
+// JSON response, so this attribute is only used by the no-JS fallback.
+const thanksPath = thanksPageRedirect ?? `/thanks/${pillar}/`;
+---
+
+<Section id="quote" background="surface-1" density="standard" class="sec-proof-quote">
+  <Container>
+    {/* ── Block 1: trust stack ────────────────────────────────────── */}
+
+    <header class="sec-proof-quote__intro">
+      <Kicker as="p">Proof in the work</Kicker>
+      <Heading as="h2" size="lg">Real projects. Named clients. Honest outcomes.</Heading>
+    </header>
+
+    {flagshipCaseStudy && (
+      <div class="sec-proof-quote__flagship">
+        <CaseStudyCard
+          size="flagship"
+          title={flagshipCaseStudy.title}
+          image={flagshipCaseStudy.image}
+          summary={flagshipCaseStudy.summary}
+          outcome={flagshipCaseStudy.outcome ?? outcomeStat}
+          href={flagshipCaseStudy.href}
+        />
+      </div>
+    )}
+
+    {namedClientLogos.length > 0 && (
+      <div class="sec-proof-quote__logos" aria-label="Selected clients">
+        <p class="sec-proof-quote__logos-label">Trusted by</p>
+        <ul class="sec-proof-quote__logos-row">
+          {namedClientLogos.map((c) => (
+            <li class="sec-proof-quote__logo-item">
+              {c.href ? (
+                <a href={c.href} rel="noopener" class="sec-proof-quote__logo-link">
+                  <img
+                    src={c.logo}
+                    alt={c.name}
+                    width="140"
+                    height="48"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </a>
+              ) : (
+                <img
+                  src={c.logo}
+                  alt={c.name}
+                  width="140"
+                  height="48"
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    {testimonial && (
+      <figure class="sec-proof-quote__quote">
+        <svg
+          class="sec-proof-quote__quote-mark"
+          viewBox="0 0 32 32"
+          width="32"
+          height="32"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M10 8H4v10h6v6H4v-2h4v-2H4V8zm18 0h-6v10h6v6h-6v-2h4v-2h-4V8z"
+            fill="currentColor"
+          />
+        </svg>
+        <blockquote class="sec-proof-quote__quote-body">
+          {testimonial.quote}
+        </blockquote>
+        <figcaption class="sec-proof-quote__quote-cap">
+          {testimonial.authorAvatar && (
+            <img
+              src={testimonial.authorAvatar}
+              alt=""
+              width="48"
+              height="48"
+              loading="lazy"
+              decoding="async"
+              class="sec-proof-quote__quote-avatar"
+            />
+          )}
+          <span class="sec-proof-quote__quote-meta">
+            <strong>{testimonial.authorName}</strong>
+            <span>{testimonial.authorRole}, {testimonial.authorOrg}</span>
+          </span>
+        </figcaption>
+      </figure>
+    )}
+
+    {outcomeStat && !flagshipCaseStudy && (
+      // Render the outcome stat standalone only when there's no flagship
+      // tile (otherwise the CaseStudyCard already surfaces it). Avoids
+      // duplicating the same string twice in the same block.
+      <p class="sec-proof-quote__outcome-stat">
+        <span class="sec-proof-quote__outcome-kicker">Outcome</span>
+        <span>{outcomeStat}</span>
+      </p>
+    )}
+
+    {relatedCaseStudies.length > 0 && (
+      <div class="sec-proof-quote__related">
+        <p class="sec-proof-quote__related-label">Related projects</p>
+        <ul class="sec-proof-quote__related-row" role="list">
+          {relatedCaseStudies.slice(0, 3).map((cs) => (
+            <li>
+              <CaseStudyCard
+                size="mini"
+                title={cs.title}
+                image={cs.image}
+                summary={cs.summary}
+                href={cs.href}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    {/* ── Block 2: specifier-mode capability statement download ───── */}
+
+    {specifierMode && capabilityStatementPDF && (
+      <aside class="sec-proof-quote__capstmt" aria-labelledby="capstmt-h">
+        <div class="sec-proof-quote__capstmt-body">
+          <Kicker as="p">FIRAS-certified</Kicker>
+          <h3 id="capstmt-h" class="sec-proof-quote__capstmt-h">
+            Download our Capability Statement
+          </h3>
+          <p class="sec-proof-quote__capstmt-copy">
+            12-page PDF with accreditation evidence, recent project list, named
+            engineer CVs and our standard tender response template. Email only —
+            no follow-up call unless you request one.
+          </p>
+        </div>
+        <form
+          class="sec-proof-quote__capstmt-form"
+          method="POST"
+          action="/_actions/capability-statement"
+        >
+          <input type="hidden" name="pillar" value={pillar} />
+          <input type="hidden" name="pagePath" value={pagePath} />
+          <input type="hidden" name="pdfKey" value={capabilityStatementPDF} />
+          <label class="sec-proof-quote__capstmt-label" for="capstmt-email">
+            <span class="sr-only">Work email</span>
+            <input
+              id="capstmt-email"
+              name="email"
+              type="email"
+              required
+              autocomplete="email"
+              placeholder="you@firm.co.uk"
+            />
+          </label>
+          <Button label="Email me the PDF" variant="secondary" as="button" type="submit" />
+        </form>
+      </aside>
+    )}
+
+    {/* ── Block 3: 8-field quote form ─────────────────────────────── */}
+
+    <div class="sec-proof-quote__form-wrap">
+      <header class="sec-proof-quote__form-head">
+        <Kicker as="p">Get a fixed quote</Kicker>
+        <Heading as="h3" size="md">{quoteFormHeadline}</Heading>
+        <p class="sec-proof-quote__promise">{responsePromise}</p>
+      </header>
+
+      <form
+        class="sec-proof-quote__form"
+        method="POST"
+        action="/_actions/quote"
+        enctype="multipart/form-data"
+        novalidate
+        data-thanks-path={thanksPath}
+      >
+        {/* Source-attribution hidden fields. The Action handler reads these
+            to (a) route to the right per-pillar mailbox, (b) tag the D1
+            row, (c) recover UTM signal for the marketing report. */}
+        <input type="hidden" name="source" value="primary" />
+        <input type="hidden" name="pillar" value={pillar} />
+        <input type="hidden" name="variantId" value={variantId} />
+        <input type="hidden" name="pagePath" value={pagePath} />
+        {/* UTM fields are populated client-side on page entry from
+            sessionStorage — see /src/scripts/utm.ts. Left empty here so the
+            Zod schema's .optional() resolves cleanly when there's no UTM. */}
+        <input type="hidden" name="utmSource" value="" data-utm="source" />
+        <input type="hidden" name="utmMedium" value="" data-utm="medium" />
+        <input type="hidden" name="utmCampaign" value="" data-utm="campaign" />
+
+        <div class="sec-proof-quote__grid">
+          {/* Row 1 — identity */}
+          <label class="sec-proof-quote__field">
+            <span class="sec-proof-quote__label">Your name</span>
+            <input
+              name="name"
+              type="text"
+              required
+              minlength="2"
+              autocomplete="name"
+            />
+          </label>
+
+          <label class="sec-proof-quote__field">
+            <span class="sec-proof-quote__label">Company</span>
+            <input
+              name="company"
+              type="text"
+              required
+              minlength="2"
+              autocomplete="organization"
+            />
+          </label>
+
+          <label class="sec-proof-quote__field">
+            <span class="sec-proof-quote__label">
+              Role
+              <span class="sec-proof-quote__hint">(optional)</span>
+            </span>
+            <input
+              name="role"
+              type="text"
+              autocomplete="organization-title"
+            />
+          </label>
+
+          {/* Row 2 — contact */}
+          <label class="sec-proof-quote__field">
+            <span class="sec-proof-quote__label">Work email</span>
+            <input
+              name="email"
+              type="email"
+              required
+              autocomplete="email"
+              inputmode="email"
+            />
+          </label>
+
+          <label class="sec-proof-quote__field">
+            <span class="sec-proof-quote__label">Phone</span>
+            <input
+              name="phone"
+              type="tel"
+              required
+              minlength="7"
+              autocomplete="tel"
+              inputmode="tel"
+            />
+          </label>
+
+          <label class="sec-proof-quote__field">
+            <span class="sec-proof-quote__label">Postcode</span>
+            <input
+              name="postcode"
+              type="text"
+              required
+              minlength="5"
+              maxlength="10"
+              autocomplete="postal-code"
+              inputmode="text"
+            />
+          </label>
+
+          {/* Row 3 — scope */}
+          <label class="sec-proof-quote__field sec-proof-quote__field--wide">
+            <span class="sec-proof-quote__label">Space type</span>
+            <select name="spaceType" required>
+              <option value="" disabled selected>Choose the closest match…</option>
+              {spaceTypeOptions.map((opt) => (
+                <option value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </label>
+
+          <label class="sec-proof-quote__field">
+            <span class="sec-proof-quote__label">
+              Approx area (sqm)
+              <span class="sec-proof-quote__hint">(optional)</span>
+            </span>
+            <input
+              name="approxAreaSqm"
+              type="number"
+              min="1"
+              step="1"
+              inputmode="numeric"
+            />
+          </label>
+        </div>
+
+        {/* File upload — optional by default, required when the page is in
+            specifier mode (Passive Fire). The upload writes to R2 via the
+            Action handler; only the resulting key gets persisted in D1. */}
+        <label class="sec-proof-quote__field sec-proof-quote__field--file">
+          <span class="sec-proof-quote__label">
+            {specifierMode ? 'Upload drawings or specs' : 'Drawings or specs'}
+            {!specifierMode && (
+              <span class="sec-proof-quote__hint">(optional — PDF / DWG up to 20MB)</span>
+            )}
+          </span>
+          <input
+            name="file"
+            type="file"
+            accept=".pdf,.dwg,.dxf,.zip,application/pdf,application/zip,image/*"
+            required={specifierMode}
+          />
+        </label>
+
+        {/* Turnstile placeholder. The cf-turnstile script (loaded globally
+            in BaseLayout.astro) auto-renders the widget on this div. The
+            invisible variant injects `cf-turnstile-response` as a hidden
+            input inside the form on success; the Action verifies it
+            server-side. */}
+        <div class="sec-proof-quote__turnstile">
+          <div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>
+        </div>
+
+        <div class="sec-proof-quote__submit-row">
+          <Button label={submitLabel} variant="primary" size="lg" as="button" type="submit" />
+          {altActionPhone && (
+            <p class="sec-proof-quote__alt-action">
+              Prefer to call?{' '}
+              <a href={`tel:${altActionPhone.ddiTel}`} class="sec-proof-quote__alt-tel">
+                {altActionPhone.ddiDisplay}
+              </a>
+            </p>
+          )}
+        </div>
+
+        <p class="sec-proof-quote__legal">
+          By submitting you consent to us contacting you about your enquiry.
+          We do not share your details. See our{' '}
+          <a href="/privacy/">privacy notice</a>.
+        </p>
+      </form>
+    </div>
+  </Container>
+</Section>
+
+<style>
+  /* ── Intro ───────────────────────────────────────────────────── */
+
+  .sec-proof-quote__intro {
+    max-width: 60ch;
+    margin-bottom: var(--s-6);
+  }
+
+  /* ── Flagship case study ─────────────────────────────────────── */
+
+  .sec-proof-quote__flagship {
+    margin-bottom: var(--s-6);
+  }
+
+  /* ── Client logos strip ──────────────────────────────────────── */
+
+  .sec-proof-quote__logos {
+    margin-bottom: var(--s-6);
+    padding-block: var(--s-4);
+    border-block: 1px solid var(--line);
+  }
+
+  .sec-proof-quote__logos-label {
+    margin: 0 0 var(--s-3);
+    font-family: var(--f-body);
+    font-size: var(--t-kicker);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted, var(--ink-3));
+  }
+
+  .sec-proof-quote__logos-row {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-5) var(--s-6);
+    align-items: center;
+  }
+
+  .sec-proof-quote__logo-item img {
+    display: block;
+    max-height: 40px;
+    width: auto;
+    filter: grayscale(1) opacity(0.7);
+    transition: filter 0.2s var(--ease);
+  }
+
+  .sec-proof-quote__logo-link:hover img,
+  .sec-proof-quote__logo-link:focus-visible img {
+    filter: grayscale(0) opacity(1);
+  }
+
+  /* ── Testimonial ─────────────────────────────────────────────── */
+
+  .sec-proof-quote__quote {
+    margin: 0 0 var(--s-6);
+    padding: var(--s-5) var(--s-6);
+    background: var(--surface, var(--paper-card));
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--radius);
+    position: relative;
+  }
+
+  .sec-proof-quote__quote-mark {
+    color: var(--accent);
+    opacity: 0.4;
+    margin-bottom: var(--s-2);
+  }
+
+  .sec-proof-quote__quote-body {
+    margin: 0 0 var(--s-4);
+    font-family: var(--f-body);
+    font-size: var(--t-body-l);
+    line-height: 1.5;
+    color: var(--text, var(--ink));
+    font-style: italic;
+    max-width: 70ch;
+  }
+
+  .sec-proof-quote__quote-cap {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    margin: 0;
+  }
+
+  .sec-proof-quote__quote-avatar {
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .sec-proof-quote__quote-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: var(--t-body-s);
+    color: var(--text-soft, var(--ink-2));
+  }
+  .sec-proof-quote__quote-meta strong {
+    color: var(--text, var(--ink));
+    font-weight: 600;
+  }
+
+  /* ── Standalone outcome stat (only when no flagship) ─────────── */
+
+  .sec-proof-quote__outcome-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-3);
+    margin: 0 0 var(--s-6);
+    padding: var(--s-3) var(--s-4);
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: var(--t-body);
+    color: var(--text, var(--ink));
+  }
+  .sec-proof-quote__outcome-kicker {
+    font-size: var(--t-kicker);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  /* ── Related case studies row ────────────────────────────────── */
+
+  .sec-proof-quote__related {
+    margin-bottom: var(--s-7, var(--s-6));
+  }
+  .sec-proof-quote__related-label {
+    margin: 0 0 var(--s-4);
+    font-family: var(--f-body);
+    font-size: var(--t-kicker);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted, var(--ink-3));
+  }
+  .sec-proof-quote__related-row {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--s-4);
+  }
+  @media (min-width: 720px) {
+    .sec-proof-quote__related-row {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* ── Specifier-mode capability statement card ────────────────── */
+
+  .sec-proof-quote__capstmt {
+    display: grid;
+    gap: var(--s-5);
+    margin-bottom: var(--s-6);
+    padding: var(--s-5) var(--s-6);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+  }
+  @media (min-width: 720px) {
+    .sec-proof-quote__capstmt {
+      grid-template-columns: 1.4fr 1fr;
+      align-items: end;
+    }
+  }
+
+  .sec-proof-quote__capstmt-h {
+    margin: var(--s-2) 0 var(--s-3);
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: var(--t-display-s, 1.5rem);
+    line-height: 1.1;
+    color: var(--text, var(--ink));
+  }
+  .sec-proof-quote__capstmt-copy {
+    margin: 0;
+    font-size: var(--t-body);
+    line-height: 1.5;
+    color: var(--text-soft, var(--ink-2));
+    max-width: 50ch;
+  }
+
+  .sec-proof-quote__capstmt-form {
+    display: flex;
+    gap: var(--s-2);
+    flex-wrap: wrap;
+  }
+  .sec-proof-quote__capstmt-label {
+    flex: 1 1 220px;
+  }
+  .sec-proof-quote__capstmt-label input {
+    width: 100%;
+    padding: 12px 14px;
+    font-family: var(--f-body);
+    font-size: var(--t-body);
+    color: var(--text, var(--ink));
+    background: var(--surface, #fff);
+    border: 1px solid var(--line-strong, var(--line));
+    border-radius: var(--radius-sm);
+  }
+
+  /* ── Quote form ──────────────────────────────────────────────── */
+
+  .sec-proof-quote__form-wrap {
+    padding: var(--s-6);
+    background: var(--surface, var(--paper-card));
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    scroll-margin-top: 80px; /* sticky-nav offset for #quote anchor jumps */
+  }
+  @media (min-width: 720px) {
+    .sec-proof-quote__form-wrap {
+      padding: var(--s-7, calc(var(--s-6) + var(--s-3)));
+    }
+  }
+
+  .sec-proof-quote__form-head {
+    margin-bottom: var(--s-5);
+    max-width: 60ch;
+  }
+  .sec-proof-quote__promise {
+    margin: var(--s-3) 0 0;
+    font-size: var(--t-body-s);
+    color: var(--text-soft, var(--ink-2));
+  }
+
+  .sec-proof-quote__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+
+  .sec-proof-quote__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--s-4);
+  }
+  @media (min-width: 560px) {
+    .sec-proof-quote__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 880px) {
+    .sec-proof-quote__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .sec-proof-quote__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+  .sec-proof-quote__field--wide {
+    grid-column: span 1;
+  }
+  @media (min-width: 880px) {
+    .sec-proof-quote__field--wide {
+      grid-column: span 2;
+    }
+  }
+
+  .sec-proof-quote__label {
+    font-family: var(--f-body);
+    font-size: var(--t-body-s);
+    font-weight: 600;
+    color: var(--text, var(--ink));
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--s-2);
+  }
+  .sec-proof-quote__hint {
+    font-weight: 400;
+    color: var(--text-muted, var(--ink-3));
+    font-size: 0.85em;
+  }
+
+  /* Inputs share a baseline. `select` and `input` need explicit reset to
+     match across browsers (Safari especially). File input keeps the
+     native chrome — we only style the wrapper. */
+  .sec-proof-quote__form input[type='text'],
+  .sec-proof-quote__form input[type='email'],
+  .sec-proof-quote__form input[type='tel'],
+  .sec-proof-quote__form input[type='number'],
+  .sec-proof-quote__form select {
+    width: 100%;
+    padding: 12px 14px;
+    font-family: var(--f-body);
+    font-size: var(--t-body);
+    line-height: 1.4;
+    color: var(--text, var(--ink));
+    background: var(--bg-elev, #fff);
+    border: 1px solid var(--line-strong, var(--line));
+    border-radius: var(--radius-sm);
+    transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+    appearance: none;
+  }
+  .sec-proof-quote__form select {
+    /* Custom chevron — native chevron is appearance-stripped above. */
+    background-image:
+      linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position:
+      calc(100% - 18px) center,
+      calc(100% - 13px) center;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 36px;
+  }
+  .sec-proof-quote__form input:focus,
+  .sec-proof-quote__form select:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--surface, #fff);
+  }
+  .sec-proof-quote__form input:invalid:not(:placeholder-shown) {
+    border-color: var(--danger, #c62828);
+  }
+
+  .sec-proof-quote__field--file input[type='file'] {
+    font-family: var(--f-body);
+    font-size: var(--t-body-s);
+    padding: 8px 0;
+  }
+
+  .sec-proof-quote__turnstile {
+    /* Cloudflare's iframe is fixed at 300x65; leave space without
+       collapsing if the script fails to load. */
+    min-height: 65px;
+  }
+
+  .sec-proof-quote__submit-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-4);
+    margin-top: var(--s-2);
+  }
+  .sec-proof-quote__alt-action {
+    margin: 0;
+    font-size: var(--t-body-s);
+    color: var(--text-soft, var(--ink-2));
+  }
+  .sec-proof-quote__alt-tel {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .sec-proof-quote__alt-tel:hover,
+  .sec-proof-quote__alt-tel:focus-visible {
+    text-decoration: underline;
+  }
+
+  .sec-proof-quote__legal {
+    margin: 0;
+    font-size: var(--t-body-s);
+    color: var(--text-muted, var(--ink-3));
+    line-height: 1.5;
+  }
+  .sec-proof-quote__legal a {
+    color: inherit;
+    text-decoration: underline;
+  }
+
+  /* sr-only — Capability Statement email label */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Day-skin tweaks — re-tint surfaces against the warm paper. */
+  :global(html[data-skin='day']) .sec-proof-quote__form-wrap {
+    background: #ffffff;
+    border-color: rgba(28, 24, 18, 0.12);
+  }
+  :global(html[data-skin='day']) .sec-proof-quote__quote {
+    background: #ffffff;
+  }
+</style>
+
+<script>
+  /**
+   * Form #2 — Astro Action submission with redirect on success.
+   *
+   * We progressively enhance the native POST to call the Astro Action via
+   * fetch so we can client-side-redirect to /thanks/{pillar}/ (per spec).
+   * If JS fails or is disabled, the form falls back to a server-side
+   * POST to /_actions/quote which Astro handles and redirects from.
+   */
+  const forms = document.querySelectorAll<HTMLFormElement>(
+    '.sec-proof-quote__form',
+  );
+
+  for (const form of Array.from(forms)) {
+    form.addEventListener('submit', async (event) => {
+      // Native validation must pass before we hijack the submit.
+      if (!form.checkValidity()) {
+        return; // browser will show its own error UI
+      }
+      event.preventDefault();
+
+      const thanksPath = form.dataset.thanksPath ?? '/thanks/';
+      const submitBtn = form.querySelector<HTMLButtonElement>(
+        'button[type="submit"]',
+      );
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.setAttribute('aria-busy', 'true');
+      }
+
+      try {
+        const formData = new FormData(form);
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: formData,
+          headers: { Accept: 'application/json' },
+        });
+
+        if (!res.ok) {
+          // Re-enable + let the user retry; an inline error message
+          // hook can be added by the parent page if needed.
+          throw new Error(`Submission failed (${res.status})`);
+        }
+
+        // Astro Action JSON includes `thanksPath` per the spec — prefer
+        // that over the data-attribute fallback.
+        let target = thanksPath;
+        try {
+          const data = (await res.clone().json()) as { thanksPath?: string };
+          if (data?.thanksPath) target = data.thanksPath;
+        } catch {
+          // Action returned non-JSON (e.g. a redirect already followed) —
+          // honour the data-thanks-path fallback.
+        }
+
+        window.location.assign(target);
+      } catch (err) {
+        // Re-enable submit so the user can retry. The D1 mirror in the
+        // Action handler means any successful network call already
+        // captured the lead even if the UI thinks it failed.
+        console.error('[quote-form]', err);
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.removeAttribute('aria-busy');
+        }
+      }
+    });
+  }
+</script>

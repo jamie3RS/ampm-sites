@@ -1,0 +1,269 @@
+---
+/**
+ * Gemini AMPM — FAQAccordion primitive.
+ *
+ * Section 10 of the service-vertical template. Native <details>/<summary>
+ * accordion — no JavaScript, no client-side bundle. The browser handles
+ * open/close, focus, and keyboard semantics for free; we just style it.
+ *
+ * Spec notes (SERVICE_VERTICAL_TEMPLATE.md §10):
+ *  - 6–10 questions phrased EXACTLY as buyers type them (GSC + PAA harvest)
+ *  - Answers 40–80 words
+ *  - First 2 expanded by default — the bounce-back reader sees content
+ *    without a click, the rest stay scannable
+ *  - Each answer may carry an optional inline CTA hook (anchor-jump to
+ *    Form #2) — exposed here as `optionalInlineCTAAnchor` + matching
+ *    `optionalInternalLinkURL`
+ *
+ * The component is rendering-only. FAQPage JSON-LD schema is emitted from
+ * the page-level template, not here — we don't want two sources of truth
+ * for the same Q&A pairs. If a page needs schema, it serialises the same
+ * `faqs` array it passes to this primitive.
+ *
+ * Layout uses Tailwind utilities (spacing, max-width); brand surfaces and
+ * typography read CSS vars so flipping html[data-skin="night"] re-themes
+ * the block without touching this file.
+ */
+
+export interface FAQ {
+  /** Buyer's literal question — phrased as they'd type it into Google. */
+  question: string;
+  /** 40–80 word answer. Plain text; line breaks render as <br>. */
+  answer: string;
+  /**
+   * Optional inline CTA label (e.g. "Get a free site survey"). If set
+   * together with `optionalInternalLinkURL`, an anchor link renders at the
+   * end of the answer body styled as a quiet underline.
+   */
+  optionalInlineCTAAnchor?: string;
+  /** Internal href the CTA anchor jumps to — typically "#form-quote". */
+  optionalInternalLinkURL?: string;
+}
+
+interface Props {
+  faqs: FAQ[];
+  /** Section heading rendered above the accordion. Defaults to plain string. */
+  heading?: string;
+  /**
+   * How many items open by default. Spec says 2; exposed as a knob in case
+   * a compact-density pillar (small-works, M&E) wants 1.
+   */
+  defaultOpenCount?: number;
+  /** Extra classes for the outer wrapper. */
+  class?: string;
+}
+
+const {
+  faqs,
+  heading = 'Frequently asked questions',
+  defaultOpenCount = 2,
+  class: extraClass,
+} = Astro.props;
+
+/* Splits an answer on blank lines so a Payload-authored multi-paragraph
+ * answer renders as <p> stack rather than one wall of text. Single
+ * newlines collapse to spaces — that's what authors usually mean. */
+const toParagraphs = (text: string): string[] =>
+  text
+    .split(/\n{2,}/)
+    .map((p) => p.replace(/\s*\n\s*/g, ' ').trim())
+    .filter(Boolean);
+---
+<section class:list={['g-faq', extraClass]} aria-labelledby="faq-heading">
+  <h2 id="faq-heading" class="g-faq__heading">{heading}</h2>
+
+  <ul class="g-faq__list" role="list">
+    {faqs.map((faq, i) => {
+      const paragraphs = toParagraphs(faq.answer);
+      const isOpen = i < defaultOpenCount;
+      const hasCTA =
+        Boolean(faq.optionalInlineCTAAnchor) &&
+        Boolean(faq.optionalInternalLinkURL);
+
+      return (
+        <li class="g-faq__item">
+          <details class="g-faq__details" open={isOpen}>
+            <summary class="g-faq__summary">
+              <span class="g-faq__question">{faq.question}</span>
+              <span class="g-faq__icon" aria-hidden="true">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  focusable="false"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </span>
+            </summary>
+
+            <div class="g-faq__answer">
+              {paragraphs.map((p) => <p>{p}</p>)}
+              {hasCTA && (
+                <p class="g-faq__cta">
+                  <a href={faq.optionalInternalLinkURL}>
+                    {faq.optionalInlineCTAAnchor}
+                    <span aria-hidden="true"> →</span>
+                  </a>
+                </p>
+              )}
+            </div>
+          </details>
+        </li>
+      );
+    })}
+  </ul>
+</section>
+
+<style>
+  /* Outer wrapper — column-rail width matches the prototype's reading
+     measure for FAQ blocks (narrower than the 1180px container so long
+     answers stay scannable). Centred so it sits in a Section primitive
+     without extra layout work. */
+  .g-faq {
+    max-width: 820px;
+    margin-inline: auto;
+  }
+
+  .g-faq__heading {
+    font-family: var(--f-display, "Big Shoulders Display", "Archivo", sans-serif);
+    font-weight: 700;
+    font-size: clamp(1.8rem, 3vw + 0.7rem, 2.8rem);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0 0 var(--s-6, 32px);
+    text-wrap: balance;
+  }
+
+  .g-faq__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    /* Hairline rule above the first item so the stack reads as a list
+       even when every item is closed. */
+    border-top: 1px solid var(--line);
+  }
+
+  .g-faq__item {
+    border-bottom: 1px solid var(--line);
+  }
+  /* Reset the bump li + li gets from base.css's stack rule */
+  .g-faq__item + .g-faq__item {
+    margin-top: 0;
+  }
+
+  .g-faq__details {
+    /* details has no default box; we style the summary as the row. */
+    padding: 0;
+  }
+
+  /* Summary is the clickable row. We strip the native marker and roll
+     our own chevron so it can sit on the right and rotate cleanly. */
+  .g-faq__summary {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--s-4, 16px);
+
+    padding: var(--s-5, 24px) 0;
+    cursor: pointer;
+    user-select: none;
+
+    font-family: var(--f-body, "Archivo", system-ui, sans-serif);
+    font-weight: 600;
+    font-size: 1.0625rem; /* ~17px — bridges body/body-l */
+    line-height: 1.4;
+    color: var(--ink);
+
+    list-style: none;
+    transition: color 0.15s var(--ease, ease);
+  }
+  .g-faq__summary::-webkit-details-marker { display: none; }
+  .g-faq__summary::marker { display: none; content: ''; }
+
+  .g-faq__summary:hover {
+    color: var(--g-accent);
+  }
+
+  .g-faq__summary:focus-visible {
+    outline: 2px solid var(--g-accent);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  .g-faq__question {
+    flex: 1 1 auto;
+    text-wrap: pretty;
+  }
+
+  /* Chevron — flex-fixed and vertically aligned to the cap-height of the
+     question so it doesn't drift on multi-line questions. Rotates 180° on
+     open via the parent [open] selector. */
+  .g-faq__icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-top: 2px;
+    border-radius: 999px;
+    color: var(--ink-2, var(--ink));
+    background: color-mix(in srgb, var(--g-accent) 10%, transparent);
+    transition: transform 0.2s var(--ease, ease), color 0.15s var(--ease, ease);
+  }
+  .g-faq__details[open] .g-faq__icon {
+    transform: rotate(180deg);
+    color: var(--g-accent);
+  }
+
+  /* Answer body — slight indent to read as a child of the question,
+     bottom padding gives the next row room to breathe. */
+  .g-faq__answer {
+    padding: 0 0 var(--s-6, 32px);
+    color: var(--ink-2, var(--ink));
+    font-size: var(--t-body, 1rem);
+    line-height: 1.6;
+    max-width: 64ch;
+  }
+
+  .g-faq__answer p {
+    margin: 0 0 var(--s-4, 16px);
+  }
+  .g-faq__answer p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Inline CTA — quiet underline that uses the accent on hover. We avoid
+     making it a button so the row doesn't compete with the page's
+     primary CTA (Form #2). */
+  .g-faq__cta {
+    margin-top: var(--s-4, 16px);
+  }
+  .g-faq__cta a {
+    font-family: var(--f-body, "Archivo", system-ui, sans-serif);
+    font-weight: 600;
+    color: var(--g-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    transition: color 0.15s var(--ease, ease);
+  }
+  .g-faq__cta a:hover {
+    color: var(--ink);
+    text-decoration-color: var(--ink);
+  }
+
+  /* Honour reduced-motion — kill the chevron rotation transition */
+  @media (prefers-reduced-motion: reduce) {
+    .g-faq__icon {
+      transition: none;
+    }
+  }
+</style>

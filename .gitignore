@@ -3,8 +3,7 @@ node_modules/
 .pnpm-store/
 .pnp.*
 .yarn/
-package-lock.json
-yarn.lock
+# Lockfiles ARE tracked — they're how Cloudflare Pages gets reproducible builds.
 
 # Build output
 dist/

@@ -1,0 +1,336 @@
+---
+/**
+ * Gemini AMPM — <PricingBand>
+ *
+ * Single pricing-band row used by Section 6 ("Honest Pricing Bands") of every
+ * service-vertical page (see SERVICE_VERTICAL_TEMPLATE.md). The pricing-band
+ * stack is the page's biggest commercial differentiator: almost no UK trade
+ * competitor publishes ranges, so each row needs to read as confident,
+ * scannable, and survey-hedged ("from £X" / "£15k–£25k typical" — never a
+ * single quote-back-able number).
+ *
+ * Responsive contract:
+ *   - Desktop (>=900px) : renders as a 4-column table-row grid (band+scope /
+ *     price / included / extra) sat inside a <PricingTable> ancestor that
+ *     supplies the column header strip. We don't ship a column header from
+ *     this primitive — the parent owns the header so screen-reader users hear
+ *     "Band, Price, What's included, What's extra" once per table, not per row.
+ *   - Mobile (<900px)  : collapses to a stacked card with the band name +
+ *     scope as the title, price as a prominent display chip, then the two
+ *     lists labelled inline. Tap targets stay >=44px implicit (no buttons in
+ *     this primitive, but the lists keep generous leading).
+ *
+ * Markup choices:
+ *   - The whole row is a single <article role="row"> with role="cell" inside
+ *     so it can sit inside <div role="table">…</div> at desktop (mirroring
+ *     accessible semantic table behaviour without locking us into <table>
+ *     layout — we want CSS grid, not table layout). On mobile the role
+ *     attributes are stripped via aria-hidden on the parent table wrapper
+ *     so AT users hear the card heading naturally. The parent <PricingTable>
+ *     primitive is responsible for emitting role="table" + role="row" header.
+ *   - Lists use native <ul> so AT announces "list, X items". whatsExtra rows
+ *     are visually de-emphasised (italic, --text-muted) so the buyer can
+ *     scan included first and only drop into extras when budgeting.
+ *
+ * Tokens consumed (from src/styles/tokens.css):
+ *   --surface, --bg-elev, --bg-elev-2, --line, --line-strong, --accent,
+ *   --accent-soft, --text, --text-soft, --text-muted, --f-display, --f-body,
+ *   --t-display-s, --t-body, --t-body-s, --t-kicker, --radius, --radius-sm,
+ *   --s-2 / --s-3 / --s-4 / --s-5 / --s-6, --ease, --shadow-sm.
+ */
+
+export interface Props {
+  /** Short band label — e.g. "Small server room, single zone". Required. */
+  bandName: string;
+  /**
+   * Sub-line under the band label clarifying scope — e.g. "Up to 50m³ enclosure,
+   * single agent". Kept separate from bandName so the table column can wrap
+   * the qualifier in a muted style without the row losing its anchor heading.
+   */
+  scopeQualifier?: string;
+  /**
+   * Display price string. Always a range or "from £X" — never a single
+   * quote-back-able number (template rule). Caller passes the exact string
+   * (e.g. "£15,000 – £25,000 typical" or "from £1,800 per zone") so the
+   * unit/typical hedge stays editorial, not encoded here.
+   */
+  priceRange: string;
+  /** Bullets of what's included at this band. Each item is a short clause. */
+  whatsIncluded: string[];
+  /** Bullets of what's extra/excluded — surveyor will price these separately. */
+  whatsExtra?: string[];
+}
+
+const {
+  bandName,
+  scopeQualifier,
+  priceRange,
+  whatsIncluded,
+  whatsExtra = [],
+} = Astro.props;
+---
+
+<article class="pb-row" role="row">
+  {/* Column 1 — band identity. role="rowheader" so AT pairs the row's data
+      cells with this label when read in table mode. On mobile the visual
+      hierarchy makes this the card title; the role still helps SR users. */}
+  <div class="pb-row__band" role="rowheader">
+    <h3 class="pb-row__name">{bandName}</h3>
+    {scopeQualifier && (
+      <p class="pb-row__scope">{scopeQualifier}</p>
+    )}
+  </div>
+
+  {/* Column 2 — price. Wrapped in a chip on mobile, sits as a display-weight
+      figure on desktop. Marked as role="cell" so it slots into the row grid
+      semantics on desktop tables. */}
+  <div class="pb-row__price" role="cell">
+    <span class="pb-row__price-label" aria-hidden="true">Price</span>
+    <span class="pb-row__price-value">{priceRange}</span>
+  </div>
+
+  {/* Column 3 — what's included. */}
+  <div class="pb-row__col pb-row__included" role="cell">
+    <span class="pb-row__col-label" aria-hidden="true">What's included</span>
+    <ul class="pb-row__list">
+      {whatsIncluded.map((item) => (
+        <li class="pb-row__item">{item}</li>
+      ))}
+    </ul>
+  </div>
+
+  {/* Column 4 — what's extra. Hidden entirely if the caller passed no extras
+      so we don't render an empty "What's extra" header on rows where the
+      band is fully inclusive. */}
+  {whatsExtra.length > 0 && (
+    <div class="pb-row__col pb-row__extra" role="cell">
+      <span class="pb-row__col-label" aria-hidden="true">What's extra</span>
+      <ul class="pb-row__list pb-row__list--extra">
+        {whatsExtra.map((item) => (
+          <li class="pb-row__item">{item}</li>
+        ))}
+      </ul>
+    </div>
+  )}
+</article>
+
+<style>
+  /* ───────────────────────────── Base (mobile card) ─────────────────────────
+     Mobile-first: each row is a self-contained card. Surface uses --bg-elev
+     so a stack of bands reads as a flight of cards over the section --paper,
+     with a subtle line border that survives both skins. */
+  .pb-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--s-4);
+    padding: var(--s-5);
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.18s var(--ease), background 0.18s var(--ease);
+  }
+
+  /* Subtle hover/focus-within affordance — the row isn't interactive itself,
+     but if the consuming page wraps the row in an anchor we still want the
+     visual lift. Cheap to ship; harmless when unused. */
+  .pb-row:focus-within,
+  .pb-row:hover {
+    border-color: var(--line-strong);
+  }
+
+  /* ── Band identity ── */
+  .pb-row__band {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+
+  .pb-row__name {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: var(--t-display-s);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .pb-row__scope {
+    font-family: var(--f-body);
+    font-size: var(--t-body-s);
+    line-height: 1.45;
+    color: var(--text-muted);
+    margin: 0;
+    max-width: 48ch;
+  }
+
+  /* ── Price chip ──
+     Visually loud on the card — buyers scan price first. Big Shoulders
+     numerals look good at this weight; the amber accent doubles as the
+     section's emotional anchor. */
+  .pb-row__price {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-2);
+    padding: var(--s-3) var(--s-4);
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+    border-radius: var(--radius-sm);
+  }
+
+  .pb-row__price-label {
+    font-family: var(--f-body);
+    font-size: var(--t-kicker);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .pb-row__price-value {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(1.3rem, 1rem + 1.2vw, 1.75rem);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    /* Numerals look chunky in Big Shoulders — tabular keeps stacked rows
+       aligned even when the strings have different glyph widths. */
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── List columns ── */
+  .pb-row__col {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+  }
+
+  .pb-row__col-label {
+    font-family: var(--f-body);
+    font-size: var(--t-kicker);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+  }
+
+  .pb-row__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+
+  .pb-row__item {
+    position: relative;
+    padding-left: var(--s-5);
+    font-family: var(--f-body);
+    font-size: var(--t-body-s);
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  /* Tick-style bullet for "included" — pseudo-element keeps markup clean and
+     leaves the list semantics intact for screen readers. */
+  .pb-row__included .pb-row__item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.45em;
+    width: 12px;
+    height: 7px;
+    border-left: 2px solid var(--accent);
+    border-bottom: 2px solid var(--accent);
+    transform: rotate(-45deg);
+  }
+
+  /* Plus-sign bullet for "extra" — signals "additional cost", not "excluded". */
+  .pb-row__extra .pb-row__item {
+    color: var(--text-muted);
+  }
+  .pb-row__extra .pb-row__item::before {
+    content: "+";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 14px;
+    height: 14px;
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--text-soft);
+  }
+
+  /* ───────────────────────────── Desktop (table row) ────────────────────────
+     >=900px: switch to a 4-column grid that lines up with the parent
+     PricingTable header. Columns:
+       1 — band identity (1.4fr)
+       2 — price (1fr)
+       3 — what's included (1.6fr)
+       4 — what's extra (1.4fr)
+     If whatsExtra is empty the included column inherits the remaining track
+     via grid-column span — the empty fourth track collapses cleanly because
+     we declared the row as a subgrid candidate via auto-fit fallback. */
+  @media (min-width: 900px) {
+    .pb-row {
+      grid-template-columns: 1.4fr 1fr 1.6fr 1.4fr;
+      align-items: start;
+      gap: var(--s-5);
+      padding: var(--s-5) var(--s-6);
+    }
+
+    /* Hide the inline column labels on desktop — the parent table header
+       carries them, so repeating per row would be visual noise and double
+       up the SR announcement when role="table" is active. */
+    .pb-row__price-label,
+    .pb-row__col-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Price chip relaxes into a plain figure on desktop — the column header
+       already labels it, so we drop the tinted background to keep the row
+       calm and let the included/extra columns breathe. */
+    .pb-row__price {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      align-self: start;
+    }
+
+    .pb-row__price-value {
+      font-size: clamp(1.4rem, 0.9rem + 1vw, 1.875rem);
+      color: var(--accent);
+    }
+
+    /* When no extras supplied, span the included column into the empty slot
+       so the row doesn't end with a hollow column. */
+    .pb-row__included:last-child {
+      grid-column: 3 / span 2;
+    }
+  }
+
+  /* ───────────────────────────── Day skin overrides ─────────────────────────
+     Tokens carry most of the lift, but the card surface needs a slightly
+     warmer paper on day so it doesn't disappear into the section background.
+     Mirrors the pattern in Section/ManufacturerChip. */
+  :global(html[data-skin='day']) .pb-row {
+    background: var(--paper-card, #ffffff);
+    border-color: var(--line, rgba(0, 0, 0, 0.08));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+</style>

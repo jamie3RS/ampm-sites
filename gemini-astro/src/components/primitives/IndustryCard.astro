@@ -1,0 +1,254 @@
+---
+/**
+ * Gemini AMPM — <IndustryCard>
+ *
+ * Industries & Applications grid card (Section 4 of every service-vertical page;
+ * see SERVICE_VERTICAL_TEMPLATE.md). One card = one sector. Six-to-nine cards
+ * arranged 3-col on desktop, 2-col on tablet, 1-col on mobile. Captures
+ * `[service] for [sector]` long-tail commercial queries that FAQPage schema
+ * cannot rank for.
+ *
+ * Anatomy (top → bottom):
+ *   1. Icon tile      — 48px square, brand-tinted, holds the SVG glyph
+ *   2. Sector name    — Big Shoulders display, sentence-cased
+ *   3. Body copy      — 30-50 words, intent-matched, ink-2 colour
+ *   4. Optional link  — "See [sector] work →"  when `optionalLink` provided
+ *
+ * Icon sourcing. `iconSlug` is a kebab-case slug ("data-centre", "warehouse",
+ * "healthcare"). The card looks for `/icons/industries/{slug}.svg` in
+ * `/public` and renders it as an <img>. Falls back gracefully to an empty
+ * tile if the asset is missing — surface check happens in CI, not at runtime.
+ *
+ * Interaction. When `optionalLink` is set the WHOLE card becomes clickable
+ * via a stretched-link pattern (visible anchor at the bottom, but the entire
+ * card surface is the hit target). Cards without a link render as a plain
+ * <article> — no false affordance.
+ *
+ * Tokens consumed (from src/styles/global.css):
+ *   --paper-card, --paper-2, --line, --line-strong, --ink, --ink-2, --ink-3,
+ *   --g-accent, --d-display, --d-body, --night, --night-2
+ */
+
+export interface Props {
+  /** Kebab-case slug, resolved to /public/icons/industries/{slug}.svg */
+  iconSlug: string;
+  /** Sector name — e.g. "Data centres", "Healthcare", "Warehousing". */
+  sectorName: string;
+  /** 30–50 word intent-matched body copy. Plain text (no markup). */
+  body: string;
+  /** Optional CTA href — case study or sector landing page (Phase 2). */
+  optionalLink?: string | null;
+  /** Optional override for the CTA label. Defaults to "See {sector} work". */
+  optionalLinkLabel?: string;
+  /** Extra classes (Tailwind utilities) to merge in. */
+  class?: string;
+}
+
+const {
+  iconSlug,
+  sectorName,
+  body,
+  optionalLink = null,
+  optionalLinkLabel,
+  class: className = '',
+} = Astro.props;
+
+const iconSrc = `/icons/industries/${iconSlug}.svg`;
+const ctaLabel = optionalLinkLabel ?? `See ${sectorName.toLowerCase()} work`;
+const isLinked = Boolean(optionalLink);
+---
+
+<article
+  class:list={['industry-card', { 'industry-card--linked': isLinked }, className]}
+  data-sector={iconSlug}
+>
+  <div class="industry-card__icon" aria-hidden="true">
+    <img
+      src={iconSrc}
+      alt=""
+      width="32"
+      height="32"
+      loading="lazy"
+      decoding="async"
+    />
+  </div>
+
+  <h3 class="industry-card__name">{sectorName}</h3>
+
+  <p class="industry-card__body">{body}</p>
+
+  {isLinked && (
+    <a class="industry-card__cta" href={optionalLink!}>
+      <span class="industry-card__cta-label">{ctaLabel}</span>
+      <span class="industry-card__cta-arrow" aria-hidden="true">&rarr;</span>
+      <span class="sr-only"> for {sectorName}</span>
+    </a>
+  )}
+</article>
+
+<style>
+  /* ── Card shell ────────────────────────────────────────────────────────
+     `position: relative` so the stretched <a> in the CTA can absolutely-fill
+     the entire card. Min-height keeps a tidy grid when body copy varies
+     between 30 and 50 words across cards. */
+  .industry-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 24px;
+    min-height: 240px;
+    background: var(--paper-card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    transition:
+      border-color 0.18s ease,
+      transform 0.18s ease,
+      background 0.18s ease;
+  }
+
+  /* Linked cards lift on hover/focus so the affordance is obvious. */
+  .industry-card--linked:hover,
+  .industry-card--linked:focus-within {
+    border-color: var(--g-accent);
+    transform: translateY(-2px);
+  }
+
+  /* ── Icon tile ─────────────────────────────────────────────────────────
+     48px square holding a 32px glyph. Subtle brand-tinted background so the
+     icon reads on both skins without per-icon colour work. */
+  .industry-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    flex: 0 0 auto;
+  }
+
+  .industry-card__icon img {
+    width: 32px;
+    height: 32px;
+    /* Day skin: icons rendered with their native (dark) artwork. */
+    filter: none;
+    opacity: 0.92;
+    transition: opacity 0.18s ease, filter 0.18s ease;
+  }
+
+  /* Night skin: invert dark-line icons so they read on the deep-navy paper. */
+  :global(html[data-skin='night']) .industry-card__icon img {
+    filter: brightness(0) invert(1);
+    opacity: 0.88;
+  }
+
+  .industry-card--linked:hover .industry-card__icon img,
+  .industry-card--linked:focus-within .industry-card__icon img {
+    opacity: 1;
+  }
+
+  /* ── Sector name ───────────────────────────────────────────────────────
+     H3 — Big Shoulders display. Tight leading; margin zero'd so the card's
+     flex gap controls vertical rhythm. */
+  .industry-card__name {
+    margin: 0;
+    font-family: var(--d-display);
+    font-weight: 700;
+    font-size: 1.5rem;       /* 24px — fits 2 lines comfortably */
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  /* ── Body copy ─────────────────────────────────────────────────────────
+     Soft ink so the eye lands on the name first, then reads down. Flex-grow
+     pushes the optional CTA to the bottom of the card on tall variants. */
+  .industry-card__body {
+    margin: 0;
+    flex: 1 1 auto;
+    font-family: var(--d-body);
+    font-size: 0.9375rem;    /* 15px */
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+
+  /* ── Optional CTA ──────────────────────────────────────────────────────
+     Stretched-link pattern: visible anchor at the bottom, but `::after`
+     blankets the whole card so the entire surface is clickable. The visible
+     anchor remains the focus target — `:focus-within` on the parent surfaces
+     the lift state for keyboard users. */
+  .industry-card__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    font-family: var(--d-body);
+    font-weight: 600;
+    font-size: 0.875rem;     /* 14px */
+    color: var(--g-accent);
+    text-decoration: none;
+    /* Underline only on hover so the resting card stays calm. */
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.18s ease;
+  }
+
+  .industry-card__cta:hover .industry-card__cta-label,
+  .industry-card__cta:focus-visible .industry-card__cta-label {
+    text-decoration: underline;
+    text-decoration-color: var(--g-accent);
+    text-underline-offset: 3px;
+  }
+
+  .industry-card__cta-arrow {
+    transition: transform 0.18s ease;
+  }
+
+  .industry-card--linked:hover .industry-card__cta-arrow {
+    transform: translateX(2px);
+  }
+
+  /* Stretched hit target — covers the full card. */
+  .industry-card__cta::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+
+  /* Keep focus ring on the anchor's actual box, not the stretched layer. */
+  .industry-card__cta:focus-visible {
+    outline: 2px solid var(--g-accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* SR-only — duplicated locally so the primitive stays standalone. */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ── Reduced motion ────────────────────────────────────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    .industry-card,
+    .industry-card__icon img,
+    .industry-card__cta-arrow,
+    .industry-card__cta {
+      transition: none;
+    }
+    .industry-card--linked:hover,
+    .industry-card--linked:focus-within {
+      transform: none;
+    }
+  }
+</style>

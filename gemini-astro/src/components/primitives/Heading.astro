@@ -1,0 +1,83 @@
+---
+/**
+ * Gemini AMPM — Heading primitive.
+ *
+ * Display headings (H1–H4) in Big Shoulders Display, sized off the prototype's
+ * fluid clamp scale (--t-display-xl/l/m/s in tokens.css). The `as` prop drives
+ * the semantic tag — keep that aligned with the document outline (one H1 per
+ * page, H2 for sections, etc.) regardless of visual size.
+ *
+ * Sizes mirror the prototype's display scale:
+ *   xl → clamp(2.6rem, 6vw + 1rem, 5.5rem)   (hero H1)
+ *   lg → clamp(2.2rem, 4vw + 0.8rem, 4rem)   (section H2)
+ *   md → clamp(1.8rem, 3vw + 0.7rem, 2.8rem) (subsection H3)
+ *   sm → clamp(1.4rem, 2vw + 0.6rem, 2rem)   (card / inline H4)
+ *
+ * Colour resolves to `var(--ink)` so it re-themes when the skin flips on
+ * <html data-skin="night">. Pass `class` to layer Tailwind utilities for
+ * layout (margin/max-width/text-align) — typography stays var-driven.
+ */
+
+type HeadingTag = 'h1' | 'h2' | 'h3' | 'h4';
+type HeadingSize = 'xl' | 'lg' | 'md' | 'sm';
+type Tracking = 'tight' | 'normal' | 'wide';
+
+interface Props {
+  as?: HeadingTag;
+  size?: HeadingSize;
+  tracking?: Tracking;
+  id?: string;
+  class?: string;
+}
+
+const {
+  as: Tag = 'h2',
+  size,
+  tracking = 'tight',
+  id,
+  class: className,
+} = Astro.props;
+
+/* Default size follows the tag if caller didn't override — keeps the common
+ * case (semantic = visual) one prop shorter. */
+const sizeKey: HeadingSize =
+  size ?? ({ h1: 'xl', h2: 'lg', h3: 'md', h4: 'sm' } as const)[Tag];
+
+/* letter-spacing — H1/H2 read tighter; H3/H4 sit normal; `wide` reserved for
+ * the occasional all-caps display use. Values match the prototype's
+ * `letter-spacing: -0.01em` baseline. */
+const trackingClass = {
+  tight: 'tracking-[-0.01em]',
+  normal: 'tracking-normal',
+  wide: 'tracking-[0.04em]',
+}[tracking];
+
+const sizeClass = `g-h--${sizeKey}`;
+---
+<Tag
+  id={id}
+  class:list={['g-h', sizeClass, trackingClass, className]}
+>
+  <slot />
+</Tag>
+
+<style>
+  /* Display headings — font + weight + leading mirror gemini base.css's
+     h1–h4 block. Size is per-modifier so a caller can stamp an <h2 size="xl">
+     visual hero without breaking document outline. Colour reads var(--ink)
+     so flipping data-skin="night" on <html> re-themes the headings without
+     touching this component. */
+  .g-h {
+    font-family: var(--d-display, "Big Shoulders Display", "Archivo", sans-serif);
+    font-weight: 700;
+    line-height: 1.05;
+    color: var(--ink);
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .g-h--xl { font-size: clamp(2.6rem, 6vw + 1rem, 5.5rem); }
+  .g-h--lg { font-size: clamp(2.2rem, 4vw + 0.8rem, 4rem); }
+  .g-h--md { font-size: clamp(1.8rem, 3vw + 0.7rem, 2.8rem); }
+  .g-h--sm { font-size: clamp(1.4rem, 2vw + 0.6rem, 2rem); }
+</style>

@@ -1,0 +1,299 @@
+---
+/**
+ * Gemini AMPM — Section 5: How It Works (Survey to Commissioning).
+ *
+ * Spec: SERVICE_VERTICAL_TEMPLATE.md §Section 5.
+ *
+ * Purpose — demystify the buying process so the form-curious-but-unsure
+ * visitor sees the path from first call to a working, certificated
+ * system. Earns HowTo schema where applicable (schema is emitted by the
+ * schema-bundle generator at page level — this section is the visible
+ * surface only).
+ *
+ * Composition:
+ *   1. <Kicker> + H2: spec-mandated buyer-language headline
+ *      ("How it works — from survey to handover").
+ *   2. <ProcessDiagram> primitive: 4-step diagram (horizontal on desktop,
+ *      vertical timeline on mobile). Each step renders title + 40-80
+ *      words + named deliverable + indicative timing.
+ *   3. Closing line (spec-fixed default but Payload-overridable):
+ *      "When you've seen the design and price, you decide. No obligation
+ *      up to that point."
+ *   4. Optional cross-link to the flagship case study for the pillar —
+ *      "See this process in action: <project name> →".
+ *
+ * Anchor id `#process` is the jump target for the Hero's secondary CTA
+ * ("See how it works"). Keep the id stable across pillars.
+ *
+ * Density flex: this section reads identically across the three density
+ * presets — 4 steps is fixed by the spec. The wrapping <Section> is set
+ * to `standard` density; the page can override via slot wiring later if
+ * the long-form pillars ever need extra breathing room above/below.
+ *
+ * Forms: none in this section (Section 5 is read-only). The CTA path
+ * for an undecided buyer who scrolls past Process is the up-section
+ * Form #1 (consult), reached via the Hero's primary CTA or by the page
+ * sticky bar. Adding a CTA here would compete with Form #1 / Form #2
+ * and violate the "trust signals adjacent to the ask, not front-loaded"
+ * directive.
+ */
+
+import Section from '../primitives/Section.astro';
+import Container from '../primitives/Container.astro';
+import Heading from '../primitives/Heading.astro';
+import Kicker from '../primitives/Kicker.astro';
+import ProcessDiagram, {
+  type ProcessStep,
+} from '../primitives/ProcessDiagram.astro';
+
+/**
+ * Optional linked case study — mirrors the Payload
+ * `optionalLinkedCaseStudy` relationship resolved to the bits this
+ * section actually renders. Keeping it shallow (slug + title) lets the
+ * page resolve the full relationship once and pass only what's needed,
+ * which keeps this component cheap to render.
+ */
+export interface LinkedCaseStudy {
+  /** URL slug (without leading/trailing slash). Page builds `/case-studies/{slug}/`. */
+  slug: string;
+  /** Project title — e.g. "Peterborough Court". Used as the anchor label. */
+  title: string;
+}
+
+export interface Props {
+  /**
+   * Exactly 4 steps per the spec (Survey, Design & Quote, Install,
+   * Commission/Handover). Payload enforces minRows: 4, maxRows: 4.
+   * Field aligns to `services.steps` in the Payload schema.
+   */
+  steps: ProcessStep[];
+
+  /**
+   * Spec-fixed default copy is provided below if Payload omits this —
+   * never render a missing-closing-line page. Payload field:
+   * `services.processClosingLine`.
+   */
+  processClosingLine?: string;
+
+  /**
+   * Optional cross-link to the pillar's flagship case study. Payload
+   * field: `services.optionalLinkedCaseStudy`. When omitted, the
+   * cross-link block is suppressed entirely.
+   */
+  optionalLinkedCaseStudy?: LinkedCaseStudy;
+
+  /**
+   * Kicker copy above the H2. Defaults to "Our process" — overridable
+   * for the rare per-pillar tweak (e.g. specifierMode pages may prefer
+   * "Specifier handover process"), so we expose it rather than hardcode.
+   */
+  kicker?: string;
+
+  /**
+   * H2 copy. Defaults to the spec's buyer-question phrasing. Override
+   * only if a per-pillar variant is being run.
+   */
+  heading?: string;
+
+  /** Extra classes for the outer <section>, rarely needed. */
+  class?: string;
+}
+
+const {
+  steps,
+  processClosingLine = "When you've seen the design and price, you decide. No obligation up to that point.",
+  optionalLinkedCaseStudy,
+  kicker = 'Our process',
+  heading = 'How it works — from survey to handover',
+  class: extraClass,
+} = Astro.props;
+
+/* Defensive dev warning — the spec mandates 4 steps. Payload's minRows
+ * /maxRows: 4 enforces it at the CMS layer, but a hand-rolled page might
+ * pass the wrong shape during dev. */
+if (import.meta.env.DEV && steps.length !== 4) {
+  // eslint-disable-next-line no-console
+  console.warn(
+    `[05-ProcessSection] expected exactly 4 steps per SERVICE_VERTICAL_TEMPLATE §5, got ${steps.length}.`,
+  );
+}
+
+const caseStudyHref = optionalLinkedCaseStudy
+  ? `/case-studies/${optionalLinkedCaseStudy.slug}/`
+  : null;
+---
+
+<Section
+  id="process"
+  background="surface-1"
+  density="standard"
+  class={extraClass}
+>
+  <Container>
+    <header class="process-section__head">
+      <Kicker as="p">{kicker}</Kicker>
+      <Heading as="h2" size="lg" class="process-section__heading">
+        {heading}
+      </Heading>
+    </header>
+
+    <ProcessDiagram steps={steps} class="process-section__diagram" />
+
+    <footer class="process-section__foot">
+      <p class="process-section__closing">{processClosingLine}</p>
+
+      {caseStudyHref && optionalLinkedCaseStudy && (
+        <p class="process-section__crosslink">
+          <span class="process-section__crosslink-label">
+            See this process in action:
+          </span>
+          <a
+            href={caseStudyHref}
+            class="process-section__crosslink-anchor"
+            data-source="process-crosslink"
+          >
+            {optionalLinkedCaseStudy.title}
+            <span aria-hidden="true" class="process-section__crosslink-arrow">→</span>
+          </a>
+        </p>
+      )}
+    </footer>
+  </Container>
+</Section>
+
+<style>
+  /* ── Header block ─────────────────────────────────────────────
+     Kicker + H2 stack. Bottom margin pushes the diagram down to a
+     comfortable distance — kept token-driven so it scales with the
+     page's --s-* rhythm. max-width on the heading keeps the H2 line
+     length scannable at the wider desktop column. */
+  .process-section__head {
+    margin-bottom: var(--s-7, 48px);
+    max-width: 52rem;
+  }
+
+  .process-section__heading {
+    margin-top: var(--s-2, 8px);
+  }
+
+  /* ── Diagram spacing ──────────────────────────────────────────
+     The primitive owns its own internal padding; here we just gate
+     the gap between diagram and footer. */
+  .process-section__diagram {
+    margin-bottom: var(--s-7, 48px);
+  }
+
+  /* ── Footer block ─────────────────────────────────────────────
+     Closing line + optional case-study cross-link. Visually quieter
+     than the diagram so the eye lands on the steps first. The
+     closing line carries an accent left-rail to tie it back to the
+     diagram's meta blocks. */
+  .process-section__foot {
+    display: grid;
+    gap: var(--s-4, 16px);
+    max-width: 56rem;
+  }
+
+  .process-section__closing {
+    margin: 0;
+    padding: var(--s-4, 16px) var(--s-5, 24px);
+    border-left: 3px solid color-mix(in srgb, var(--g-accent, var(--accent)) 65%, transparent);
+    background: color-mix(in srgb, var(--g-accent, var(--accent)) 6%, transparent);
+    border-radius: 0 var(--radius, 12px) var(--radius, 12px) 0;
+    color: var(--ink, var(--text, currentColor));
+    font-family: var(--f-body, "Archivo", sans-serif);
+    font-size: var(--t-body-l, 1.125rem);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  /* ── Cross-link ───────────────────────────────────────────────
+     Inline label + anchor. The label sits visually muted so the
+     anchor reads as the action. Hover lift mirrors the Button
+     primitive's 1px translate + accent recolour — same micro-motion
+     language across the page. */
+  .process-section__crosslink {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--s-2, 8px) var(--s-3, 12px);
+    font-family: var(--f-body, "Archivo", sans-serif);
+    font-size: var(--t-body, 1rem);
+    line-height: 1.5;
+  }
+
+  .process-section__crosslink-label {
+    color: var(--text-muted, var(--ink-3, currentColor));
+  }
+
+  .process-section__crosslink-anchor {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--s-2, 8px);
+    color: var(--g-accent, var(--accent));
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--g-accent, var(--accent)) 40%, transparent);
+    transition:
+      color 0.15s var(--ease, ease),
+      border-color 0.15s var(--ease, ease),
+      transform 0.15s var(--ease, ease);
+  }
+
+  .process-section__crosslink-anchor:hover,
+  .process-section__crosslink-anchor:focus-visible {
+    color: var(--g-accent, var(--accent));
+    border-bottom-color: var(--g-accent, var(--accent));
+    transform: translateY(-1px);
+  }
+
+  .process-section__crosslink-anchor:focus-visible {
+    outline: 2px solid var(--g-accent, var(--accent));
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  .process-section__crosslink-arrow {
+    /* Tabular spacing so the arrow stays put even if the title
+       wraps under it on narrow viewports. */
+    font-variant-numeric: tabular-nums;
+    transition: transform 0.15s var(--ease, ease);
+  }
+
+  .process-section__crosslink-anchor:hover .process-section__crosslink-arrow,
+  .process-section__crosslink-anchor:focus-visible .process-section__crosslink-arrow {
+    transform: translateX(3px);
+  }
+
+  /* ── Desktop refinement ──────────────────────────────────────
+     At >=768px the diagram switches to its 4-column horizontal
+     layout (handled inside the primitive). We just expand the
+     top/bottom rhythm so the section breathes against the
+     surface-2 / surface-1 bands either side. */
+  @media (min-width: 768px) {
+    .process-section__head {
+      margin-bottom: var(--s-8, 64px);
+    }
+    .process-section__diagram {
+      margin-bottom: var(--s-8, 64px);
+    }
+  }
+
+  /* Reduced-motion: kill the hover translate so users with the
+     OS preference set don't see the micro-movement. */
+  @media (prefers-reduced-motion: reduce) {
+    .process-section__crosslink-anchor,
+    .process-section__crosslink-arrow {
+      transition: none;
+    }
+    .process-section__crosslink-anchor:hover,
+    .process-section__crosslink-anchor:focus-visible {
+      transform: none;
+    }
+    .process-section__crosslink-anchor:hover .process-section__crosslink-arrow,
+    .process-section__crosslink-anchor:focus-visible .process-section__crosslink-arrow {
+      transform: none;
+    }
+  }
+</style>

@@ -1,0 +1,48 @@
+---
+/**
+ * Gemini AMPM — Container primitive.
+ *
+ * Max-width wrapper, centred, with the shared `--pad-x` gutter
+ * (clamp(20px, 5vw, 72px) — see src/styles/global.css). Three widths:
+ *   - default: 1200px (mirrors prototype's --container: 1180px, rounded up)
+ *   - narrow:  920px  (long-form reading width)
+ *   - wide:    1440px (full-bleed sections, gallery grids)
+ *
+ * Single <div> + <slot>. No extra DOM noise. Use it everywhere a section
+ * needs sane horizontal limits — do not write ad-hoc max-w-* + mx-auto
+ * combinations in page templates.
+ *
+ * Tag is overridable so callers can render <section>/<article>/<main>
+ * without nesting another wrapper.
+ */
+import type { HTMLTag } from 'astro/types';
+
+type Variant = 'default' | 'narrow' | 'wide';
+
+interface Props {
+  variant?: Variant;
+  as?: HTMLTag;
+  class?: string;
+}
+
+const MAX_WIDTHS: Record<Variant, string> = {
+  default: '1200px',
+  narrow:  '920px',
+  wide:    '1440px',
+};
+
+const {
+  variant = 'default',
+  as: Tag = 'div',
+  class: className = '',
+} = Astro.props;
+
+const maxWidth = MAX_WIDTHS[variant];
+---
+<Tag
+  class:list={['mx-auto w-full px-pad-x', className]}
+  style={`max-width: ${maxWidth};`}
+  data-container={variant}
+>
+  <slot />
+</Tag>

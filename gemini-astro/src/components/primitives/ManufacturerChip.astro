@@ -1,0 +1,128 @@
+---
+/**
+ * Gemini AMPM — <ManufacturerChip>
+ *
+ * Small badge used inside System-Types cards (Section 3 of every service-vertical
+ * page; see SERVICE_VERTICAL_TEMPLATE.md). Pairs a manufacturer logo with the
+ * brand name; if no logo is supplied, falls back to the brand name set in
+ * uppercase brand-accent type.
+ *
+ * Renders as an <a> when `link` is provided, otherwise an inline <span>. Wraps
+ * the logo (or text fallback) so screen-reader users always hear the brand
+ * name — the <img> stays alt="" to avoid double-announcement.
+ *
+ * Tokens consumed (from src/styles/tokens.css):
+ *   --surface, --line, --line-strong, --accent, --text, --text-soft,
+ *   --radius-sm, --s-2, --s-3, --t-body-s, --f-body, --ease
+ */
+export interface Props {
+  /** Manufacturer name, e.g. "Fike" — always required for a11y + fallback. */
+  name: string;
+  /** Absolute or root-relative URL to the logo image. Pass `null` for text-only. */
+  logo?: string | null;
+  /** Optional href; if set the chip becomes a link to the manufacturer page. */
+  link?: string | null;
+}
+
+const { name, logo = null, link = null } = Astro.props;
+const Tag = link ? 'a' : 'span';
+const commonAttrs = {
+  class: 'mfr-chip',
+  'data-mfr': name,
+  ...(link ? { href: link, 'aria-label': `${name} — manufacturer page` } : {}),
+};
+---
+
+<Tag {...commonAttrs}>
+  {logo ? (
+    <img
+      class="mfr-chip__logo"
+      src={logo}
+      alt=""
+      width="64"
+      height="24"
+      loading="lazy"
+      decoding="async"
+    />
+  ) : (
+    <span class="mfr-chip__text">{name}</span>
+  )}
+  {logo && <span class="sr-only">{name}</span>}
+</Tag>
+
+<style>
+  .mfr-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-2);
+    padding: var(--s-2) var(--s-3);
+    min-height: 32px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-family: var(--f-body);
+    font-size: var(--t-body-s);
+    line-height: 1;
+    color: var(--text);
+    transition:
+      border-color 0.15s var(--ease),
+      background 0.15s var(--ease),
+      transform 0.15s var(--ease);
+  }
+
+  /* Only links get the hover affordance. */
+  a.mfr-chip:hover,
+  a.mfr-chip:focus-visible {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .mfr-chip__logo {
+    height: 20px;
+    width: auto;
+    max-width: 96px;
+    /* Logos are usually delivered on light backgrounds; on the night skin we
+       brighten the artwork so the mark still reads against the dark surface. */
+    filter: brightness(0) invert(1);
+    opacity: 0.85;
+    transition: opacity 0.15s var(--ease), filter 0.15s var(--ease);
+  }
+
+  a.mfr-chip:hover .mfr-chip__logo,
+  a.mfr-chip:focus-visible .mfr-chip__logo {
+    opacity: 1;
+  }
+
+  /* Day skin: revert the invert so logos display in their native colours. */
+  :global(html[data-skin='day']) .mfr-chip__logo {
+    filter: none;
+    opacity: 1;
+  }
+
+  .mfr-chip__text {
+    font-family: var(--f-body);
+    font-weight: 600;
+    font-size: var(--t-kicker);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* SR-only — duplicated locally so the primitive stays standalone. */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

@@ -1,0 +1,68 @@
+---
+/**
+ * Kicker — small uppercase label that sits above a heading.
+ *
+ * Mirrors the prototype's `.kicker` rule from gemini/src/styles/base.css:
+ *   - Archivo body stack, weight 600
+ *   - 12px (--t-kicker equivalent), 0.14em tracking, uppercase
+ *   - Brand accent colour (--g-accent), which flips per-vertical
+ *
+ * Pure presentational primitive — no interactivity, no island.
+ * Renders as a <span> by default so it sits inline above an <h1>/<h2>
+ * without introducing extra block-level semantics. Pass `as` to override
+ * (e.g. `as="p"` when the kicker is the only thing in a stack cell).
+ *
+ * Usage:
+ *   <Kicker>Gas suppression</Kicker>
+ *   <h1>FM-200 systems installed across the UK</h1>
+ *
+ *   <Kicker tone="muted" as="p">Since 1997</Kicker>
+ */
+
+type Tone = "accent" | "muted" | "soft";
+
+interface Props {
+  /** Element to render as. Defaults to <span>. */
+  as?: "span" | "p" | "div";
+  /** Colour variant. `accent` = brand orange/per-vertical, `muted` = grey, `soft` = soft body. */
+  tone?: Tone;
+  /** Extra classes to merge in (Tailwind utilities for spacing, etc). */
+  class?: string;
+  /** Optional id for aria-labelledby wiring. */
+  id?: string;
+}
+
+const { as: Tag = "span", tone = "accent", class: className = "", id } = Astro.props;
+
+const toneColor: Record<Tone, string> = {
+  accent: "var(--g-accent)",
+  muted: "var(--ink-3)",
+  soft: "var(--ink-2)",
+};
+---
+
+<Tag id={id} class:list={["kicker", className]} data-tone={tone}>
+  <slot />
+</Tag>
+
+<style define:vars={{ kickerColor: toneColor[tone] }}>
+  .kicker {
+    display: inline-block;
+    font-family: var(--d-body);
+    font-weight: 700;
+    font-size: 0.75rem;          /* 12px — matches --t-kicker */
+    line-height: 1.2;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--kickerColor);
+    margin: 0;
+  }
+
+  /* When the kicker is a block-level element, give it the standard
+     prototype gap before the heading that follows it. */
+  p.kicker,
+  div.kicker {
+    display: block;
+    margin-bottom: 0.75rem;      /* ~ --s-3 */
+  }
+</style>
