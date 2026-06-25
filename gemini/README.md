@@ -9,7 +9,7 @@ Gemini keeps its own night / PM→AM "we keep watch" identity. Designed as a
 
 | File | What it is |
 |---|---|
-| `Gemini AMPM Website.html` | The clickable renewed site — home, services overview, 7 service pillars, sectors, why, about, news, casework, contact. Hash-routed. |
+| `index.html` | The clickable renewed site — home, services overview, 7 service pillars, sectors, why, about, news, casework, contact. Hash-routed. |
 | `Gemini AMPM — SEO Migration Map.html` | Printable handoff doc: full URL inventory (live → renewed), redirect register, pre-launch checklist. |
 
 ## How it relates to the group
