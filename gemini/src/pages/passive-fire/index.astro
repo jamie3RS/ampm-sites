@@ -1,0 +1,39 @@
+---
+import Base from '~/layouts/Base.astro';
+import Hero from '~/components/Hero.astro';
+import QualGate from '~/components/QualGate.astro';
+import SystemTypes from '~/components/SystemTypes.astro';
+import Industries from '~/components/Industries.astro';
+import Process from '~/components/Process.astro';
+import Pricing from '~/components/Pricing.astro';
+import SocialProof from '~/components/SocialProof.astro';
+import MaintenanceHook from '~/components/MaintenanceHook.astro';
+import WhyGemini from '~/components/WhyGemini.astro';
+import FAQ from '~/components/FAQ.astro';
+import SiteFooter from '~/components/SiteFooter.astro';
+import StickyMobileCTA from '~/components/StickyMobileCTA.astro';
+
+import { passiveFire } from '~/lib/services/passive-fire';
+import { buildSchemaGraph } from '~/lib/schema';
+
+const svc = passiveFire;
+const schemaJson = buildSchemaGraph(svc, 'https://gemini.ampm.co.uk');
+---
+<Base
+  title={svc.metaTitle}
+  description={svc.metaDescription}
+  schemaJson={schemaJson}
+>
+  <Hero svc={svc} />
+  <QualGate svc={svc} />
+  <SystemTypes svc={svc} />
+  <Industries svc={svc} />
+  <Process svc={svc} />
+  <Pricing svc={svc} />
+  <SocialProof svc={svc} />
+  <MaintenanceHook svc={svc} />
+  <WhyGemini svc={svc} />
+  <FAQ svc={svc} />
+  <SiteFooter svc={svc} />
+  <StickyMobileCTA phone={svc.regionalDDI} phoneDisplay={svc.regionalDDIDisplay} />
+</Base>
