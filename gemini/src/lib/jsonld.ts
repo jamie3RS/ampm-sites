@@ -28,12 +28,19 @@ export function organization() {
     '@id': SITE + '/#organization',
     name: 'Gemini AMPM',
     legalName: 'Gemini AMPM Ltd',
+    alternateName: ['Gemini AMPM Ltd', 'AMPM'],
     url: SITE,
     logo: SITE + '/assets/gemini-logo.png',
     foundingDate: '1997',
     description:
       'Employee-owned UK fire, security, ventilation, gas suppression and passive fire contractor. BAFE, NSI Gold, FIRAS, CHAS Elite, Constructionline Gold. Based in Burgess Hill, West Sussex; serving the South East and the UK.',
-    sameAs: [CONTACT.linkedin],
+    // Companies House identifier — primary UK entity reference
+    identifier: '03437130',
+    // Verifiable external references — pure data, all live URLs
+    sameAs: [
+      CONTACT.linkedin,
+      'https://find-and-update.company-information.service.gov.uk/company/03437130',
+    ],
     telephone: CONTACT.phone,
     email: 'info@geminiampm.co.uk',
     address: {
@@ -53,7 +60,9 @@ export function organization() {
     }],
     hasCredential: ACCREDS.map((a: Accred) => ({
       '@type': 'EducationalOccupationalCredential',
-      name: stripHtml(a.t + ' — ' + a.d),
+      credentialCategory: 'certification',
+      name: stripHtml(a.t),
+      description: stripHtml(a.d),
       url: SITE + '/accreditations/' + a.slug + '/',
     })),
   };
@@ -135,17 +144,30 @@ export function person(m: TeamMember) {
 
 export function article(n: NewsItem) {
   const pageUrl = SITE + '/news/' + n.slug + '/';
+  const isoDate = n.date.split('.').reverse().join('-');
+  // Approximate word count from body if present (helps AI freshness/depth scoring).
+  const wordCount = n.body
+    ? stripHtml(n.body).split(/\s+/).filter(Boolean).length
+    : undefined;
+  // Author: prefer named byline if NewsItem.author set; fall back to Organization.
+  const authorNode = n.author
+    ? { '@type': 'Person', name: n.author, worksFor: { '@id': SITE + '/#organization' } }
+    : { '@id': SITE + '/#organization' };
   return {
     '@type': 'Article',
     '@id': pageUrl + '#article',
     headline: stripHtml(n.title),
     description: stripHtml(n.teaser),
     image: n.image || (SITE + '/og-image.png'),
-    datePublished: n.date.split('.').reverse().join('-'),
-    author: { '@id': SITE + '/#organization' },
+    datePublished: isoDate,
+    dateModified: isoDate,
+    inLanguage: 'en-GB',
+    author: authorNode,
     publisher: { '@id': SITE + '/#organization' },
-    mainEntityOfPage: pageUrl,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl },
     articleSection: n.cat,
+    ...(wordCount ? { wordCount } : {}),
+    isPartOf: { '@type': 'WebSite', '@id': SITE + '/#website', url: SITE, name: 'Gemini AMPM' },
   };
 }
 
