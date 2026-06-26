@@ -4,7 +4,7 @@
 // passed in via the layout's schemaItems prop.
 
 import { ACCREDS, CONTACT, PILLARS } from '~/data/site';
-import type { Pillar, Accred, NewsItem } from '~/data/site';
+import type { Pillar, Accred, NewsItem, TeamMember } from '~/data/site';
 
 const SITE = 'https://gemini.ampm.co.uk';
 
@@ -117,6 +117,19 @@ export function breadcrumb(items: Array<{ name: string; href: string }>) {
       name: it.name,
       item: it.href.startsWith('http') ? it.href : SITE + it.href,
     })),
+  };
+}
+
+export function person(m: TeamMember) {
+  return {
+    '@type': 'Person',
+    '@id': SITE + '/about/team/#' + m.slug,
+    name: m.name,
+    jobTitle: m.role.replace(/&[a-z]+;/g, ' '),
+    description: stripHtml(m.bio).slice(0, 250),
+    worksFor: { '@id': SITE + '/#organization' },
+    url: m.linkedin || SITE + '/about/team/',
+    sameAs: m.linkedin ? [m.linkedin] : undefined,
   };
 }
 

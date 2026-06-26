@@ -11,6 +11,7 @@ const STATIC_URLS = [
   '/casestudies/',
   '/news/',
   '/about/',
+  '/about/team/',
   '/why/',
   '/contact/',
   '/clients/',

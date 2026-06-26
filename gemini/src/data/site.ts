@@ -736,8 +736,55 @@ export const REP_CASES: Record<string, CaseItem[]> = {
   ],
 };
 
-// ─── GROUP from g-pages.jsx (About page) ──────────────────────────────────────
-export interface GroupItem { tag: string; t: string; current?: boolean; href?: string; d: string; }
+// ─── TEAM — leadership profiles for /about/team/ ──────────────────────────────
+// Bios use only facts from the AMPM Group business plan (May 2026). No
+// invented detail. Add new members by appending to this array; the team page
+// auto-renders them grouped by `tier`.
+export interface TeamMember {
+  slug: string;
+  name: string;
+  role: string;
+  tier: 'group-leadership' | 'operational-leadership' | 'academy';
+  /** Bio as HTML — paragraphs separated by <br /> or wrapped in <p>. */
+  bio: string;
+  /** Optional named clients/projects/specialisms for the "what they own" line. */
+  ownsLine?: string;
+  linkedin?: string;
+  /** Optional photo path (relative to /assets/). Falls back to initials placeholder. */
+  photo?: string;
+  /** Meridian colour for the initials placeholder. */
+  accent: 'orange' | 'blue' | 'green' | 'purple';
+}
+
+export const TEAM: TeamMember[] = [
+  {
+    slug: 'jamie-dawson',
+    name: 'Jamie Dawson',
+    role: 'Chair, AMPM Group · Co-founder, Gemini AMPM',
+    tier: 'group-leadership',
+    bio: '<p>Jamie co-founded Gemini AMPM and led the business from start-up through 27 years of continuous trading, into the Employee Ownership Trust transition in October 2024 and on to the formation of <strong>AMPM Group</strong>. He chairs the Group, drives strategy, runs the investor relationships, and signs off the acquisition pipeline.</p><p>Like Luke and Dan, Jamie came up through a trades apprenticeship &mdash; the conviction behind the <strong>AMPM Academy</strong> launching in September 2026 is personal as well as commercial.</p>',
+    ownsLine: 'Group strategy · investor relationships · acquisition pipeline · AMPM Academy founding patron',
+    accent: 'orange',
+  },
+  {
+    slug: 'luke-finney',
+    name: 'Luke Finney',
+    role: 'Commercial Director, AMPM Group · Co-founder, Gemini AMPM',
+    tier: 'group-leadership',
+    bio: '<p>Luke co-founded Gemini AMPM and is now Commercial Director of AMPM Group. He owns commercial strategy across the Group &mdash; estimating, bid management and new-business development &mdash; and works the long-term Tier-1 contractor and FM-framework relationships that anchor the client book.</p><p>A trades-apprenticeship background (the same path Jamie and Dan came through) underwrites a commercial style that engineers trust: the price the building sees is the price the engineer can deliver.</p>',
+    ownsLine: 'Commercial strategy · estimating · bid management · new business across the Group',
+    accent: 'blue',
+  },
+  {
+    slug: 'dan-small',
+    name: 'Dan Small',
+    role: 'Managing Director, AMPM Group · former MD, Gemini AMPM',
+    tier: 'group-leadership',
+    bio: '<p>Dan is the operational lead across every trading division of the Group and the <strong>longest-serving member of the management team</strong>. As former MD of Gemini AMPM he carries the deepest set of client and supply-chain relationships in the business &mdash; from Mace on Peterborough Court to Equans, FirstPort, Moat Homes and the wider Tier-1 supply chain.</p><p>Day-to-day delivery, divisional P&amp;L, and the operational integration of any acquired business sit on Dan&rsquo;s desk. Same trades-apprenticeship route as Jamie and Luke.</p>',
+    ownsLine: 'Operations across all eight divisions · client relationships · supply chain · acquisition integration',
+    accent: 'green',
+  },
+];
 export const GROUP: GroupItem[] = [
   { tag: 'This company',    t: 'Gemini AMPM',            current: true,                                  d: 'Fire, security, ventilation, gas suppression and passive fire since 1997. Employee-owned. The life-safety specialist of the group.' },
   { tag: 'Sister company',  t: 'AMPM Building Services', href: 'https://ampmbuilding.services',          d: 'MEPH, commercial fit-out, fabric and groundworks &mdash; the daytime building-services arm. AM &rarr; PM.' },
