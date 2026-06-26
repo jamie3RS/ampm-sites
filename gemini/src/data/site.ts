@@ -466,6 +466,101 @@ export const MANUFACTURERS: Manufacturer[] = [
 const UNSPLASH = (id: string, w = 1200) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=72`;
 
 export const NEWS: NewsItem[] = [
+  { cat: 'Compliance', date: '26.06.2026', slug: 'fire-risk-assessment-review-service',
+    title: 'Fire risk assessments &mdash; what the law actually requires, and a free second-opinion review service',
+    teaser: 'Every non-domestic building in England needs a current fire risk assessment. Send us yours and we&rsquo;ll come back with a plain-English review and the actions you should prioritise.',
+    image: UNSPLASH('1450101499163-c8848c66ca85'),
+    author: 'the Gemini AMPM compliance team',
+    body: `
+<p>A current, &ldquo;suitable and sufficient&rdquo; fire risk assessment is a <strong>legal requirement</strong> for every non-domestic building in England. It is also, in our experience reviewing them for clients, one of the most variable documents in the building&rsquo;s safety file &mdash; ranging from genuinely rigorous to comfortably-photocopied. If you&rsquo;ve recently inherited responsibility for a building, or you haven&rsquo;t looked at the FRA on your file in more than 12 months, this article is the brief tour you need.</p>
+
+<p>At the end of the article there&rsquo;s a <strong>free second-opinion review service</strong> &mdash; you send us the FRA PDF, we come back with our observations.</p>
+
+<h3>What the law requires</h3>
+
+<p>Under the <strong>Regulatory Reform (Fire Safety) Order 2005</strong>, the Responsible Person for any non-domestic premises in England must &ldquo;make a suitable and sufficient assessment of the risks to which relevant persons are exposed for the purpose of identifying the general fire precautions [they] need to take.&rdquo; Article 9 of the Order.</p>
+
+<p>The Fire Safety Act 2021 extended the scope to explicitly cover the structure, external walls and entrance doors of buildings containing two or more sets of domestic premises. The Building Safety Act 2022 added a further layer of duties for higher-risk buildings (those above 18 metres or 7 storeys with at least 2 residential units), including the requirement to share fire safety information with residents and to maintain golden-thread evidence digitally.</p>
+
+<p>In plain English: <strong>if you&rsquo;re responsible for a building where people work, sleep, study, are treated, are detained or are entertained, you need a current FRA.</strong> No exemptions for small buildings, occupancy levels or sector.</p>
+
+<h3>How often it has to be reviewed</h3>
+
+<p>The Fire Safety Order doesn&rsquo;t give a single frequency. It requires the assessment to be reviewed &ldquo;regularly&rdquo; and revised whenever there&rsquo;s reason to suspect it&rsquo;s no longer valid &mdash; specifically <strong>after any significant change</strong>:</p>
+
+<ul>
+  <li>Change of use, occupancy, or layout</li>
+  <li>Refurbishment, fit-out or structural alteration</li>
+  <li>Significant change in fire-safety provision (new alarm, new sprinklers, new compartmentation)</li>
+  <li>A near-miss, false-alarm pattern, or actual fire</li>
+  <li>New regulatory guidance affecting your building type</li>
+</ul>
+
+<p>The accepted industry practice for premises with no significant change is an <strong>annual review</strong>. For higher-risk premises &mdash; care homes, HMOs, student accommodation, healthcare, anywhere with sleeping risk &mdash; the practical interval is shorter. For very low-risk premises with no changes, a 2 or 3 year cycle can be defensible if documented.</p>
+
+<p>The published reference for FRA methodology is <strong>PAS 79-1</strong> (premises other than housing) and <strong>PAS 79-2</strong> (housing). A defensible FRA follows the PAS 79 structure or an equivalent methodology that demonstrably covers the same ground.</p>
+
+<h3>Who can do one</h3>
+
+<p>The Order requires the assessment be carried out by a &ldquo;competent person.&rdquo; The law doesn&rsquo;t mandate a specific certificate &mdash; but the post-Grenfell enforcement environment has raised the bar for what &ldquo;competent&rdquo; means in practice. The reasonable expectations are now:</p>
+
+<ul>
+  <li>Recognised qualification (e.g. NEBOSH Fire Safety Certificate, IFSM, FPA, or equivalent)</li>
+  <li>Demonstrable experience appropriate to your building type</li>
+  <li>Third-party accreditation where available (e.g. <strong>BAFE SP205</strong> for fire-risk-assessment providers)</li>
+  <li>Professional indemnity insurance covering the assessment work</li>
+</ul>
+
+<p>The Building Safety Regulator and your insurer will both ask. If your current FRA was produced by someone whose credentials you can&rsquo;t evidence today, that itself is a flag worth a second-opinion review.</p>
+
+<h3>What a good FRA actually contains</h3>
+
+<p>A defensible FRA covers, at minimum:</p>
+
+<ul>
+  <li>Building description, occupancy profile and use</li>
+  <li>Identification of fire hazards (sources of ignition, fuel, oxygen, and the people at risk)</li>
+  <li>Evaluation of existing fire safety measures (detection, alarm, evacuation strategy, compartmentation, means of escape, signage, emergency lighting, fire-fighting equipment, management arrangements)</li>
+  <li>Identification of any shortfalls &mdash; with risk rating and prioritised remediation</li>
+  <li>An action plan with named responsibilities and target dates</li>
+  <li>Review date</li>
+  <li>Named assessor with credentials</li>
+</ul>
+
+<p>What we routinely see missing: photographic evidence of compartmentation conditions, specific reference to the building&rsquo;s fire alarm category (BS 5839-1), evacuation strategy assumptions tested against an actual scenario, and a plan that&rsquo;s been signed off by the Responsible Person rather than left as a recommendation.</p>
+
+<h3>The most common findings we see on review</h3>
+
+<p>Over the last 12 months we&rsquo;ve reviewed FRAs across commercial estates, NHS trusts, social housing portfolios and listed buildings. The themes that come up again and again:</p>
+
+<ul>
+  <li><strong>Out-of-date.</strong> The FRA was current the day it was written; the building has changed since. The most common gap is fit-out or refurbishment work that altered compartmentation or escape routes without the FRA being updated.</li>
+  <li><strong>Passive fire compartmentation untested.</strong> The FRA cites compartmentation as a control measure but the actual condition of fire stopping, fire doors and cavity barriers hasn&rsquo;t been physically surveyed.</li>
+  <li><strong>Alarm category mismatch.</strong> The FRA assumes a Category L1 / L2 / L4 / L5 / M system, but the alarm actually installed in the building isn&rsquo;t that category &mdash; sometimes the building has been downgraded or partially decommissioned without anyone updating the assessment.</li>
+  <li><strong>Action plans without owners.</strong> The FRA lists 14 remedial actions but nobody is named as the owner of any of them, and no review date is set. Six months later nothing has moved.</li>
+  <li><strong>Evacuation strategy assumption gaps.</strong> &ldquo;Simultaneous evacuation&rdquo; is stated but the means-of-escape capacity hasn&rsquo;t been calculated against the actual occupancy.</li>
+</ul>
+
+<h3>Send us your FRA &mdash; free second-opinion review</h3>
+
+<div class="cta-callout">
+  <p><strong>If you have an existing fire risk assessment, send us the PDF and we&rsquo;ll come back with a free, no-obligation second-opinion review.</strong></p>
+
+  <p>You&rsquo;ll receive a plain-English summary covering:</p>
+  <ul>
+    <li>Whether the assessment looks &ldquo;suitable and sufficient&rdquo; against current standards</li>
+    <li>The top three actions we&rsquo;d prioritise from the report&rsquo;s findings</li>
+    <li>Any gaps we noticed that the assessment didn&rsquo;t cover</li>
+    <li>An honest view on whether the assessment needs full re-doing or just a targeted update</li>
+  </ul>
+
+  <p><strong>How to send it:</strong> email the PDF to <a href="mailto:info@geminiampm.co.uk?subject=FRA%20review%20request">info@geminiampm.co.uk</a> with the subject &ldquo;FRA review request&rdquo; and a one-line note about the building (type, approximate size, anything you&rsquo;re specifically worried about). We respond within <strong>5 working days</strong>. No quote, no follow-up sales call &mdash; just our observations. If you want us to act on anything we flag, that conversation is yours to start.</p>
+
+  <p>For files larger than 25MB or anything you&rsquo;d prefer to send via secure transfer, call us first on <a href="tel:+443300430080">0330 043 0080</a> and we&rsquo;ll set up a shared folder.</p>
+</div>
+
+<p>The point of the review service is straightforward. A second pair of qualified eyes on an FRA, before the next enforcement visit or insurer audit, is genuinely useful &mdash; and we&rsquo;d rather spend half an hour reading one and giving you an honest read than have you find out from the regulator that something was missed.</p>
+` },
   { cat: 'Company News', date: '26.06.2026', slug: 'homes-england-imaf-supplier-panel-application',
     title: 'Gemini AMPM applies to the Homes England IMAF supplier panel',
     teaser: 'Gemini AMPM has submitted an application to join the Interim Measures Alarm Fund supplier panel &mdash; the government scheme replacing waking-watch costs in residential buildings under remediation.',

@@ -502,6 +502,13 @@ html[data-skin="day"] .founder .portrait image-slot { background: rgba(28,24,18,
 .gaccred .t { font-family: var(--d-display); font-weight: 700; text-transform: uppercase; font-size: 20px; line-height: 0.98; color: #fff; }
 .gaccred .d { font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(244,234,216,0.6); line-height: 1.35; }
 
+/* ===== news article CTA callout box ===== */
+.article-body .cta-callout { background: rgba(232,116,44,0.10); border: 1px solid rgba(232,116,44,0.45);
+  border-radius: 6px; padding: clamp(22px, 3vw, 32px); margin: clamp(24px, 4vw, 40px) 0; }
+.article-body .cta-callout p:first-child { font-size: 18px; line-height: 1.55; color: var(--ink, #f4ead8); margin-top: 0; }
+.article-body .cta-callout strong { color: var(--ink, #f4ead8); }
+.article-body .cta-callout a { color: var(--m-orange); font-weight: 600; }
+
 /* ===== pillar FAQ (per-service expandable Q&A — feeds FAQPage schema) ===== */
 .pfaq { display: grid; gap: 12px; }
 .pfaq__item { background: var(--paper, #161d36); border: 1px solid var(--line, rgba(244,234,216,0.18));
