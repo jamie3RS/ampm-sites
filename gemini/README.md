@@ -1,65 +1,44 @@
-# Gemini AMPM — production site (Astro 6)
+# Gemini AMPM — renewed website (on the AMPM group design system)
 
-The production rebuild of geminiampm.co.uk on Astro + Cloudflare Pages, following the 11-section service-vertical template in `../audits/SERVICE_VERTICAL_TEMPLATE.md`.
+A fresh attempt at renewing **geminiampm.co.uk**, built on the same design
+system as the AMPM Building Services site so the two read as one group — while
+Gemini keeps its own night / PM→AM "we keep watch" identity. Designed as a
+**re-skin within the existing WordPress install**, so no SEO equity is lost.
 
-## What's shipped (Phase 1)
+## Deliverables
 
-- Astro 6 scaffold
-- All 11 section components, statically authored
-- **Gas Suppression pillar** as the first fully-built page (worst-converting GSC cluster — 25k impressions, ~0% conversion)
-- JSON-LD schema bundle (Service + Offers + BreadcrumbList + FAQPage + HowTo + LocalBusiness)
-- Three forms (consult, quote, maintenance) + footer mini-form + sticky mobile CTA bar — wired to `mailto:` fallback
-- All client + manufacturer logos lifted from the static prototype
-
-## What's deferred (Phase 2 / 3)
-
-- **Payload CMS 3** for content authoring without redeploys
-- **Resend + Cloudflare Turnstile + D1** for proper form submission, attribution and lead-deliverability guarantees
-- The other 6 pillars (template ready, just need content authored)
-- Live Google reviews chip in the hero trust strip (Cloudflare Cron Trigger + D1 cache)
-- Per-pillar mailbox routing rules in Microsoft 365
-
-## Develop locally
-
-```
-cd _websites/gemini
-npm install
-npm run dev
-```
-
-Open http://localhost:4321.
-
-## Build
-
-```
-npm run build
-```
-
-Output goes to `dist/`.
-
-## Deploy
-
-Cloudflare Pages auto-deploys on every push to `main`. Required Pages settings:
-
-| Field | Value |
+| File | What it is |
 |---|---|
-| Build command | `cd gemini && npm install --no-audit --no-fund && npm run build` |
-| Build output directory | `gemini/dist` |
-| Root directory | *(blank)* |
-| Node version | 22 |
+| `index.html` | The clickable renewed site — home, services overview, 7 service pillars, sectors, why, about, news, casework, contact. Hash-routed. |
+| `Gemini AMPM — SEO Migration Map.html` | Printable handoff doc: full URL inventory (live → renewed), redirect register, pre-launch checklist. |
 
-Custom domain: `gemini.ampm.co.uk`.
+## How it relates to the group
 
-## File layout
+- **Shared DNA with AMPM Building Services:** Big Shoulders + Archivo type, the
+  four-colour meridian, the stamp/kicker vocabulary, identical nav/footer chrome.
+- **Gemini owns the night:** the homepage runs the inverted PM→AM arc (dusk →
+  deep night → dawn handback) with the night-log differentiator; interior pages
+  run the Building Services calm-page system in a dark "night" skin.
 
-```
-gemini/
-  src/
-    components/    # 11 section components + form components + primitives
-    layouts/       # Base.astro wrapping every page
-    lib/           # TypeScript content types + JSON-LD schema generators + Gas Suppression content
-    pages/         # index.astro (homepage), gas-suppression.astro (first pillar)
-    styles/        # Design tokens + base + components
-  public/
-    assets/        # Logos + cert PDFs (lifted from the static prototype)
-```
+## Tweaks (toolbar → Tweaks)
+
+- **Night-arc intensity** — Full / Subtle / Still
+- **Homepage** — "The Watch" (full night-log story) / "First Light" (calmer, who-we-are led)
+- **Interior skin** — Night (dark) / Day (cream)
+- **Display face** — Big Shoulders / Archivo Black
+- **Accent** — Amber / Blue / Green / Violet
+
+## SEO principle
+
+Every live URL is frozen: the 7 pillars, their ~40 child service pages, the 8
+`/sector/…/` pages, news, casework and system pages all keep their exact slugs,
+titles and meta. The renewed templates render onto the same addresses — no
+redirects needed. See the migration map for the page-by-page spec.
+
+## Files
+
+`g-data.jsx` content model (URLs mirror live) · `g-shell.jsx` nav/footer/helpers ·
+`g-home.jsx` both home directions · `g-service.jsx` pillar template ·
+`g-pages.jsx` interior pages · `gemini-base.css` (BS sub-page system) +
+`gemini-theme.css` (night layer). Imagery is image-slot placeholders for the
+client to drop real photos into.
