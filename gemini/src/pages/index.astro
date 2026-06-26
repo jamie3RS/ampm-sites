@@ -105,7 +105,15 @@ const phone = CONTACT.phone;
           <h2 class="gh2 sm">Tell us about<br /><span class="lt">the building.</span></h2>
           <p class="gquick__sub">A named engineer comes back within 24 hours &mdash; not a call centre. Three fields, no captcha.</p>
         </div>
-        <form class="gquick__form" method="post" action={'mailto:info@geminiampm.co.uk?subject=' + encodeURIComponent('Website quick enquiry')} enctype="text/plain">
+        <form class="gquick__form" method="POST" action="https://formsubmit.co/info@geminiampm.co.uk">
+          {/* Formsubmit hidden config */}
+          <input type="hidden" name="_subject" value="Website quick enquiry — Gemini AMPM" />
+          <input type="hidden" name="_template" value="table" />
+          <input type="hidden" name="_next" value="https://gemini.ampm.co.uk/contact/thanks/" />
+          <input type="hidden" name="_captcha" value="true" />
+          <input type="hidden" name="_honey" value="" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" />
+          <input type="hidden" name="Source" value="Homepage quick form" />
+
           <label class="gquick__field">
             <span>Your name</span>
             <input name="Name" type="text" required autocomplete="name" />
@@ -237,7 +245,7 @@ const phone = CONTACT.phone;
       <GStamp time="05:10" shift="Latest insights" />
       <h2 class="gh2 reveal">From the<br /><span class="lt">control room.</span></h2>
       <div class="gnews-row reveal">
-        {NEWS.slice(0, 3).map((n) => (
+        {NEWS.filter((n) => n.published !== false).slice(0, 3).map((n) => (
           <a class="gnews" href="/news/">
             <image-slot id={'g-news-' + n.slug} shape="rect" class="ni" style="width:100%; height:196px; display:block"
               src={n.image}

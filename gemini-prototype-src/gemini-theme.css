@@ -502,6 +502,35 @@ html[data-skin="day"] .founder .portrait image-slot { background: rgba(28,24,18,
 .gaccred .t { font-family: var(--d-display); font-weight: 700; text-transform: uppercase; font-size: 20px; line-height: 0.98; color: #fff; }
 .gaccred .d { font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(244,234,216,0.6); line-height: 1.35; }
 
+/* ===== mobile responsiveness fixes (audit findings) ===== */
+/* Sticky-nav phone CTA — meets the 44×44px tap-target minimum on phone. */
+@media (max-width: 720px) {
+  .nav .phone { min-height: 44px; padding: 10px 16px; display: inline-flex; align-items: center; }
+}
+/* The 4-segment colour ribbon stacks 2×2 on phone instead of crammed strip. */
+@media (max-width: 720px) {
+  .gribbon .bar { grid-template-columns: 1fr 1fr; }
+  .gribbon .legend { flex-direction: column; gap: 6px; }
+}
+/* Accreditation flip-tiles use :hover which never fires on touch. Add a tap
+   trigger: tapping once flips, tapping again on the back navigates. We
+   simulate this by toggling :focus-within (the cell is an <a>, so tap = focus). */
+.gaccred a.cell.linked:focus-within .flipper { transform: rotateY(180deg); }
+.acc-wall a.cell.linked:focus-within .flipper { transform: rotateY(180deg); }
+/* Also: on coarse-pointer devices (touch), the flip happens on tap regardless. */
+@media (hover: none) and (pointer: coarse) {
+  .gaccred a.cell.linked:active .flipper,
+  .acc-wall a.cell.linked:active .flipper { transform: rotateY(180deg); }
+}
+
+/* ===== footer legal strip ===== */
+.foot-legal { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(244,234,216,0.06);
+  font-size: 12.5px; color: rgba(244,234,216,0.45); display: flex; flex-wrap: wrap; gap: 8px;
+  align-items: center; }
+.foot-legal a { color: inherit; text-decoration: none; }
+.foot-legal a:hover { color: var(--ink, #f4ead8); text-decoration: underline; }
+.foot-legal span { opacity: 0.5; }
+
 /* ===== news article CTA callout box ===== */
 .article-body .cta-callout { background: rgba(232,116,44,0.10); border: 1px solid rgba(232,116,44,0.45);
   border-radius: 6px; padding: clamp(22px, 3vw, 32px); margin: clamp(24px, 4vw, 40px) 0; }

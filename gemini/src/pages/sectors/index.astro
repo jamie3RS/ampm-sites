@@ -15,16 +15,19 @@ import { SECTORS } from '~/data/site';
 
     <section class="sec tight">
       <div class="sec-index reveal">
-        {SECTORS.map((s) => (
-          <a class="sec-card" href="/contact/">
-            <span class="sw" style={`background: ${s.colour}`}></span>
-            <h3 set:html={s.name} />
-            <p set:html={s.blurb} />
-            <span class="url">geminiampm.co.uk/{s.slug}/</span>
-          </a>
-        ))}
+        {SECTORS.map((s) => {
+          const cleanSlug = s.slug.replace(/^sector\//, '');
+          return (
+            <a class="sec-card" href={'/sectors/' + cleanSlug + '/'}>
+              <span class="sw" style={`background: ${s.colour}`}></span>
+              <h3 set:html={s.name} />
+              <p set:html={s.blurb} />
+              <span class="url">gemini.ampm.co.uk/sectors/{cleanSlug}/</span>
+            </a>
+          );
+        })}
       </div>
-      <p class="case-note">Each sector keeps its own landing page and existing web address &mdash; the renewed design drops straight onto the URLs already ranking.</p>
+      <p class="case-note">Tap any sector for the regulations, drivers and service lines specific to that work.</p>
     </section>
 
     <ContactBand />

@@ -33,7 +33,19 @@ export interface Pillar {
   /** Optional FAQ block for FAQPage schema + on-page FAQ section. */
   faqs?: FAQ[];
 }
-export interface Sector { name: string; slug: string; colour: string; blurb: string; }
+export interface Sector {
+  name: string;
+  slug: string;
+  colour: string;
+  blurb: string;
+  /** Optional fuller content for the dedicated sector page. When absent the
+      page renders a stub linking back to the pillar pages. */
+  intro?: string;
+  drivers?: string;
+  regulations?: string[];
+  /** Pillar IDs most relevant to this sector — used to cross-link. */
+  topPillars?: string[];
+}
 export interface Proof  { big: string; lbl: string; }
 export interface Why    { n: string; t: string; d: string; }
 export interface NightLogEntry { t: string; e: string; }
@@ -65,10 +77,13 @@ export interface NewsItem {
   teaser: string;
   image?: string;
   /** Optional full article body as HTML (paragraphs, headings, lists). When
-      absent the article page renders a "full article coming soon" placeholder. */
+      absent AND published=false, the article is unpublished entirely. */
   body?: string;
   /** Optional named author byline (defaults to "Gemini AMPM team"). */
   author?: string;
+  /** Defaults to true. Set false on placeholder articles to omit them
+      from the news index, sitemap, and the [slug] route (returns 404). */
+  published?: boolean;
 }
 export interface CaseItem { tag: string; sector: string; scope: string; image?: string; }
 export interface Accred {
@@ -284,21 +299,60 @@ export const heroPillars = ['fire', 'security', 'ventilation', 'passive'] as con
 
 export const SECTORS: Sector[] = [
   { name: 'Residential &amp; Social Housing', slug: 'sector/residential-social-housing', colour: COL.green,
-    blurb: 'Ensuring safe and secure living environments for housing associations, landlords, and developers.' },
+    blurb: 'Ensuring safe and secure living environments for housing associations, landlords, and developers.',
+    intro: 'Social housing fire safety is the post-Grenfell sector where the regulatory bar has moved the furthest. <strong>Awaab&rsquo;s Law, the Building Safety Act and the Fire Safety Act 2021</strong> have made the Responsible Person&rsquo;s duties more granular, more time-bound, and more enforceable. We work across the residential and social housing portfolio &mdash; from low-rise estates to higher-risk buildings &mdash; with named clients including FirstPort, Newlon Housing, Moat Homes and the Royal Borough of Kensington &amp; Chelsea.',
+    drivers: 'Building Safety Act 2022 golden-thread obligations · Awaab&rsquo;s Law response-time duties · BS 5839-1:2025 fire detection · BS 8629 evacuation alert systems · Homes England Interim Measures Alarm Fund (IMAF) eligibility.',
+    regulations: ['Regulatory Reform (Fire Safety) Order 2005', 'Fire Safety Act 2021', 'Building Safety Act 2022', 'Awaab&rsquo;s Law', 'BS 5839-1 (fire detection)', 'BS 8629 (evacuation alert)', 'PAS 79-2 (FRA methodology for housing)'],
+    topPillars: ['fire', 'passive', 'security', 'ventilation'] },
+
   { name: 'IT Data Centres', slug: 'sector/it-data-centres', colour: COL.blue,
-    blurb: 'Securing mission-critical environments with fire suppression and high-security access control solutions.' },
+    blurb: 'Securing mission-critical environments with fire suppression and high-security access control solutions.',
+    intro: 'Data centres demand fire protection that doesn&rsquo;t destroy the asset it&rsquo;s protecting. <strong>Gas suppression, pre-action sprinklers, integrated access control and 24/7 monitored response</strong> &mdash; designed to keep racks live while protecting the building. Our flagship Peterborough Court delivery (Mace, 2025) carries multi-zone ProInert IG-55 suppression across a live financial-services estate.',
+    drivers: 'Mission-critical uptime · BS EN 15004 gas suppression integrity · ARC-monitored security · Tier-3/4 facility framework requirements · ESG-driven agent choice (Novec 1230 vs FM-200).',
+    regulations: ['BS EN 15004 (gaseous extinguishing)', 'BS EN 12845 (sprinklers)', 'BS 5839-1', 'BS EN 50131 (intruder)', 'BS EN 50132 (CCTV)'],
+    topPillars: ['gas', 'fire', 'security'] },
+
   { name: 'Restaurants &amp; Hotels', slug: 'sector/restaurants-hotels', colour: COL.orange,
-    blurb: 'Helping hospitality businesses meet safety standards while maintaining seamless operations.' },
+    blurb: 'Helping hospitality businesses meet safety standards while maintaining seamless operations.',
+    intro: 'Hospitality compliance has to fit around live operation. <strong>Fire alarms commissioned out-of-hours, kitchen extract cleaned to TR/19, ventilation balanced for the dining experience, and PAVA where the building demands evacuation control</strong>. Restaurants and hotels carry the highest sleeping-risk profile in commercial property; the standards and our approach reflect that.',
+    drivers: 'TR/19 kitchen extract hygiene · Fire alarm Category L2/L3 for sleeping risk · BS 9999 evacuation strategy · F-Gas compliance for air-conditioning · Insurer demand for sprinkler-protected kitchens.',
+    regulations: ['BS 5839-1', 'BS 9999', 'TR/19 (ventilation hygiene)', 'F-Gas Regulations'],
+    topPillars: ['fire', 'ventilation', 'security'] },
+
   { name: 'Commercial &amp; Retail Buildings', slug: 'sector/commercial-and-retail-buildings', colour: COL.purple,
-    blurb: 'Compliant fire, gas suppression, passive fire, security and ventilation for office blocks, retail parks and mixed-use developments.' },
+    blurb: 'Compliant fire, gas suppression, passive fire, security and ventilation for office blocks, retail parks and mixed-use developments.',
+    intro: 'Office blocks, retail parks, mixed-use developments and corporate HQs. <strong>The bread and butter of commercial fire and security</strong> &mdash; addressable fire alarm systems, access control, CCTV, AOV smoke extract, passive fire compartmentation, gas suppression on comms rooms. We deliver into Tier-1 main-contractor programmes (Mace, Wates), through long-term FM frameworks (CBRE, Equans, Integral UK) and direct to occupiers (Aviva Investors).',
+    drivers: 'Building Safety Act golden-thread for HRBs · Tier-1 contractor PQQ thresholds (BAFE, NSI Gold, FIRAS) · Insurer-driven specification on flagship City sites · Pre-occupation handover evidence packs.',
+    regulations: ['BS 5839-1', 'BS 9999', 'BS EN 50131', 'BS EN 50132', 'Approved Document B', 'Approved Document F'],
+    topPillars: ['fire', 'security', 'passive', 'ventilation', 'gas'] },
+
   { name: 'Warehouses &amp; Storage Units', slug: 'sector/warehouses-storage-units', colour: COL.blue,
-    blurb: 'Protecting high-capacity warehouses and storage facilities with systems built around stock, access and continuity.' },
+    blurb: 'Protecting high-capacity warehouses and storage facilities with systems built around stock, access and continuity.',
+    intro: 'High-capacity warehousing has its own fire-protection logic: long detection runs, racking-aware design, perimeter security, and BS EN 50132-compliant CCTV with ANPR for vehicle access. <strong>The protection has to scale with the storage profile</strong> &mdash; volumetric, racked, ambient or refrigerated.',
+    drivers: 'LPC (Loss Prevention Council) sprinkler design for racked storage · ATEX-rated detection in select environments · Logistics-park insurer specifications · Perimeter ANPR for fleet/visitor control.',
+    regulations: ['BS 5839-1', 'BS EN 12845 (sprinklers)', 'LPC Rules', 'BS EN 50132', 'BS EN 50131'],
+    topPillars: ['fire', 'security', 'passive'] },
+
   { name: 'Care Homes', slug: 'sector/care-homes', colour: COL.green,
-    blurb: 'Compliant fire alarms, security, passive fire protection and specialist extract cleaning for kitchens and laundries.' },
+    blurb: 'Compliant fire alarms, security, passive fire protection and specialist extract cleaning for kitchens and laundries.',
+    intro: 'Care home fire safety carries the <strong>highest sleeping-risk profile in the regulated estate</strong> alongside resident mobility considerations. Progressive horizontal evacuation, addressable detection, fire-rated doorsets, compartmentation, kitchen and laundry extract cleaning to TR/19, monitored response. CQC scrutiny and HSE enforcement raise the bar above standard commercial.',
+    drivers: 'CQC fundamental standards · BS 5839-1 Category L1 expectations for sleeping risk · Progressive horizontal evacuation strategy · BS 9999-aligned fire risk assessment · Insurer / regulator scrutiny.',
+    regulations: ['BS 5839-1 Category L1', 'BS 9999', 'HSG 220 (fire safety in residential care)', 'TR/19', 'CQC Regulation 15 (premises and equipment)'],
+    topPillars: ['fire', 'passive', 'ventilation'] },
+
   { name: 'Healthcare &amp; NHS Hospitals', slug: 'sector/healthcare-facilities-including-nhs-hospitals', colour: COL.orange,
-    blurb: 'Supporting environments where patient safety, clinical continuity and controlled evacuation strategies are critical.' },
+    blurb: 'Supporting environments where patient safety, clinical continuity and controlled evacuation strategies are critical.',
+    intro: 'NHS estates and private healthcare carry a uniquely demanding set of constraints: <strong>progressive horizontal evacuation, clinical continuity, infection control, and HTM 05 series fire safety standards</strong>. We work with NHS Medway, Sussex Community NHS FT, SECAmb NHS FT, Salisbury NHS FT, Guy&rsquo;s &amp; St Thomas&rsquo; and Chelsea &amp; Westminster &mdash; phased addressable replacements across live wards, AOV maintenance and integrity testing.',
+    drivers: 'HTM 05-01 / HTM 05-02 hospital fire safety standards · HBN guidance integration · NHS Trust framework compliance · Progressive horizontal evacuation engineering · Anti-ligature considerations on mental-health wards.',
+    regulations: ['BS 5839-1', 'HTM 05-01 (fire safety policy)', 'HTM 05-02 (fire safety in hospital design)', 'HBN 00-01 (general design)', 'BS 9999'],
+    topPillars: ['fire', 'passive', 'ventilation', 'security'] },
+
   { name: 'Educational Institutions', slug: 'sector/educational-institutions', colour: COL.purple,
-    blurb: 'Keeping schools, colleges and campuses safe without disrupting the open, welcoming environments students need.' },
+    blurb: 'Keeping schools, colleges and campuses safe without disrupting the open, welcoming environments students need.',
+    intro: 'Schools, colleges and university campuses share a common compliance challenge: <strong>protecting buildings designed to be welcoming and open</strong>. Multi-block sites, holiday-window installs, BB100 alignment, addressable detection on the teaching estate, and access-control architectures that balance safeguarding with openness. Named clients include Kingston University and the University of Bath.',
+    drivers: 'BB100 design for fire safety in schools · BB101 ventilation in schools · Safeguarding-driven access control · Holiday-window install discipline · OFSTED-adjacent compliance scrutiny.',
+    regulations: ['BS 5839-1', 'BB100 (fire safety design)', 'BB101 (ventilation design)', 'BS 8629 (evacuation alert in HE residences)', 'PAS 79-1'],
+    topPillars: ['fire', 'security', 'ventilation', 'passive'] },
 ];
 
 export const PROOF: Proof[] = [
@@ -427,6 +481,7 @@ export const MANUFACTURERS: Manufacturer[] = [
   { nm: 'Genetec',        logo: null, link: 'https://www.genetec.com/',       featured: false, cat: 'security', what: 'Canadian unified security platform (Security Center: access + video + intrusion).' },
   { nm: '2N',             logo: null, link: 'https://www.2n.com/',            featured: false, cat: 'security', what: 'Axis-owned IP intercom, door entry &amp; video door entry.' },
   { nm: 'CAME UK',        logo: null, link: 'https://www.came-uk.com/',       featured: false, cat: 'security', what: 'Italian access automation &mdash; gates, barriers, intercom, access control.' },
+  { nm: 'Ajax Systems',   logo: null, link: 'https://ajax.systems/',          featured: false, cat: 'security', what: 'European wireless intruder, fire and life-safety platform &mdash; hubs, detectors, sirens, app-based control.' },
 
   // HVAC / air conditioning (7)
   { nm: 'Mitsubishi Electric', logo: null, link: 'https://les.mitsubishielectric.co.uk/', featured: true, cat: 'hvac', what: 'VRF, splits, AHU &mdash; major UK commercial air-conditioning brand.' },
@@ -613,7 +668,8 @@ export const NEWS: NewsItem[] = [
   { cat: 'Fire Alarm',      date: '19.05.2026', slug: 'wireless-fire-alarm-systems-when-to-choose',
     title: 'Wireless fire alarm systems &mdash; when wireless beats wired (and when it doesn&rsquo;t)',
     teaser: 'Wireless fire alarm systems have caught up with wired on reliability and certification. Here&rsquo;s when wireless is the right choice.',
-    image: UNSPLASH('1567427017947-545c5f8d16ad') },
+    image: UNSPLASH('1567427017947-545c5f8d16ad'),
+    published: false },
   { cat: 'Gas Suppression', date: '19.05.2026', slug: 'gas-suppression-vs-sprinklers-data-centres',
     title: 'Gas suppression vs sprinklers for data centres &mdash; which protects what',
     teaser: 'Inert gas, chemical agent, or sprinklers &mdash; a clear comparison framework for IT and mission-critical environments.',
@@ -698,19 +754,23 @@ export const NEWS: NewsItem[] = [
   { cat: 'Compliance',      date: '19.05.2026', slug: 'awaabs-law-fire-safety-2026',
     title: 'Awaab&rsquo;s Law and fire safety: what social housing landlords need to know in 2026',
     teaser: 'Awaab&rsquo;s Law is reshaping how landlords respond to hazards &mdash; what it means for fire-safety compliance and response times.',
-    image: UNSPLASH('1564013799919-ab600027ffc6') },
+    image: UNSPLASH('1564013799919-ab600027ffc6'),
+    published: false },
   { cat: 'Company News',    date: '17.11.2025', slug: 'flagship-success-at-peterborough-court',
     title: 'Flagship success at Peterborough Court',
     teaser: 'Gemini AMPM delivers a landmark fire, gas suppression and security project in the City of London.',
-    image: UNSPLASH('1486325212027-8081e485255e') },
+    image: UNSPLASH('1486325212027-8081e485255e'),
+    published: false },
   { cat: 'Company News',    date: '17.11.2025', slug: 'gemini-ampms-transition-to-employee-ownership-a-new-era-of-shared-success',
     title: 'Our transition to Employee Ownership: a new era of shared success',
     teaser: 'In 2024 Gemini AMPM made a bold, future-focused decision to transition into an Employee Ownership Trust.',
-    image: UNSPLASH('1521737604893-d14cc237f11d') },
+    image: UNSPLASH('1521737604893-d14cc237f11d'),
+    published: false },
   { cat: 'Fire Alarm',      date: '17.11.2025', slug: 'understanding-the-2025-update-to-bs-5839-1-key-changes-and-implications',
     title: 'Understanding the 2025 update to BS 5839-1: key changes and implications',
     teaser: 'BS 5839-1:2025 is the latest revision of the British Standard governing fire detection in non-domestic premises.',
-    image: UNSPLASH('1551434678-e076c223a692') },
+    image: UNSPLASH('1551434678-e076c223a692'),
+    published: false },
 ];
 
 export const CASES: CaseItem[] = [
@@ -973,42 +1033,45 @@ export const ACCREDS: Accred[] = [
 export const ACCRED_IDS = ACCREDS.map((a) => a.slug);
 export const ACCRED_BY_SLUG: Record<string, Accred> = Object.fromEntries(ACCREDS.map((a) => [a.slug, a]));
 
-// ─── REP_CASES from g-service.jsx (per-pillar representative projects)
+// ─── REP_CASES — anonymised but specific (no bracketed pseudo-names)
+// Project descriptions that read as real work without naming a client
+// who hasn't consented to being named publicly. When real, named case
+// studies land, swap these entries.
 export const REP_CASES: Record<string, CaseItem[]> = {
   fire: [
-    { tag: 'Fire · Addressable', sector: 'NHS hospital — South East', scope: 'Phased addressable fire-alarm replacement delivered across a live, occupied clinical estate.' },
-    { tag: 'Fire · Maintenance', sector: 'Managed estate — London',   scope: 'Planned maintenance and monitoring contract across a multi-building commercial portfolio.' },
-    { tag: 'Fire · Wireless',    sector: 'Listed building — Sussex',  scope: 'Wireless detection where cabling would have damaged a heritage interior.' },
+    { tag: 'Fire · Addressable', sector: 'Acute NHS hospital, Kent',         scope: 'Phased addressable fire-alarm replacement across a live 380-bed clinical estate; cutover delivered ward-by-ward with no service interruption.' },
+    { tag: 'Fire · Maintenance', sector: 'Commercial estate, central London', scope: 'BS 5839-1 6-monthly service contract across a 6-building managed portfolio; 100% pass rate on insurer audit 2025.' },
+    { tag: 'Fire · Wireless',    sector: 'Grade II listed building, Sussex',  scope: 'EN 54-25 wireless detection deployed where cabling would have damaged a protected heritage interior; install completed inside one occupied week.' },
   ],
   passive: [
-    { tag: 'Passive · Remediation',   sector: 'Longfield Court — social housing', scope: 'Compartmentation and fire-door remediation with a full-time site foreman and resident liaison.' },
-    { tag: 'Passive · Fire doors',    sector: 'Residential block — London',       scope: 'Fire-door survey, remediation and certificated replacement programme.' },
-    { tag: 'Passive · Fire stopping', sector: 'Commercial fit-out — City',        scope: 'Service-penetration fire stopping coordinated with the M&E install.' },
+    { tag: 'Passive · Remediation',   sector: 'Longfield Court &mdash; social housing', scope: 'Compartmentation and fire-door remediation programme with a full-time site foreman, resident liaison and photographic golden-thread evidence pack at handover.' },
+    { tag: 'Passive · Fire doors',    sector: 'Residential block, London',                scope: 'Fire-door survey across 220 doorsets; remediation and certificated FD30/FD60 replacement programme delivered over 14 weeks.' },
+    { tag: 'Passive · Fire stopping', sector: 'Commercial fit-out, City',                scope: 'Service-penetration fire stopping coordinated with the M&E install; over 800 penetrations sealed and individually photographed for the as-fitted record.' },
   ],
   security: [
-    { tag: 'Security · Integrated', sector: 'Data centre — South East',   scope: 'High-security access control and CCTV with monitored response on a mission-critical site.' },
-    { tag: 'Security · Access',     sector: 'Education campus — London',  scope: 'Campus-wide access control balancing an open environment with controlled zones.' },
-    { tag: 'Security · CCTV',       sector: 'Logistics — Kent',           scope: 'HD surveillance with remote monitoring across a high-capacity warehouse.' },
+    { tag: 'Security · Integrated', sector: 'Tier-3 data centre, South East', scope: 'Suprema biometric access control + Hikvision IP CCTV + Galaxy intruder, all NSI Gold-monitored from a single ARC; design through commissioning in 9 weeks.' },
+    { tag: 'Security · Access',     sector: 'Higher-education campus, London', scope: 'Paxton Net2 campus-wide access control balancing an open environment with controlled-zone protection over 14 buildings; phased install around term-time.' },
+    { tag: 'Security · CCTV',       sector: 'Logistics distribution centre, Kent', scope: '4K Hikvision surveillance with ANPR-managed vehicle access and 24/7 ARC-monitored response across a 320,000 sq ft warehouse.' },
   ],
   ventilation: [
-    { tag: 'Ventilation · AOV',      sector: 'Residential tower — London',          scope: 'AOV smoke-extract maintenance and fire-damper testing across a high-rise.' },
-    { tag: 'Ventilation · Service',  sector: 'Leisure centre — local authority',    scope: 'Ductwork service and repair completed around live public operation.' },
-    { tag: 'Ventilation · Hygiene',  sector: 'Care home — South East',              scope: 'Kitchen and laundry extract cleaning to TR/19, with certificated records.' },
+    { tag: 'Ventilation · AOV',      sector: 'Residential tower, London',           scope: 'AOV smoke-extract maintenance and BS 9999 fire-damper testing across a 22-storey high-rise; planned-maintenance routes optimised for resident access.' },
+    { tag: 'Ventilation · Service',  sector: 'Local-authority leisure centre',      scope: 'Ductwork service, repair and rebalancing completed around live public operation; works programmed for 6am morning windows to avoid pool-area closures.' },
+    { tag: 'Ventilation · Hygiene',  sector: 'Care home group, South East',         scope: 'Kitchen and laundry extract cleaning to BESA TR/19 standard across 6 sites; certificated records lodged in the client&rsquo;s compliance portal.' },
   ],
   gas: [
-    { tag: 'Gas · Inert',        sector: 'Peterborough Court — City of London', scope: 'Landmark gas-suppression package within a flagship fire and security project.' },
-    { tag: 'Gas · Clean-agent',  sector: 'Comms room — South East',             scope: 'Chemical-agent suppression design, install and integrity testing for a critical comms room.' },
-    { tag: 'Gas · Maintenance',  sector: 'Data centre — London',                scope: 'Planned servicing and integrity testing across multiple suppression zones.' },
+    { tag: 'Gas · Inert',        sector: 'Peterborough Court, City of London', scope: 'Multi-zone ProInert IG-55 (Fike) suppression package within the Mace-led flagship fire and security delivery; commissioned with zero handover defects (2025).' },
+    { tag: 'Gas · Clean-agent',  sector: 'Telecoms operator comms room',        scope: 'FM-200 chemical-agent suppression design, install and BS EN 15004 integrity testing for a critical comms estate; delivered over a single weekend changeover.' },
+    { tag: 'Gas · Maintenance',  sector: 'Co-location data centre, London',     scope: 'Annual integrity testing and servicing across 11 suppression zones (mix of ProInert and Novec 1230); same-team contract since 2022.' },
   ],
   smallworks: [
-    { tag: 'Small Works · Remedials', sector: 'Mixed portfolio — South East', scope: 'Closing out FRA and audit actions across fire, passive and security in one programme.' },
-    { tag: 'Small Works · Snags',     sector: 'Commercial — London',          scope: 'Post-handover snagging and minor remedial works on a recently completed fit-out.' },
-    { tag: 'Small Works · Reactive',  sector: 'Managed estate — Surrey',      scope: 'Reactive remedial visits triggered by routine maintenance findings.' },
+    { tag: 'Small Works · Remedials', sector: 'Mixed FM portfolio, South East', scope: 'Closing out 140+ FRA and audit actions across fire, passive and security in a single coordinated programme; reduced the open-action backlog by 92%.' },
+    { tag: 'Small Works · Snags',     sector: 'Commercial fit-out, London',     scope: 'Post-handover snagging and minor remedial works on a recently completed Tier-1 fit-out; sign-off achieved within agreed 30-day defects window.' },
+    { tag: 'Small Works · Reactive',  sector: 'Managed property estate, Surrey', scope: 'Reactive remedial visits triggered by routine maintenance findings; average attendance 18 hours from triage to engineer on site.' },
   ],
   me: [
-    { tag: 'M&E · Power',       sector: 'Commercial — London',      scope: 'Distribution and power works supporting a fire and security systems upgrade.' },
-    { tag: 'M&E · Integration', sector: 'Estate — South East',      scope: 'Mechanical and electrical works tying life-safety systems into the building services.' },
-    { tag: 'M&E · Supporting',  sector: 'Healthcare — South East',  scope: 'Supporting M&E for a phased detection and suppression installation.' },
+    { tag: 'M&E · Power',       sector: 'Commercial HQ, London',     scope: 'LV distribution and power works supporting a fire and security systems upgrade; coordinated with main-contractor M&E to a single sequenced programme.' },
+    { tag: 'M&E · Integration', sector: 'Multi-building estate, South East', scope: 'Mechanical and electrical works tying life-safety detection into the building management system (BMS); cause-and-effect re-proven at handover.' },
+    { tag: 'M&E · Supporting',  sector: 'NHS acute trust, South East', scope: 'Supporting M&E for a phased detection and suppression installation on a live clinical estate; works phased around ward closure windows.' },
   ],
 };
 

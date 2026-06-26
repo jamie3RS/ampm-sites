@@ -8,7 +8,12 @@ import { NEWS } from '~/data/site';
 import { graph, article, breadcrumb } from '~/lib/jsonld';
 
 export function getStaticPaths() {
-  return NEWS.map((n) => ({ params: { slug: n.slug }, props: { news: n } }));
+  // Only build pages for published articles. Placeholder/draft articles
+  // (published: false) are skipped — visiting the URL returns the
+  // site's 404 page.
+  return NEWS
+    .filter((n) => n.published !== false)
+    .map((n) => ({ params: { slug: n.slug }, props: { news: n } }));
 }
 
 const { news: n } = Astro.props;
@@ -16,7 +21,7 @@ const cleanTitle = n.title.replace(/<[^>]+>/g, '').replace(/&mdash;/g, '—').re
 const description = n.teaser.replace(/<[^>]+>/g, '').replace(/&mdash;/g, '—').replace(/&rsquo;/g, '’').slice(0, 155);
 
 // Sister-articles for the "more from the control room" footer
-const others = NEWS.filter((x) => x.slug !== n.slug).slice(0, 3);
+const others = NEWS.filter((x) => x.slug !== n.slug && x.published !== false).slice(0, 3);
 
 const schemaJson = graph(
   article(n),

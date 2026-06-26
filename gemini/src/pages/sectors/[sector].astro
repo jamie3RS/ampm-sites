@@ -1,0 +1,106 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import Kicker from '~/components/Kicker.astro';
+import ContactBand from '~/components/ContactBand.astro';
+import { SECTORS, PILLARS } from '~/data/site';
+import { graph, breadcrumb, service } from '~/lib/jsonld';
+
+export function getStaticPaths() {
+  // The original SECTORS array has slugs like "sector/residential-social-housing".
+  // Strip the "sector/" prefix so the URL is /sectors/residential-social-housing/.
+  return SECTORS.map((s) => ({
+    params: { sector: s.slug.replace(/^sector\//, '') },
+    props: { sector: s },
+  }));
+}
+
+const { sector: s } = Astro.props;
+const pillarsForSector = (s.topPillars || []).map((id: string) => PILLARS.find((p) => p.id === id)).filter(Boolean);
+const clean = (str: string) => str.replace(/&amp;/g, '&').replace(/&mdash;/g, '—').replace(/<[^>]+>/g, '');
+const sectorName = clean(s.name);
+
+const schemaJson = graph(
+  breadcrumb([
+    { name: 'Home',    href: '/' },
+    { name: 'Sectors', href: '/sectors/' },
+    { name: sectorName, href: '/sectors/' + s.slug.replace(/^sector\//, '') + '/' },
+  ]),
+  ...pillarsForSector.map((p) => ({
+    ...service(p!),
+    '@id': 'https://gemini.ampm.co.uk/sectors/' + s.slug.replace(/^sector\//, '') + '/#' + p!.id,
+    audience: { '@type': 'BusinessAudience', audienceType: sectorName },
+  })),
+);
+---
+<Base
+  title={'Fire, Security & Ventilation for ' + sectorName + ' — Gemini AMPM'}
+  description={'BAFE, NSI Gold and FIRAS-certified fire safety, security, passive fire and ventilation services for ' + sectorName.toLowerCase() + ' across UK estates.'}
+  schemaJson={schemaJson}
+>
+  <PageWrap skin="night">
+    <PageHero
+      kicker={'Sector · ' + sectorName}
+      h1={'Fire, security &amp; ventilation<br />for <span class="lt">' + s.name + '.</span>'}
+      lede={s.intro || s.blurb}
+    />
+
+    {pillarsForSector.length > 0 && (
+      <section class="sec tight">
+        <div class="reveal" style="margin-bottom: 24px">
+          <Kicker>What we deliver here</Kicker>
+          <h2 class="dhead sm">Service lines for {sectorName.toLowerCase()}.</h2>
+        </div>
+        <div class="sec-index reveal">
+          {pillarsForSector.map((p) => p && (
+            <a class="sec-card" href={'/' + p.id + '/'}>
+              <span class="sw" style={`background: ${p.colour}`}></span>
+              <h3 set:html={p.full} />
+              <p set:html={p.short} />
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {s.drivers && (
+      <section class="sec tight">
+        <div class="intro2 reveal">
+          <div>
+            <Kicker>Why it matters now</Kicker>
+            <h2 class="dhead sm">Where the compliance<br />pressure is.</h2>
+          </div>
+          <div>
+            <p class="body" set:html={s.drivers} />
+          </div>
+        </div>
+      </section>
+    )}
+
+    {s.regulations && s.regulations.length > 0 && (
+      <section class="sec tight">
+        <div class="intro2 reveal">
+          <div>
+            <Kicker>Standards we design to</Kicker>
+            <h2 class="dhead sm">The regulations<br />that shape the work.</h2>
+          </div>
+          <div>
+            <ul class="acc-covers">
+              {s.regulations.map((r) => <li set:html={r} />)}
+            </ul>
+            <p class="body" style="margin-top: 18px; color: rgba(244,234,216,0.55); font-size: 14px;">
+              Every install is delivered to the relevant British / European standard with an audit-ready evidence pack at handover.
+            </p>
+          </div>
+        </div>
+      </section>
+    )}
+
+    <ContactBand />
+  </PageWrap>
+</Base>
+
+<style>
+  .sec-card { text-decoration: none; color: inherit; display: block; }
+</style>

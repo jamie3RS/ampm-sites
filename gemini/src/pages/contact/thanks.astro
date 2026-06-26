@@ -1,0 +1,37 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import Kicker from '~/components/Kicker.astro';
+import { CONTACT } from '~/data/site';
+const tel = 'tel:' + String(CONTACT.phone).replace(/\s+/g, '');
+---
+<Base
+  title="Thanks — your enquiry is with us | Gemini AMPM"
+  description="We've received your enquiry. A named engineer responds within 24 hours, Mon-Fri."
+>
+  <PageWrap skin="night">
+    <section class="sec p-hero nightband" data-nav-dark>
+      <div class="reveal"><Kicker dark>Enquiry received</Kicker></div>
+      <h1 class="reveal d1">Thanks.<br />We&rsquo;re on it.</h1>
+      <p class="lede reveal d2">A named engineer will come back to you within 24 hours, Monday to Friday. Out-of-hours, the line is monitored on <a href={tel} style="color: var(--m-orange)">{CONTACT.phone}</a> — call it whenever, somebody picks up.</p>
+    </section>
+
+    <section class="sec tight">
+      <div class="intro2 reveal">
+        <div>
+          <Kicker>While you wait</Kicker>
+          <h2 class="dhead sm">A few links that<br />might be useful.</h2>
+        </div>
+        <div>
+          <ul style="list-style: none; padding: 0; line-height: 2;">
+            <li><a href="/services/">All seven service lines &rarr;</a></li>
+            <li><a href="/accreditations/">Our 12 accreditations &rarr;</a></li>
+            <li><a href="/clients/">The full client list &rarr;</a></li>
+            <li><a href="/news/">News &amp; insights from our team &rarr;</a></li>
+            <li><a href="/about/team/">Meet the founders &rarr;</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </PageWrap>
+</Base>

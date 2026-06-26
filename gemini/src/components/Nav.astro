@@ -25,4 +25,66 @@ const path = Astro.url.pathname;
     })}
   </div>
   <a class="phone" href={tel}>{phone}</a>
+  <button class="nav__burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-drawer">
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+  </button>
 </nav>
+
+{/* Mobile drawer — full-screen overlay below 900px, hidden on desktop. */}
+<div class="nav__drawer" id="nav-drawer" aria-hidden="true">
+  <div class="nav__drawer-inner">
+    <ul class="nav__drawer-links">
+      <li><a href="/" class={path === '/' ? 'active' : ''}>Home</a></li>
+      {NAV_LINKS.map((p) => {
+        const active = path === p.href || path.startsWith(p.href);
+        return (
+          <li><a href={p.href} class={active ? 'active' : ''}>{p.label}</a></li>
+        );
+      })}
+    </ul>
+    <div class="nav__drawer-foot">
+      <a class="nav__drawer-phone" href={tel}>📞 {phone}</a>
+      <p class="nav__drawer-tag">An answered alarm, every time.</p>
+    </div>
+  </div>
+</div>
+
+{/* Open/close logic — pure vanilla, no framework. */}
+<script is:inline>
+  (function() {
+    const burger = document.getElementById('nav-burger');
+    const drawer = document.getElementById('nav-drawer');
+    if (!burger || !drawer) return;
+    let open = false;
+    const set = (v) => {
+      open = v;
+      burger.setAttribute('aria-expanded', String(v));
+      drawer.setAttribute('aria-hidden', String(!v));
+      document.documentElement.toggleAttribute('data-menu-open', v);
+      if (v) {
+        // Focus first link for keyboard users
+        const first = drawer.querySelector('a');
+        if (first) setTimeout(() => first.focus(), 80);
+      } else {
+        burger.focus();
+      }
+    };
+    burger.addEventListener('click', () => set(!open));
+    // Close on link click (so nav-to-anchor works on mobile)
+    drawer.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') set(false);
+    });
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && open) set(false);
+    });
+    // Close on resize above mobile breakpoint
+    let lastW = window.innerWidth;
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 900 && open) set(false);
+      lastW = window.innerWidth;
+    }, { passive: true });
+  })();
+</script>

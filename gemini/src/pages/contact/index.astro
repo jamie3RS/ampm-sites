@@ -6,8 +6,11 @@ import { CONTACT, PILLARS } from '~/data/site';
 
 const phone = CONTACT.phone;
 const tel = 'tel:' + String(phone).replace(/\s+/g, '');
-// Build mailto: action so the form works server-rendered without a backend.
-const formAction = `mailto:info@geminiampm.co.uk?subject=${encodeURIComponent('Website enquiry — Gemini AMPM')}`;
+// Real form backend via Formsubmit (free, no account, captcha-protected).
+// First submission to a new email triggers Formsubmit's activation email
+// which the recipient must click once. From then on, every submission is
+// delivered as a templated email to info@geminiampm.co.uk.
+const formAction = 'https://formsubmit.co/info@geminiampm.co.uk';
 ---
 <Base title="Contact Gemini AMPM — Free Site Survey, 24h Response" description="Named engineer responds within 24 hours. Burgess Hill HQ, engineers across the South East & London. Phone 0330 043 0080 or email info@geminiampm.co.uk.">
   <PageWrap skin="night">

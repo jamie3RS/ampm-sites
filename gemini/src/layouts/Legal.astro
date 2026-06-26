@@ -1,0 +1,62 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import { graph, breadcrumb } from '~/lib/jsonld';
+
+interface Props {
+  title: string;
+  kicker: string;
+  h1: string;
+  lede?: string;
+  /** Last reviewed date, shown in the page footer for transparency. */
+  lastReviewed: string;
+  description?: string;
+}
+
+const { title, kicker, h1, lede, lastReviewed, description } = Astro.props;
+const schemaJson = graph(breadcrumb([
+  { name: 'Home',  href: '/' },
+  { name: 'Legal', href: '/legal/' },
+  { name: kicker,  href: Astro.url.pathname },
+]));
+---
+<Base title={title} description={description || 'Legal information from Gemini AMPM Ltd.'} schemaJson={schemaJson}>
+  <PageWrap skin="night">
+    <PageHero kicker={kicker} h1={h1} lede={lede} />
+
+    <div class="legal-body">
+      <slot />
+
+      <p class="legal-footer">
+        <strong>Last reviewed:</strong> {lastReviewed}.<br />
+        <strong>Document owner:</strong> Gemini AMPM Ltd (company number 03437130), Unit 2, Regents Business Centre, Jubilee Road, Burgess Hill, West Sussex RH15 9TL.<br />
+        <strong>Contact:</strong> <a href="mailto:info@geminiampm.co.uk">info@geminiampm.co.uk</a> &middot; <a href="tel:+443300430080">0330 043 0080</a>
+      </p>
+    </div>
+  </PageWrap>
+</Base>
+
+<style is:global>
+  .legal-body { max-width: 760px; margin: 0 auto; padding: 0 24px 80px; }
+  .legal-body h2 { font-family: var(--d-display); font-weight: 700;
+    font-size: clamp(22px, 2.4vw, 28px); margin: 40px 0 16px;
+    color: var(--ink, #f4ead8); line-height: 1.1; }
+  .legal-body h3 { font-family: var(--d-display); font-weight: 700;
+    font-size: clamp(18px, 1.8vw, 22px); margin: 28px 0 12px;
+    color: var(--ink, #f4ead8); }
+  .legal-body p { color: var(--ink-2, rgba(244,234,216,0.78));
+    font-size: 16px; line-height: 1.65; margin: 0 0 16px; }
+  .legal-body p strong { color: var(--ink, #f4ead8); }
+  .legal-body ul, .legal-body ol { color: var(--ink-2, rgba(244,234,216,0.78));
+    padding-left: 22px; margin: 0 0 18px; }
+  .legal-body li { font-size: 16px; line-height: 1.65; margin-bottom: 8px; }
+  .legal-body a { color: var(--m-orange); }
+  .legal-footer { margin-top: 56px; padding-top: 24px;
+    border-top: 1px solid rgba(244,234,216,0.16);
+    font-size: 14px; color: rgba(244,234,216,0.55); line-height: 1.7; }
+  .legal-draft-banner { background: rgba(232,116,44,0.12); border: 1px solid rgba(232,116,44,0.4);
+    border-radius: 4px; padding: 16px 20px; margin-bottom: 32px;
+    color: var(--ink, #f4ead8); font-size: 14px; line-height: 1.55; }
+  .legal-draft-banner strong { color: var(--m-orange); }
+</style>
