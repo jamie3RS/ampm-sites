@@ -94,6 +94,13 @@ html[data-arc="subtle"] .nightfall {
   transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease; }
 .nav .phone:hover { background: var(--sun-color, var(--ink));
   color: #fff; border-color: var(--sun-color, var(--ink)); }
+/* Dark nav: turn the phone on its head — solid cream pill with ink text so
+   it stays readable even when the sun-color sweep is in the navy-blue
+   range at the top of the page. Hover inverts to transparent + cream outline. */
+.nav.dark .phone { background: var(--cream, #f9efdd); color: #0b0e1c;
+  border-color: var(--cream, #f9efdd); }
+.nav.dark .phone:hover { background: transparent; color: var(--cream, #f9efdd);
+  border-color: var(--cream, #f9efdd); }
 @media (max-width: 900px) { .nav .links { display: none; } .nav .wm small { display: none; } }
 
 /* ===== hero — dawn ===== */
