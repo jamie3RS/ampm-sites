@@ -1,0 +1,3 @@
+# Short edge-cache TTL so the prototype is never stuck on a stale deploy.
+/*
+  Cache-Control: public, max-age=300

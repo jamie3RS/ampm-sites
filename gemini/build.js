@@ -16,6 +16,7 @@ const SKIP = new Set([
   '.DS_Store',
   'build.js',
 ]);
+// _redirects and _headers ARE copied — Cloudflare Pages reads them from dist/.
 
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });

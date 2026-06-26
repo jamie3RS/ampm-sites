@@ -1,0 +1,10 @@
+# Redirect old Astro paths from the abandoned build to the SPA root.
+# Without these, Cloudflare's edge cache keeps serving the old AI-authored
+# HTML for these paths until the s-maxage=604800 expires.
+/gas-suppression/         /   301
+/fire-alarm/              /   301
+/passive-fire/            /   301
+/security-access/         /   301
+/ventilation/             /   301
+/mechanical-electrical/   /   301
+/small-works/             /   301
