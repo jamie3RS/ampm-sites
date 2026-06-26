@@ -502,6 +502,23 @@ html[data-skin="day"] .founder .portrait image-slot { background: rgba(28,24,18,
 .gaccred .t { font-family: var(--d-display); font-weight: 700; text-transform: uppercase; font-size: 20px; line-height: 0.98; color: #fff; }
 .gaccred .d { font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(244,234,216,0.6); line-height: 1.35; }
 
+/* ===== pillar FAQ (per-service expandable Q&A — feeds FAQPage schema) ===== */
+.pfaq { display: grid; gap: 12px; }
+.pfaq__item { background: var(--paper, #161d36); border: 1px solid var(--line, rgba(244,234,216,0.18));
+  border-radius: 4px; padding: 18px 22px; transition: border-color 0.15s ease; }
+.pfaq__item[open] { border-color: rgba(232,116,44,0.45); }
+.pfaq__item summary { list-style: none; cursor: pointer; font-family: var(--d-display, system-ui);
+  font-weight: 600; font-size: clamp(16px, 1.5vw, 19px); padding-right: 30px; position: relative;
+  color: var(--ink, #f4ead8); }
+.pfaq__item summary::-webkit-details-marker { display: none; }
+.pfaq__item summary::after { content: '+'; position: absolute; right: 0; top: 50%;
+  transform: translateY(-50%); color: var(--m-orange); font-family: var(--d-display, sans-serif);
+  font-weight: 800; font-size: 24px; transition: transform 0.18s ease; }
+.pfaq__item[open] summary::after { content: '−'; }
+.pfaq__answer { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(244,234,216,0.10);
+  color: var(--ink-2, rgba(244,234,216,0.74)); font-size: 15.5px; line-height: 1.6; }
+.pfaq__answer strong { color: var(--ink, #f4ead8); font-weight: 700; }
+
 /* ===== sister-company card on homepage: BS brand mark on the left ===== */
 .gsister-logo { width: clamp(110px, 14vw, 170px); height: auto; flex-shrink: 0; display: block; margin-right: clamp(18px, 2.5vw, 32px); }
 @media (max-width: 720px) { .gsister-logo { margin-bottom: 14px; margin-right: 0; } }

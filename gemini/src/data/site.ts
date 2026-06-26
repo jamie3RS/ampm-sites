@@ -12,6 +12,7 @@ export const COL = {
 
 // ─── Types (so callers get autocomplete; runtime is identical to the prototype)
 export interface PillarChild { name: string; slug: string; }
+export interface FAQ { q: string; a: string; }
 export interface Pillar {
   id: string;
   no: string;
@@ -25,6 +26,12 @@ export interface Pillar {
   intro: string;
   children: PillarChild[];
   drivers: string;
+  /** SEO override — defaults to `${full} — Gemini AMPM` if absent. Keep ≤60 chars. */
+  metaTitle?: string;
+  /** SEO override — defaults to `short` truncated to 155 chars. */
+  metaDescription?: string;
+  /** Optional FAQ block for FAQPage schema + on-page FAQ section. */
+  faqs?: FAQ[];
 }
 export interface Sector { name: string; slug: string; colour: string; blurb: string; }
 export interface Proof  { big: string; lbl: string; }
@@ -93,6 +100,8 @@ export const PILLARS: Pillar[] = [
     colour: COL.orange,
     time: '23:00',
     shift: 'Systems live',
+    metaTitle: 'Fire Alarm Installer UK — BAFE Registered Since 1997 | Gemini AMPM',
+    metaDescription: 'BS 5839-1 fire alarms, AOV smoke extract, disabled refuge and PAVA — designed, installed and 24/7 monitored. BAFE-registered (ID 302260) since 1997.',
     short: 'Fire alarms and evacuation, AOV smoke extract, disabled refuge and PAVA &mdash; designed, installed and maintained to current British standards, with monitored response when the alarm actually sounds.',
     intro: 'Fire systems, end to end &mdash; <strong>fire detection and evacuation alarms, AOV smoke extract, disabled refuge and PAVA, designed, installed, commissioned and maintained to the current British standards that apply to each system type</strong>. From a single panel replacement to a campus-wide addressable system, with planned maintenance and 24/7 monitored response behind it. An answered alarm, not just a recording.',
     children: [
@@ -117,6 +126,8 @@ export const PILLARS: Pillar[] = [
     colour: COL.purple,
     time: '01:30',
     shift: 'Holding the line',
+    metaTitle: 'Passive Fire Protection Contractors UK — FIRAS Certified | Gemini AMPM',
+    metaDescription: 'Fire doors, fire stopping, compartmentation and barriers — FIRAS-certificated installers. Building Safety Act golden-thread evidence with every job.',
     short: 'Fire doors, fire stopping, compartmentation, barriers and risk assessments &mdash; the protection that works without anyone pressing a button.',
     intro: 'Passive fire protection is the part of the building that holds the line on its own &mdash; <strong>compartmentation, fire stopping, fire doors and barriers</strong> that contain a fire long enough for everyone to get out. Surveyed, installed and certificated, with audit-ready records the responsible person can actually hand over.',
     children: [
@@ -138,6 +149,8 @@ export const PILLARS: Pillar[] = [
     colour: COL.green,
     time: '02:47',
     shift: 'On watch',
+    metaTitle: 'Security & Access Control — NSI Gold Installer UK | Gemini AMPM',
+    metaDescription: 'Intruder alarms, CCTV, access control and 24/7 ARC-monitored response — NSI Gold approved installer. From SME estates to CNI multi-site security.',
     short: 'Intruder alarms, CCTV, access control, door entry and 24/7 monitoring &mdash; the systems that stay awake after the last person leaves.',
     intro: 'Security for buildings that don&rsquo;t stop mattering at 6pm &mdash; <strong>intruder alarms, CCTV, access control, door entry and monitored response</strong>. Designed, installed and watched, so an event at 2am is answered and attended, not just recorded for the morning.',
     children: [
@@ -159,6 +172,8 @@ export const PILLARS: Pillar[] = [
     colour: COL.blue,
     time: '03:55',
     shift: 'Keeping it breathing',
+    metaTitle: 'Ventilation, AOV & Air Quality — Commercial UK | Gemini AMPM',
+    metaDescription: 'AHU/ductwork install, AOV smoke extract, fire-damper testing, TR/19 hygiene and commissioning across UK commercial estates. Statutory testing covered.',
     short: 'AHU and ductwork install, service and repair, fire-damper testing, ventilation hygiene, AOV smoke extract, air conditioning and commissioning.',
     intro: 'The air system is life-safety and building-performance at once &mdash; <strong>AHU and ductwork, AOV smoke extract, fire-damper testing, ventilation hygiene and air conditioning</strong>. Installed, serviced, tested and commissioned so smoke moves the right way in an emergency and the building breathes properly the rest of the time.',
     children: [
@@ -182,6 +197,42 @@ export const PILLARS: Pillar[] = [
     colour: COL.orange,
     time: '04:30',
     shift: 'Mission-critical',
+    metaTitle: 'Gas Suppression Systems UK — Data Centres, Comms | Gemini AMPM',
+    metaDescription: 'Inert and chemical gas suppression — FM-200, Novec 1230, IG-55 — for data centres, comms rooms, archives. Design, install, integrity test, maintain.',
+    faqs: [
+      {
+        q: 'What is a gas suppression system, and when do I need one?',
+        a: 'A gas suppression system extinguishes a fire by displacing or absorbing oxygen and heat with a clean agent &mdash; no water, no residue, no clean-up. They&rsquo;re used wherever water-based suppression would do more damage than the fire itself: data centres, comms rooms, switchgear rooms, archives, museum stores, MRI rooms and laboratories. If your asset register includes equipment that can&rsquo;t be replaced overnight or data that can&rsquo;t be re-keyed, gas is the right answer.',
+      },
+      {
+        q: 'What&rsquo;s the difference between inert gas (IG-55, Inergen) and chemical agents (FM-200, Novec 1230)?',
+        a: '<strong>Inert gas</strong> (e.g. ProInert IG-55, Inergen IG-541) is a blend of naturally-occurring gases &mdash; argon, nitrogen, CO&sub2; &mdash; that reduces oxygen below the combustion threshold while remaining breathable. Larger cylinder banks, slower discharge, environmentally neutral. <strong>Chemical agents</strong> (FM-200 / HFC-227ea, Novec 1230) are synthetic clean agents stored as a liquid that vapourise on discharge, absorbing heat and interrupting the combustion reaction. Smaller cylinder count, faster discharge (typically 10 seconds), but higher global-warming potential (FM-200) or premium cost (Novec 1230). Choice depends on room volume, environmental policy and budget.',
+      },
+      {
+        q: 'How is a system designed and how long does it take?',
+        a: 'A site survey establishes room volume, integrity, ventilation, occupancy and existing detection. From the survey we model agent quantity to <strong>BS EN 15004</strong> (gaseous extinguishing systems) and BS&nbsp;6535-2 (clean-agent selection), specify the cylinder room, draft pipework and nozzles, and integrate the detection and release control. Typical timelines: small single-zone install 2&ndash;3 weeks on site; mid multi-zone 4&ndash;6 weeks; large data centres phased over maintenance windows. Design and procurement add 4&ndash;6 weeks before site work begins.',
+      },
+      {
+        q: 'How much does a gas suppression system cost?',
+        a: 'Indicative ranges from real UK commercial jobs: small single-zone server room &pound;15k&ndash;&pound;25k; mid multi-zone data centre &pound;40k&ndash;&pound;80k; large data centre with redundant agents and full integrity reporting &pound;80k&ndash;&pound;200k+. Drivers: room volume (the single biggest factor), agent choice, enclosure integrity, integration scope with the existing fire alarm and BMS, access difficulty, and commissioning depth. Annual integrity testing and servicing typically from &pound;1,800 per zone. Your site survey produces a fixed quote.',
+      },
+      {
+        q: 'Will a gas suppression system harm staff who are in the room when it discharges?',
+        a: 'Properly designed systems are <strong>designed for human-occupiable spaces</strong> at their design concentration. Inert systems reduce oxygen to a level that no longer supports combustion but remains breathable; Inergen specifically contains a small CO&sub2; component that stimulates deeper breathing during discharge. Chemical agents at design concentration are safe for occupants. All systems include a pre-discharge alarm with an evacuation period so the room can be vacated before agent release.',
+      },
+      {
+        q: 'Will a gas suppression system work alongside our existing fire alarm?',
+        a: 'Yes &mdash; we integrate with every major fire alarm platform (Apollo, Hochiki, Advanced, Gent Vigilon, Honeywell). The fire alarm provides cross-zoned detection; the suppression release control sits alongside it on its own listed-and-approved release panel, with the cause-and-effect engineered to require confirmation from two independent detectors before discharge. That prevents accidental discharge from a single false alarm.',
+      },
+      {
+        q: 'How often does a gas suppression system need to be serviced and tested?',
+        a: 'BS EN 15004 / BS ISO 14520 require an annual service: cylinder weight check, agent batch verification, detection circuit verification and discharge-release proving. Hose pressure tests are typically every 5 years. <strong>Room integrity testing</strong> (often called the &ldquo;door fan test&rdquo;) should be done at install, then every 5 years or after any alteration that might affect room sealing &mdash; cable penetrations, new ductwork, removed walls. Servicing contracts from &pound;1,800 per zone per year.',
+      },
+      {
+        q: 'Can you take over our existing gas suppression maintenance contract?',
+        a: 'Yes. We run a <strong>free transition audit</strong> when we take over an existing system &mdash; compliance gap analysis, asset register reconciliation, and a one-off catch-up service if anything has slipped through the previous contractor. Our maintenance contracts have no long lock-in (90 days&rsquo; notice) and no hidden recharge clauses. Whatever your incumbent has on the system, we&rsquo;ll service it &mdash; we&rsquo;re cross-trained on every major manufacturer.',
+      },
+    ],
     short: 'Inert and chemical gas suppression &mdash; design, install, repair and maintenance for data centres, comms rooms and irreplaceable assets.',
     intro: 'When water would do more damage than the fire, the answer is gas &mdash; <strong>inert and chemical suppression for data centres, comms rooms, archives and mission-critical plant</strong>. Designed, installed, integrity-tested and maintained, with commissioning and client training delivered on the day. Our benchmark clients call us their benchmark contractor.',
     children: [
@@ -204,6 +255,8 @@ export const PILLARS: Pillar[] = [
     colour: COL.green,
     time: '05:20',
     shift: 'Closing actions',
+    metaTitle: 'Small Works & Remedials — Fast Compliance Close-Out | Gemini AMPM',
+    metaDescription: 'Closing out fire risk assessment actions, snags and minor projects — by the team that already knows the building. No new contract needed.',
     short: 'The remedial actions, snags and small projects that close out a compliance report &mdash; handled quickly, by the team that already knows the building.',
     intro: 'Most compliance reports end with a list of actions. <strong>Small Works &amp; Project Remedials is how those actions get closed</strong> &mdash; the remedials, snags and smaller projects across fire, security, ventilation and passive fire, handled by the team that already knows the building, without standing up a whole new contract.',
     children: [],
@@ -218,6 +271,8 @@ export const PILLARS: Pillar[] = [
     colour: COL.blue,
     time: '05:50',
     shift: 'First shift prep',
+    metaTitle: 'M&E Services — Power, Heating, Controls UK | Gemini AMPM',
+    metaDescription: 'Mechanical and electrical works that tie life-safety systems into the building — power, BMS, lighting, plant rooms. Coordinated with fire and security.',
     short: 'Mechanical and electrical services that tie the life-safety and building systems together &mdash; power, distribution and supporting M&amp;E.',
     intro: 'The mechanical and electrical layer that the life-safety systems depend on &mdash; <strong>power, distribution, supporting M&amp;E and integration</strong> across fire, security and ventilation. Delivered in coordination with the rest of the building so the safety-critical systems have the infrastructure they need.',
     children: [],
@@ -418,7 +473,84 @@ export const NEWS: NewsItem[] = [
   { cat: 'Gas Suppression', date: '19.05.2026', slug: 'gas-suppression-vs-sprinklers-data-centres',
     title: 'Gas suppression vs sprinklers for data centres &mdash; which protects what',
     teaser: 'Inert gas, chemical agent, or sprinklers &mdash; a clear comparison framework for IT and mission-critical environments.',
-    image: UNSPLASH('1558494949-ef010cbdcc31') },
+    image: UNSPLASH('1558494949-ef010cbdcc31'),
+    author: 'the Gemini AMPM suppression team',
+    body: `
+<p>Every data-centre fire-protection conversation eventually arrives at the same fork in the road: <strong>gas suppression or sprinklers?</strong> Both are mature, both are accepted by insurers, both can be designed to current British Standards. They are not, however, interchangeable. Choosing wrong means either over-spending on capital cost or accepting downstream risk you didn&rsquo;t fully price in.</p>
+
+<p>This is the framework we use on every survey to decide which one belongs where.</p>
+
+<h3>What the two technologies actually do</h3>
+
+<p><strong>Sprinklers</strong> &mdash; designed to BS EN 12845 &mdash; suppress a fire by releasing water from heads activated by heat. They cool the fuel below its ignition point and saturate the seat of the fire. Modern installations use pre-action systems, where two events (smoke detection followed by sprinkler-head activation) are required before water is released; this is the standard pattern in occupied data spaces where accidental discharge from a single fault would be catastrophic.</p>
+
+<p><strong>Gas suppression</strong> &mdash; designed to BS EN 15004 &mdash; extinguishes the fire chemically or by displacing oxygen, with no water in the room at all. The two principal families are <strong>inert gases</strong> (ProInert IG-55, Inergen IG-541) that reduce oxygen below the combustion threshold while remaining breathable, and <strong>chemical clean agents</strong> (FM-200, Novec 1230) that interrupt the combustion reaction in a 10-second discharge and leave no residue.</p>
+
+<h3>The damage profile is the deciding factor</h3>
+
+<p>For a typical white-space rack hall, the real question isn&rsquo;t &ldquo;will it extinguish the fire?&rdquo; &mdash; both will. The question is what the room looks like an hour later, and what your business continuity plan costs from that point.</p>
+
+<p>A sprinkler discharge in a rack hall will saturate every server in the throw radius, plus everything beneath. Even where pre-action design prevents nuisance discharge, an actual activation event typically writes off the affected racks. Sprinkler water also carries dissolved minerals and pipe-system corrosion; servers that survive the initial soak often fail in the following weeks from corrosion damage that wasn&rsquo;t immediately visible.</p>
+
+<p>Gas suppression, by contrast, leaves the room <strong>operationally recoverable within hours</strong>. Inert gas systems leave nothing behind; chemical agents leave a fine residue that&rsquo;s easily removed. Servers that weren&rsquo;t directly involved in the fire continue to operate. The downtime is the discharge itself plus the recharge and re-validation cycle.</p>
+
+<h3>Where each one belongs</h3>
+
+<p><strong>Gas suppression is the right answer for:</strong></p>
+<ul>
+  <li>Live rack halls and server rooms with concurrent business operations</li>
+  <li>Comms rooms and MERs where downtime ripples through the wider estate</li>
+  <li>UPS rooms, switchgear rooms, and battery rooms (subject to the agent being electrically safe for the equipment present)</li>
+  <li>Archives, vaults and irreplaceable physical assets &mdash; museums, records offices, legal archives</li>
+  <li>Plant rooms supporting clinical, broadcast or financial-services critical infrastructure</li>
+</ul>
+
+<p><strong>Sprinklers remain the right answer for:</strong></p>
+<ul>
+  <li>Building-wide protection of corridors, offices, warehouses and unmanned zones outside the data hall</li>
+  <li>Spaces where room integrity for gas can&rsquo;t practically be achieved (large open floor plates, frequent door movements, large penetrations)</li>
+  <li>Risk areas where the asset value is low and the consequence of water damage is acceptable</li>
+  <li>Sites where insurer specification mandates sprinkler coverage as a baseline</li>
+</ul>
+
+<p>In a typical mid-size data-centre estate we see both technologies working in parallel: <strong>pre-action sprinklers as the building&rsquo;s primary fire-protection layer</strong>, with <strong>gas suppression overlaid on the rack halls, MERs and switchgear rooms</strong> where water cannot be tolerated.</p>
+
+<h3>What insurers and regulators expect</h3>
+
+<p>Both technologies satisfy the Regulatory Reform (Fire Safety) Order 2005 when correctly designed, installed and maintained. Insurer scrutiny tends to focus on:</p>
+
+<ul>
+  <li><strong>Design competence</strong> &mdash; LPC-aligned for sprinklers, BAFE / FIA-aligned for gas. Third-party certification of the installer is increasingly written into commercial insurance schedules.</li>
+  <li><strong>Room integrity</strong> for gas systems &mdash; the &ldquo;door fan test&rdquo; that proves the room will hold the agent at concentration for the required hold time. Without a current integrity certificate, the gas system effectively isn&rsquo;t there.</li>
+  <li><strong>Servicing regime</strong> &mdash; annual at minimum for both; weight checks and agent verification for gas systems; flow tests and head replacement programmes for sprinklers.</li>
+  <li><strong>Documentation</strong> &mdash; design, install, commissioning and maintenance records kept as part of the building&rsquo;s &ldquo;golden thread&rdquo; under the Building Safety Act 2022.</li>
+</ul>
+
+<h3>Cost framing</h3>
+
+<p>Headline capital costs vary, but indicative ranges from real UK installations are useful framing:</p>
+
+<ul>
+  <li><strong>Pre-action sprinkler system</strong> for a typical data-centre rack hall: &pound;25k&ndash;&pound;60k+ depending on building integration cost</li>
+  <li><strong>Gas suppression</strong> for the same room: &pound;40k&ndash;&pound;100k+ depending on agent choice and volume</li>
+  <li><strong>Annual maintenance</strong>: sprinklers from &pound;1.2k per zone; gas from &pound;1.8k per zone</li>
+</ul>
+
+<p>On paper, sprinklers win on capital cost. <strong>On total cost of ownership over the asset lifecycle, the calculation flips</strong> the moment you price in the value of equipment that survives a localised fire because the room wasn&rsquo;t flooded. For most mission-critical data-centre estates, gas suppression in the rack halls is the cheaper option once the second incident has been priced in.</p>
+
+<h3>What we&rsquo;d recommend</h3>
+
+<p>If you&rsquo;re designing a new data hall or specifying protection for a mission-critical estate refresh, our standard recommendation is:</p>
+
+<ol>
+  <li>Sprinklers as the building-wide baseline, pre-action where they enter occupied data spaces.</li>
+  <li>Gas suppression overlaid on rack halls, MERs, switchgear and UPS rooms where the agent and room volume support a workable design.</li>
+  <li>Integrity testing on the gas-protected rooms at commissioning and every five years thereafter (or after any building works that could affect sealing).</li>
+  <li>An annual integrated service contract covering both technologies, with a single contractor accountable for the evidence pack the insurer and Responsible Person will ask for.</li>
+</ol>
+
+<p>If you&rsquo;d like a survey on an existing data-centre estate, or a design review on a new build, our suppression team can attend within 5 working days. We&rsquo;re BAFE-registered, FIA members, and we&rsquo;ve installed the full range of agents on UK estates from single-rack comms rooms to the multi-zone fit-out on Mace&rsquo;s Peterborough Court project. <a href="/contact/">Get in touch</a>.</p>
+` },
   { cat: 'Compliance',      date: '19.05.2026', slug: 'awaabs-law-fire-safety-2026',
     title: 'Awaab&rsquo;s Law and fire safety: what social housing landlords need to know in 2026',
     teaser: 'Awaab&rsquo;s Law is reshaping how landlords respond to hazards &mdash; what it means for fire-safety compliance and response times.',

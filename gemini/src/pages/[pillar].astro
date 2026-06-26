@@ -16,16 +16,36 @@ const others = PILLARS.filter((x) => x.id !== p.id);
 const cases = REP_CASES[p.id] || REP_CASES.fire;
 const stockImage = PILLAR_STOCK_IMAGE[p.id];
 
-const schemaJson = graph(
+const schemaItems = [
   service(p),
   breadcrumb([
     { name: 'Home', href: '/' },
     { name: 'Services', href: '/services/' },
     { name: p.full.replace(/&amp;/g, '&'), href: '/' + p.id + '/' },
   ]),
-);
+];
+// If the pillar carries FAQs, emit a FAQPage entity — Google reads this for
+// rich-result eligibility (the collapsible accordion in SERPs).
+if (p.faqs && p.faqs.length > 0) {
+  schemaItems.push({
+    '@type': 'FAQPage',
+    mainEntity: p.faqs.map((f) => ({
+      '@type': 'Question',
+      name: f.q.replace(/&[a-z]+;/g, ' ').replace(/<[^>]+>/g, ''),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: f.a.replace(/&[a-z]+;/g, ' ').replace(/<[^>]+>/g, ''),
+      },
+    })),
+  });
+}
+const schemaJson = graph(...schemaItems);
 ---
-<Base title={p.full.replace(/&amp;/g, '&') + ' — Gemini AMPM'} description={p.short.replace(/<[^>]+>/g, '').replace(/&mdash;/g, '—').replace(/&amp;/g, '&').slice(0, 155)} schemaJson={schemaJson}>
+<Base
+  title={p.metaTitle ?? (p.full.replace(/&amp;/g, '&') + ' — Gemini AMPM')}
+  description={p.metaDescription ?? p.short.replace(/<[^>]+>/g, '').replace(/&mdash;/g, '—').replace(/&amp;/g, '&').slice(0, 155)}
+  schemaJson={schemaJson}
+>
   <div class="page" data-nav-dark>
     <span class="pageglow"></span>
     <div class="shell">
@@ -98,6 +118,23 @@ const schemaJson = graph(
         </div>
         <p class="case-note">Representative of the {p.name.replace(/&amp;/g, '&')} work we deliver. Named, full case studies and PQQ references available on request.</p>
       </section>
+
+      {p.faqs && p.faqs.length > 0 && (
+        <section class="sec tight line-top">
+          <div class="reveal" style="margin-bottom: 22px">
+            <Kicker>FAQ</Kicker>
+            <h2 class="dhead sm" set:html={'Common questions on<br />' + p.name.replace(/&amp;/g, '&').toLowerCase() + '.'} />
+          </div>
+          <div class="pfaq reveal">
+            {p.faqs.map((f, i) => (
+              <details class="pfaq__item" open={i < 2}>
+                <summary set:html={f.q} />
+                <div class="pfaq__answer" set:html={f.a} />
+              </details>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section class="sec tight line-top">
         <div class="reveal" style="margin-bottom: 22px">
