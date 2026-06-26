@@ -188,6 +188,7 @@ const phone = CONTACT.phone;
         {NEWS.slice(0, 3).map((n) => (
           <a class="gnews" href="/news/">
             <image-slot id={'g-news-' + n.slug} shape="rect" class="ni" style="width:100%; height:196px; display:block"
+              src={n.image}
               placeholder={n.cat + ' — article image'}></image-slot>
             <div class="meta"><span class="cat">{n.cat}</span><span>{n.date}</span></div>
             <h4 set:html={n.title} />

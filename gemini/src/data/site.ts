@@ -50,8 +50,8 @@ export interface Manufacturer {
   what: string;
 }
 export interface ManufacturerCategory { id: string; name: string; }
-export interface NewsItem { cat: string; date: string; slug: string; title: string; teaser: string; }
-export interface CaseItem { tag: string; sector: string; scope: string; }
+export interface NewsItem { cat: string; date: string; slug: string; title: string; teaser: string; image?: string; }
+export interface CaseItem { tag: string; sector: string; scope: string; image?: string; }
 export interface Accred {
   t: string;
   slug: string;
@@ -394,32 +394,57 @@ export const MANUFACTURERS: Manufacturer[] = [
   { nm: 'ADI Global Distribution', logo: null, link: 'https://www.adiglobaldistribution.com/uk', featured: false, cat: 'trade-distribution', what: 'Security &amp; fire trade distributor (ADI Gardiner).' },
 ];
 
+// Stock images: free-licence Unsplash photos, sized 1200w q=72. Placeholder
+// only — to be swapped for owned project photography when commissioned.
+const UNSPLASH = (id: string, w = 1200) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=72`;
+
 export const NEWS: NewsItem[] = [
   { cat: 'Fire Alarm',      date: '19.05.2026', slug: 'wireless-fire-alarm-systems-when-to-choose',
     title: 'Wireless fire alarm systems &mdash; when wireless beats wired (and when it doesn&rsquo;t)',
-    teaser: 'Wireless fire alarm systems have caught up with wired on reliability and certification. Here&rsquo;s when wireless is the right choice.' },
+    teaser: 'Wireless fire alarm systems have caught up with wired on reliability and certification. Here&rsquo;s when wireless is the right choice.',
+    image: UNSPLASH('1567427017947-545c5f8d16ad') },
   { cat: 'Gas Suppression', date: '19.05.2026', slug: 'gas-suppression-vs-sprinklers-data-centres',
     title: 'Gas suppression vs sprinklers for data centres &mdash; which protects what',
-    teaser: 'Inert gas, chemical agent, or sprinklers &mdash; a clear comparison framework for IT and mission-critical environments.' },
+    teaser: 'Inert gas, chemical agent, or sprinklers &mdash; a clear comparison framework for IT and mission-critical environments.',
+    image: UNSPLASH('1558494949-ef010cbdcc31') },
   { cat: 'Compliance',      date: '19.05.2026', slug: 'awaabs-law-fire-safety-2026',
     title: 'Awaab&rsquo;s Law and fire safety: what social housing landlords need to know in 2026',
-    teaser: 'Awaab&rsquo;s Law is reshaping how landlords respond to hazards &mdash; what it means for fire-safety compliance and response times.' },
+    teaser: 'Awaab&rsquo;s Law is reshaping how landlords respond to hazards &mdash; what it means for fire-safety compliance and response times.',
+    image: UNSPLASH('1564013799919-ab600027ffc6') },
   { cat: 'Company News',    date: '17.11.2025', slug: 'flagship-success-at-peterborough-court',
     title: 'Flagship success at Peterborough Court',
-    teaser: 'Gemini AMPM delivers a landmark fire, gas suppression and security project in the City of London.' },
+    teaser: 'Gemini AMPM delivers a landmark fire, gas suppression and security project in the City of London.',
+    image: UNSPLASH('1486325212027-8081e485255e') },
   { cat: 'Company News',    date: '17.11.2025', slug: 'gemini-ampms-transition-to-employee-ownership-a-new-era-of-shared-success',
     title: 'Our transition to Employee Ownership: a new era of shared success',
-    teaser: 'In 2024 Gemini AMPM made a bold, future-focused decision to transition into an Employee Ownership Trust.' },
+    teaser: 'In 2024 Gemini AMPM made a bold, future-focused decision to transition into an Employee Ownership Trust.',
+    image: UNSPLASH('1521737604893-d14cc237f11d') },
   { cat: 'Fire Alarm',      date: '17.11.2025', slug: 'understanding-the-2025-update-to-bs-5839-1-key-changes-and-implications',
     title: 'Understanding the 2025 update to BS 5839-1: key changes and implications',
-    teaser: 'BS 5839-1:2025 is the latest revision of the British Standard governing fire detection in non-domestic premises.' },
+    teaser: 'BS 5839-1:2025 is the latest revision of the British Standard governing fire detection in non-domestic premises.',
+    image: UNSPLASH('1551434678-e076c223a692') },
 ];
 
 export const CASES: CaseItem[] = [
-  { tag: 'Gas · Fire · Security', sector: 'Peterborough Court, City of London', scope: 'Landmark fire, gas suppression and security project delivered in a live City building.' },
-  { tag: 'Passive Fire',          sector: 'Longfield Court &mdash; social housing', scope: 'Full-time site foreman, resident-sensitive delivery, consistently positive tenant feedback.' },
-  { tag: 'Ventilation',           sector: 'Leisure centre &mdash; local authority', scope: 'Works completed in an operational leisure centre with minimal disruption to daily operation.' },
+  { tag: 'Gas · Fire · Security', sector: 'Peterborough Court, City of London', scope: 'Landmark fire, gas suppression and security project delivered in a live City building.',
+    image: UNSPLASH('1486325212027-8081e485255e') },
+  { tag: 'Passive Fire',          sector: 'Longfield Court &mdash; social housing', scope: 'Full-time site foreman, resident-sensitive delivery, consistently positive tenant feedback.',
+    image: UNSPLASH('1564013799919-ab600027ffc6') },
+  { tag: 'Ventilation',           sector: 'Leisure centre &mdash; local authority', scope: 'Works completed in an operational leisure centre with minimal disruption to daily operation.',
+    image: UNSPLASH('1576091160550-2173dba999ef') },
 ];
+
+// Per-pillar hero/case stock images — used as fallback on the pillar page
+// representative-case cards. Swap when real project photography lands.
+export const PILLAR_STOCK_IMAGE: Record<string, string> = {
+  fire:        UNSPLASH('1567427017947-545c5f8d16ad'),
+  passive:     UNSPLASH('1581094271901-8022df4466f9'),
+  security:    UNSPLASH('1551434678-e076c223a692'),
+  ventilation: UNSPLASH('1576091160550-2173dba999ef'),
+  gas:         UNSPLASH('1558494949-ef010cbdcc31'),
+  smallworks:  UNSPLASH('1518005020951-eccb494ad742'),
+  me:          UNSPLASH('1553413077-190dd305871c'),
+};
 
 export const CONTACT = {
   phone: '0330 043 0080',

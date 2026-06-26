@@ -18,6 +18,7 @@ import { CASES } from '~/data/site';
         {CASES.map((c, i) => (
           <a class="case-card" href="/contact/">
             <image-slot id={'g-case-' + i} shape="rect" class="ci" style="width:100%; height: 210px; display:block"
+              src={c.image}
               placeholder={'CASE — ' + c.tag}></image-slot>
             <span class="ctag" style="background: var(--m-orange); position: absolute" set:html={c.tag} />
             <h4 set:html={c.sector} />
