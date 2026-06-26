@@ -728,7 +728,7 @@ export const REP_CASES: Record<string, CaseItem[]> = {
 export interface GroupItem { tag: string; t: string; current?: boolean; href?: string; d: string; }
 export const GROUP: GroupItem[] = [
   { tag: 'This company',    t: 'Gemini AMPM',            current: true,                                  d: 'Fire, security, ventilation, gas suppression and passive fire since 1997. Employee-owned. The life-safety specialist of the group.' },
-  { tag: 'Sister company',  t: 'AMPM Building Services', href: 'https://ampm.co.uk',                     d: 'MEPH, commercial fit-out, fabric and groundworks &mdash; the daytime building-services arm. AM &rarr; PM.' },
+  { tag: 'Sister company',  t: 'AMPM Building Services', href: 'https://ampmbuilding.services',          d: 'MEPH, commercial fit-out, fabric and groundworks &mdash; the daytime building-services arm. AM &rarr; PM.' },
   { tag: 'The wider group', t: 'AMPM Group',             href: 'https://ampmgroup.co.uk',                d: 'The mothership: shared standards, shared operating stack, one palette. Several companies, one accountable group.' },
 ];
 
