@@ -6,3 +6,7 @@
 /security-access/         /security/    301
 /mechanical-electrical/   /me/          301
 /small-works/             /smallworks/  301
+
+# /areas/sussex/ was split into /areas/west-sussex/ + /areas/east-sussex/.
+# Send any bookmarks of the old combined URL to the HQ-county (West Sussex).
+/areas/sussex/            /areas/west-sussex/   301
