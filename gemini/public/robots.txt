@@ -1,4 +1,70 @@
+# Gemini AMPM Ltd — robots.txt
+# UK fire safety, security, ventilation, gas suppression, passive fire
+# and life-safety contractor. Burgess Hill, West Sussex. Est. 1997.
+#
+# AI assistants and search crawlers are welcome — see /llms.txt for an
+# AI-optimised content map of the site.
+
+# Default: everyone allowed
 User-agent: *
+Allow: /
+Disallow: /contact/thanks/
+
+# ── OpenAI ──
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# ── Anthropic ──
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+# ── Google AI (separate opt-in from Googlebot) ──
+User-agent: Google-Extended
+Allow: /
+
+# ── Microsoft Copilot ──
+User-agent: Bingbot
+Allow: /
+
+# ── Perplexity ──
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# ── Apple Intelligence ──
+User-agent: Applebot-Extended
+Allow: /
+
+# ── Meta / Llama ──
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+# ── Amazon / Alexa / AWS Bedrock ──
+User-agent: Amazonbot
+Allow: /
+
+# ── Other useful crawlers ──
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: YandexBot
 Allow: /
 
 Sitemap: https://gemini.ampm.co.uk/sitemap.xml
