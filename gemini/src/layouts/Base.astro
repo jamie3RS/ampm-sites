@@ -1,6 +1,7 @@
 ---
 import Nav from '~/components/Nav.astro';
 import Footer from '~/components/Footer.astro';
+import { defaultGraph } from '~/lib/jsonld';
 
 interface Props {
   title: string;
@@ -9,7 +10,7 @@ interface Props {
   skin?: 'night' | 'day';
   /** Optional canonical override; defaults to the request URL. */
   canonical?: string;
-  /** Optional inline JSON-LD object to inject. */
+  /** Optional inline JSON-LD object to inject. Falls back to default org + local-business graph. */
   schemaJson?: object;
 }
 
@@ -18,7 +19,7 @@ const {
   description = 'We are Gemini AMPM, an award-winning, employee-owned provider of fire and security safety systems, ventilation, gas suppression, passive fire, asset management and property maintenance services across the UK.',
   skin = 'night',
   canonical,
-  schemaJson,
+  schemaJson = defaultGraph(),
 } = Astro.props;
 
 const site = 'https://gemini.ampm.co.uk';
@@ -62,9 +63,7 @@ const url = canonical ?? new URL(Astro.url.pathname, site).toString();
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content="https://gemini.ampm.co.uk/og-image.png" />
 
-    {schemaJson && (
-      <script type="application/ld+json" set:html={JSON.stringify(schemaJson)} />
-    )}
+    <script type="application/ld+json" set:html={JSON.stringify(schemaJson)} />
 
     {/* Inline thumbnail template kept verbatim from the prototype */}
     <template id="__bundler_thumbnail">

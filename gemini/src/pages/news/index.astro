@@ -16,9 +16,10 @@ import { NEWS } from '~/data/site';
     <section class="sec tight">
       <div class="news-index reveal">
         {NEWS.map((n) => (
-          <a class="ni-card" href="/contact/">
+          <a class="ni-card" href={'/news/' + n.slug + '/'}>
             <image-slot id={'g-newsidx-' + n.slug} shape="rect" class="img" style="width:100%; height: 200px; display: block"
               src={n.image}
+              aria-label={n.cat + ' article: ' + n.title.replace(/<[^>]+>/g, '').replace(/&mdash;/g, '—').replace(/&rsquo;/g, '’')}
               placeholder={n.cat + ' — article image'}></image-slot>
             <div class="meta"><span class="cat">{n.cat}</span><span>{n.date}</span></div>
             <h4 set:html={n.title} />

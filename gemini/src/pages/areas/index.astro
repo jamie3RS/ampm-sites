@@ -1,0 +1,46 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import ContactBand from '~/components/ContactBand.astro';
+import { SERVICE_AREAS } from '~/data/site';
+import { graph, breadcrumb } from '~/lib/jsonld';
+
+const schemaJson = graph(breadcrumb([
+  { name: 'Home', href: '/' },
+  { name: 'Service areas', href: '/areas/' },
+]));
+---
+<Base
+  title="Service areas — Fire, security, ventilation across London &amp; the South East — Gemini AMPM"
+  description="Coverage across Greater London, the South East, Sussex, Kent, Surrey, Hampshire and the M25 corridor. Local engineers, same-day reactive response, planned-maintenance routes."
+  schemaJson={schemaJson}
+>
+  <PageWrap skin="night">
+    <PageHero
+      kicker="Service areas"
+      h1="Where we work."
+      lede="Our HQ is in Burgess Hill, West Sussex &mdash; our engineers cover <strong>Greater London, the South East, Sussex, Kent, Surrey, Hampshire and the M25 corridor</strong>. Same-day reactive response across the home region; planned-maintenance routes optimised across the wider UK for framework partners."
+    />
+
+    <section class="sec tight">
+      <div class="sec-index reveal">
+        {SERVICE_AREAS.map((a) => (
+          <a class="sec-card" href={'/areas/' + a.slug + '/'}>
+            <span class="sw" style="background: var(--m-orange)"></span>
+            <h3 set:html={a.name} />
+            <p set:html={a.blurb} />
+            <span class="url">gemini.ampm.co.uk/areas/{a.slug}/</span>
+          </a>
+        ))}
+      </div>
+      <p class="case-note">Don&rsquo;t see your region? We work UK-wide for framework partners and across the rest of England for one-off commercial projects &mdash; <a href="/contact/">get in touch</a> with the postcode and brief.</p>
+    </section>
+
+    <ContactBand />
+  </PageWrap>
+</Base>
+
+<style>
+  .sec-card { text-decoration: none; color: inherit; display: block; }
+</style>

@@ -4,12 +4,12 @@ import PageWrap from '~/components/PageWrap.astro';
 import PageHero from '~/components/PageHero.astro';
 import Kicker from '~/components/Kicker.astro';
 import { CLIENTS, CLIENT_SECTORS } from '~/data/site';
+import { graph, breadcrumb } from '~/lib/jsonld';
 
 const itemList = {
-  '@context': 'https://schema.org',
   '@type': 'ItemList',
   name: 'Gemini AMPM clients',
-  url: 'https://geminiampm.co.uk/clients/',
+  url: 'https://gemini.ampm.co.uk/clients/',
   numberOfItems: CLIENTS.length,
   itemListElement: CLIENTS.map((c, i) => ({
     '@type': 'ListItem',
@@ -18,8 +18,12 @@ const itemList = {
     url: c.link || undefined,
   })),
 };
+const schemaJson = graph(itemList, breadcrumb([
+  { name: 'Home', href: '/' },
+  { name: 'Clients', href: '/clients/' },
+]));
 ---
-<Base title="Clients — Gemini AMPM" description="The full set of named clients across the sectors we serve — Tier-1 main contractors, FM partners, NHS Trusts, universities, housing associations and corporate occupiers." schemaJson={itemList}>
+<Base title="Clients — Gemini AMPM" description="The full set of named clients across the sectors we serve — Tier-1 main contractors, FM partners, NHS Trusts, universities, housing associations and corporate occupiers." schemaJson={schemaJson}>
   <PageWrap skin="night">
     <PageHero
       kicker="Clients"

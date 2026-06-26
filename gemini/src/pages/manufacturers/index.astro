@@ -4,12 +4,12 @@ import PageWrap from '~/components/PageWrap.astro';
 import PageHero from '~/components/PageHero.astro';
 import Kicker from '~/components/Kicker.astro';
 import { MANUFACTURERS, MANUFACTURER_CATEGORIES } from '~/data/site';
+import { graph, breadcrumb } from '~/lib/jsonld';
 
 const itemList = {
-  '@context': 'https://schema.org',
   '@type': 'ItemList',
   name: 'Manufacturers Gemini AMPM installs and maintains',
-  url: 'https://geminiampm.co.uk/manufacturers/',
+  url: 'https://gemini.ampm.co.uk/manufacturers/',
   numberOfItems: MANUFACTURERS.length,
   itemListElement: MANUFACTURERS.map((m, i) => ({
     '@type': 'ListItem',
@@ -18,8 +18,12 @@ const itemList = {
     url: m.link || undefined,
   })),
 };
+const schemaJson = graph(itemList, breadcrumb([
+  { name: 'Home', href: '/' },
+  { name: 'Manufacturers', href: '/manufacturers/' },
+]));
 ---
-<Base title="Manufacturers — Gemini AMPM" description="Brands we install, maintain and specify across UK commercial estates — from Fike ProInert IG55 to Hyfire wireless and the HVAC majors." schemaJson={itemList}>
+<Base title="Manufacturers — Gemini AMPM" description="Brands we install, maintain and specify across UK commercial estates — from Fike ProInert IG55 to Hyfire wireless and the HVAC majors." schemaJson={schemaJson}>
   <PageWrap skin="night">
     <PageHero
       kicker="Manufacturers"

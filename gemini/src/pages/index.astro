@@ -44,6 +44,7 @@ const phone = CONTACT.phone;
         <figure class="gfig reveal d2">
           <image-slot id="g-hero" shape="rect" style="width:100%; height: clamp(300px,38vw,460px); display: block"
             src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1400&q=72"
+            aria-label="The London city skyline at night with lit office windows"
             placeholder="NIGHT — the building / city after dark"></image-slot>
           <figcaption class="gcap">After hours &mdash; when the building empties, the systems stay on · Peterborough Court, Fleet Street &middot; London</figcaption>
         </figure>
@@ -70,6 +71,9 @@ const phone = CONTACT.phone;
     <section class="gwrap gservices">
       <GStamp time="23:00" shift="Systems live" />
       <h2 class="gh2 reveal">What&rsquo;s on<br /><span class="lt">while you&rsquo;re off.</span></h2>
+      <p class="reveal" style="max-width: 56ch; color: rgba(244,234,216,0.74); font-size: 17px; line-height: 1.5; margin: -12px 0 28px;">
+        Fire alarms, gas suppression, passive fire, security and ventilation &mdash; seven service lines designed, installed, monitored and maintained for UK commercial and public-sector buildings.
+      </p>
       <div>
         {PILLARS.map((p) => (
           <a class="gsvc reveal" href={'/' + p.id + '/'}>
@@ -87,6 +91,33 @@ const phone = CONTACT.phone;
             <div class="lbl" set:html={c.lbl} />
           </div>
         ))}
+      </div>
+    </section>
+
+    {/* Quick-capture form — three-field, mailto fallback, no friction */}
+    <section class="gwrap gquick reveal">
+      <div class="gquick__inner">
+        <div class="gquick__lead">
+          <p class="kicker on-dark">Talk to us</p>
+          <h2 class="gh2 sm">Tell us about<br /><span class="lt">the building.</span></h2>
+          <p class="gquick__sub">A named engineer comes back within 24 hours &mdash; not a call centre. Three fields, no captcha.</p>
+        </div>
+        <form class="gquick__form" method="post" action={'mailto:info@geminiampm.co.uk?subject=' + encodeURIComponent('Website quick enquiry')} enctype="text/plain">
+          <label class="gquick__field">
+            <span>Your name</span>
+            <input name="Name" type="text" required autocomplete="name" />
+          </label>
+          <label class="gquick__field">
+            <span>Email</span>
+            <input name="Email" type="email" required autocomplete="email" />
+          </label>
+          <label class="gquick__field">
+            <span>What building, briefly?</span>
+            <input name="Building" type="text" placeholder="e.g. office block in EC2, NHS estate, residential tower" required />
+          </label>
+          <button class="btn" type="submit">Request a consultation</button>
+          <p class="gquick__sla">We respond within 24 hours · Mon–Fri</p>
+        </form>
       </div>
     </section>
 
@@ -123,6 +154,9 @@ const phone = CONTACT.phone;
     <section class="gwrap gclients">
       <GStamp time="03:30" shift="Who we protect" />
       <h2 class="gh2 reveal">The buildings<br /><span class="lt">we keep safe.</span></h2>
+      <p class="reveal" style="max-width: 56ch; color: rgba(244,234,216,0.74); font-size: 17px; line-height: 1.5; margin: -12px 0 28px;">
+        Fire safety, security and ventilation across NHS Trusts, social housing, data centres, schools, leisure centres and commercial estates &mdash; the sectors where compliance actually matters.
+      </p>
       <div class="gsector-grid reveal">
         {SECTORS.map((s) => (
           <a class="gsector" href="/sectors/">
@@ -170,6 +204,9 @@ const phone = CONTACT.phone;
     <section class="gwrap gclients" style="padding-top: clamp(70px,8vw,100px)">
       <GStamp time="04:50" shift="Accredited" />
       <h2 class="gh2 reveal">Certified to<br /><span class="lt">the standard.</span></h2>
+      <p class="reveal" style="max-width: 56ch; color: rgba(244,234,216,0.74); font-size: 17px; line-height: 1.5; margin: -12px 0 28px;">
+        BAFE-registered fire alarm company (ID 302260), NSI Gold security installer, FIRAS-certified passive fire protection &mdash; every accreditation verifiable on its awarding body&rsquo;s register. Tap any tile to see the certificate.
+      </p>
       <div class="gaccred reveal">
         {ACCREDS.map((a) => (
           <a class="cell linked" href={'/accreditations/' + a.slug + '/'}>
@@ -201,6 +238,7 @@ const phone = CONTACT.phone;
           <a class="gnews" href="/news/">
             <image-slot id={'g-news-' + n.slug} shape="rect" class="ni" style="width:100%; height:196px; display:block"
               src={n.image}
+              aria-label={n.cat + ' article: ' + n.title.replace(/<[^>]+>/g, '').replace(/&mdash;/g, '—').replace(/&rsquo;/g, '’')}
               placeholder={n.cat + ' — article image'}></image-slot>
             <div class="meta"><span class="cat">{n.cat}</span><span>{n.date}</span></div>
             <h4 set:html={n.title} />

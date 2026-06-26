@@ -19,6 +19,7 @@ import { CASES } from '~/data/site';
           <a class="case-card" href="/contact/">
             <image-slot id={'g-case-' + i} shape="rect" class="ci" style="width:100%; height: 210px; display:block"
               src={c.image}
+              aria-label={c.tag.replace(/&[a-z]+;/g, '·') + ' case study: ' + c.sector.replace(/&mdash;/g, '—').replace(/<[^>]+>/g, '')}
               placeholder={'CASE — ' + c.tag}></image-slot>
             <span class="ctag" style="background: var(--m-orange); position: absolute" set:html={c.tag} />
             <h4 set:html={c.sector} />

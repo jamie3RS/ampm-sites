@@ -1,0 +1,96 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import Kicker from '~/components/Kicker.astro';
+import ContactBand from '~/components/ContactBand.astro';
+import { NEWS } from '~/data/site';
+import { graph, article, breadcrumb } from '~/lib/jsonld';
+
+export function getStaticPaths() {
+  return NEWS.map((n) => ({ params: { slug: n.slug }, props: { news: n } }));
+}
+
+const { news: n } = Astro.props;
+const cleanTitle = n.title.replace(/<[^>]+>/g, '').replace(/&mdash;/g, '—').replace(/&rsquo;/g, '’').replace(/&amp;/g, '&');
+const description = n.teaser.replace(/<[^>]+>/g, '').replace(/&mdash;/g, '—').replace(/&rsquo;/g, '’').slice(0, 155);
+
+// Sister-articles for the "more from the control room" footer
+const others = NEWS.filter((x) => x.slug !== n.slug).slice(0, 3);
+
+const schemaJson = graph(
+  article(n),
+  breadcrumb([
+    { name: 'Home', href: '/' },
+    { name: 'News & insights', href: '/news/' },
+    { name: cleanTitle, href: '/news/' + n.slug + '/' },
+  ]),
+);
+---
+<Base title={cleanTitle + ' — Gemini AMPM'} description={description} schemaJson={schemaJson}>
+  <PageWrap skin="night">
+    <PageHero kicker={n.cat + ' · ' + n.date} h1={n.title} lede={n.teaser} />
+
+    {n.image && (
+      <section class="sec tight">
+        <figure class="reveal" style="margin: 0">
+          <img src={n.image} alt={n.cat + ' article: ' + cleanTitle} style="width:100%; height:auto; display:block;" loading="eager" />
+        </figure>
+      </section>
+    )}
+
+    <section class="sec tight">
+      <div class="intro2 reveal">
+        <div>
+          <Kicker>Article</Kicker>
+          <h2 class="dhead sm" set:html={'By ' + (n.author || 'the Gemini AMPM team')} />
+        </div>
+        <div class="article-body">
+          {n.body ? (
+            <Fragment set:html={n.body} />
+          ) : (
+            <>
+              <p class="body">This full article is being prepared by our team and will publish here shortly. In the meantime, the summary above captures the headline; for anything time-sensitive, please contact us directly and we&rsquo;ll respond within 24 hours.</p>
+              <p class="body" style="margin-top: 16px">
+                <a class="btn line sm" href="/contact/">Ask the team &rarr;</a>
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </section>
+
+    {others.length > 0 && (
+      <section class="sec tight">
+        <div class="reveal" style="margin-bottom: 24px">
+          <Kicker>More from the control room</Kicker>
+          <h2 class="dhead sm">Related insights.</h2>
+        </div>
+        <div class="news-index reveal">
+          {others.map((o) => (
+            <a class="ni-card" href={'/news/' + o.slug + '/'}>
+              {o.image
+                ? <img src={o.image} alt={o.cat + ' article: ' + o.title.replace(/<[^>]+>/g, '').replace(/&mdash;/g, '—').replace(/&rsquo;/g, '’')} style="width:100%; height: 200px; object-fit: cover; display: block;" loading="lazy" />
+                : <image-slot id={'g-other-' + o.slug} shape="rect" class="img" style="width:100%; height: 200px; display: block" aria-label={o.cat + ' — ' + o.title} placeholder={o.cat + ' — article image'}></image-slot>}
+              <div class="meta"><span class="cat">{o.cat}</span><span>{o.date}</span></div>
+              <h4 set:html={o.title} />
+              <p set:html={o.teaser} />
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <ContactBand />
+  </PageWrap>
+</Base>
+
+<style>
+  .ni-card { text-decoration: none; color: inherit; display: block; }
+  .article-body :global(p) { font-size: 17px; line-height: 1.65; margin-bottom: 18px; color: var(--ink-2, rgba(244,234,216,0.74)); }
+  .article-body :global(p strong) { color: var(--ink, #f4ead8); }
+  .article-body :global(h3) { font-family: var(--d-display); font-weight: 700; font-size: clamp(22px, 2.4vw, 28px); margin: 32px 0 14px; line-height: 1.1; color: var(--ink, #f4ead8); }
+  .article-body :global(ul), .article-body :global(ol) { padding-left: 22px; margin: 0 0 18px; color: var(--ink-2, rgba(244,234,216,0.74)); }
+  .article-body :global(li) { font-size: 17px; line-height: 1.65; margin-bottom: 8px; }
+  .article-body :global(blockquote) { border-left: 3px solid var(--m-orange); padding-left: 20px; margin: 24px 0; color: var(--ink, #f4ead8); font-style: italic; }
+</style>

@@ -5,6 +5,7 @@
 import Base from '~/layouts/Base.astro';
 import Kicker from '~/components/Kicker.astro';
 import { PILLARS, SECTORS, REP_CASES, PILLAR_STOCK_IMAGE } from '~/data/site';
+import { graph, service, breadcrumb } from '~/lib/jsonld';
 
 export function getStaticPaths() {
   return PILLARS.map((p) => ({ params: { pillar: p.id }, props: { pillar: p } }));
@@ -14,8 +15,17 @@ const { pillar: p } = Astro.props;
 const others = PILLARS.filter((x) => x.id !== p.id);
 const cases = REP_CASES[p.id] || REP_CASES.fire;
 const stockImage = PILLAR_STOCK_IMAGE[p.id];
+
+const schemaJson = graph(
+  service(p),
+  breadcrumb([
+    { name: 'Home', href: '/' },
+    { name: 'Services', href: '/services/' },
+    { name: p.full.replace(/&amp;/g, '&'), href: '/' + p.id + '/' },
+  ]),
+);
 ---
-<Base title={p.full.replace(/&amp;/g, '&') + ' — Gemini AMPM'} description={p.short.replace(/<[^>]+>/g, '').replace(/&mdash;/g, '—').replace(/&amp;/g, '&').slice(0, 155)}>
+<Base title={p.full.replace(/&amp;/g, '&') + ' — Gemini AMPM'} description={p.short.replace(/<[^>]+>/g, '').replace(/&mdash;/g, '—').replace(/&amp;/g, '&').slice(0, 155)} schemaJson={schemaJson}>
   <div class="page" data-nav-dark>
     <span class="pageglow"></span>
     <div class="shell">
@@ -78,6 +88,7 @@ const stockImage = PILLAR_STOCK_IMAGE[p.id];
             <a class="case-card" href="/casestudies/">
               <image-slot id={'g-rc-' + p.id + '-' + i} shape="rect" class="ci" style="width:100%;height:200px;display:block"
                 src={stockImage}
+                aria-label={p.name.replace(/&amp;/g, '&') + ' representative project: ' + c.sector.replace(/&mdash;/g, '—').replace(/<[^>]+>/g, '')}
                 placeholder={'CASE — ' + p.name.replace(/&amp;/g, '&')}></image-slot>
               <span class="ctag" style={`background: ${p.colour}; position: absolute`} set:html={c.tag} />
               <h4>[{c.sector}]</h4>

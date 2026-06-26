@@ -1,0 +1,118 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import Kicker from '~/components/Kicker.astro';
+import ContactBand from '~/components/ContactBand.astro';
+import { SERVICE_AREAS, PILLARS, CONTACT } from '~/data/site';
+import { graph, breadcrumb, service } from '~/lib/jsonld';
+
+export function getStaticPaths() {
+  return SERVICE_AREAS.map((a) => ({ params: { area: a.slug }, props: { area: a } }));
+}
+
+const { area: a } = Astro.props;
+
+// Schema: BreadcrumbList + a Service-area-specific Service entry per pillar
+const schemaJson = graph(
+  breadcrumb([
+    { name: 'Home', href: '/' },
+    { name: 'Service areas', href: '/areas/' },
+    { name: a.name, href: '/areas/' + a.slug + '/' },
+  ]),
+  ...PILLARS.map((p) => ({
+    ...service(p),
+    '@id': 'https://gemini.ampm.co.uk/areas/' + a.slug + '/#' + p.id,
+    areaServed: { '@type': 'AdministrativeArea', name: a.longName.replace(/&amp;/g, '&').replace(/<[^>]+>/g, '') },
+    url: 'https://gemini.ampm.co.uk/areas/' + a.slug + '/',
+  })),
+);
+---
+<Base
+  title={'Fire, security &amp; ventilation in ' + a.longName.replace(/&amp;/g, '&').replace(/<[^>]+>/g, '') + ' — Gemini AMPM'}
+  description={'Local fire alarm, security, ventilation, gas suppression and passive fire across ' + a.longName.replace(/&amp;/g, '&').replace(/<[^>]+>/g, '') + '. ' + a.blurb.replace(/<[^>]+>/g, '').replace(/&mdash;/g, '—').slice(0, 100)}
+  schemaJson={schemaJson}
+>
+  <PageWrap skin="night">
+    <PageHero
+      kicker={'Service area · ' + a.name}
+      h1={'Fire, security &amp; ventilation<br />in <span class="lt">' + a.name + '.</span>'}
+      lede={a.intro}
+    />
+
+    <section class="sec tight">
+      <div class="intro2 reveal">
+        <div>
+          <Kicker>Coverage</Kicker>
+          <h2 class="dhead sm" set:html={a.travelTime + '.'} />
+        </div>
+        <div>
+          <p class="body"><strong>Postcodes covered:</strong> {a.postcodes.map((p, i) => (<><span class="pc">{p}</span>{i < a.postcodes.length - 1 ? ' ' : ''}</>))}</p>
+          <p class="body" style="margin-top: 16px">
+            Same-team accountability across every visit &mdash; from the initial survey through install, commissioning, planned maintenance and out-of-hours reactive cover. <a href="/contact/">Talk to us</a> about your building.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec tight">
+      <div class="reveal" style="margin-bottom: 24px">
+        <Kicker>What we do here</Kicker>
+        <h2 class="dhead sm">Seven service lines,<br />one accountable team.</h2>
+      </div>
+      <div class="sec-index reveal">
+        {PILLARS.map((p) => (
+          <a class="sec-card" href={'/' + p.id + '/'}>
+            <span class="sw" style={`background: ${p.colour}`}></span>
+            <h3 set:html={p.full} />
+            <p set:html={p.short} />
+          </a>
+        ))}
+      </div>
+    </section>
+
+    {a.topSectors.length > 0 && (
+      <section class="sec tight">
+        <div class="intro2 reveal">
+          <div>
+            <Kicker>Strongest in {a.name}</Kicker>
+            <h2 class="dhead sm">The sectors we<br />work most.</h2>
+          </div>
+          <div>
+            <ul class="acc-covers">
+              {a.topSectors.map((s) => <li set:html={s} />)}
+            </ul>
+          </div>
+        </div>
+      </section>
+    )}
+
+    {a.notableProjects.length > 0 && (
+      <section class="sec tight">
+        <div class="intro2 reveal">
+          <div>
+            <Kicker>Locally</Kicker>
+            <h2 class="dhead sm">Some of the buildings<br />we work on here.</h2>
+          </div>
+          <div>
+            <ul class="acc-covers">
+              {a.notableProjects.map((proj) => <li set:html={proj} />)}
+            </ul>
+            <p class="body" style="margin-top: 18px; color: var(--ink-3, rgba(244,234,216,0.48)); font-size: 14px;">
+              References, full case studies and PQQ submissions available on request &mdash; including project value and named contacts where the client permits.
+            </p>
+          </div>
+        </div>
+      </section>
+    )}
+
+    <ContactBand />
+  </PageWrap>
+</Base>
+
+<style>
+  .sec-card { text-decoration: none; color: inherit; display: block; }
+  .pc { display: inline-block; padding: 4px 9px; background: rgba(244,234,216,0.08); border: 1px solid rgba(244,234,216,0.16);
+        border-radius: 4px; margin-right: 4px; margin-bottom: 6px; font-family: var(--d-display, monospace);
+        font-weight: 700; font-size: 13px; letter-spacing: 0.04em; color: var(--ink, #f4ead8); }
+</style>

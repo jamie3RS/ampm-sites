@@ -506,5 +506,23 @@ html[data-skin="day"] .founder .portrait image-slot { background: rgba(28,24,18,
 .gsister-logo { width: clamp(110px, 14vw, 170px); height: auto; flex-shrink: 0; display: block; margin-right: clamp(18px, 2.5vw, 32px); }
 @media (max-width: 720px) { .gsister-logo { margin-bottom: 14px; margin-right: 0; } }
 
+/* ===== homepage quick-capture form ===== */
+.gquick { padding-top: clamp(60px, 7vw, 90px); padding-bottom: clamp(40px, 5vw, 70px); }
+.gquick__inner { display: grid; grid-template-columns: 1fr 1.2fr; gap: clamp(28px, 4vw, 56px); align-items: start;
+  background: rgba(244,234,216,0.04); border: 1px solid rgba(244,234,216,0.10); border-radius: 4px;
+  padding: clamp(28px, 4vw, 48px); }
+@media (max-width: 880px) { .gquick__inner { grid-template-columns: 1fr; } }
+.gquick__lead .gh2 { font-size: clamp(36px, 4.5vw, 56px); margin-top: 14px; margin-bottom: 16px; color: #fff; }
+.gquick__sub { color: rgba(244,234,216,0.74); font-size: 16px; line-height: 1.5; max-width: 38ch; }
+.gquick__form { display: grid; gap: 14px; }
+.gquick__field { display: flex; flex-direction: column; gap: 6px; }
+.gquick__field > span { font-size: 13px; font-weight: 600; color: rgba(244,234,216,0.85); text-transform: uppercase; letter-spacing: 0.06em; }
+.gquick__field input { background: rgba(244,234,216,0.06); border: 1px solid rgba(244,234,216,0.18);
+  border-radius: 4px; color: #f4ead8; font: inherit; font-size: 16px; padding: 13px 14px; transition: border-color 0.15s ease; }
+.gquick__field input:focus { outline: none; border-color: var(--m-orange); background: rgba(244,234,216,0.08); }
+.gquick__field input::placeholder { color: rgba(244,234,216,0.40); }
+.gquick__form .btn { justify-self: start; margin-top: 6px; }
+.gquick__sla { color: rgba(244,234,216,0.52); font-size: 13px; margin: 0; }
+
 /* utility */
 .center-narrow { max-width: 760px; }

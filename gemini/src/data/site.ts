@@ -50,7 +50,19 @@ export interface Manufacturer {
   what: string;
 }
 export interface ManufacturerCategory { id: string; name: string; }
-export interface NewsItem { cat: string; date: string; slug: string; title: string; teaser: string; image?: string; }
+export interface NewsItem {
+  cat: string;
+  date: string;
+  slug: string;
+  title: string;
+  teaser: string;
+  image?: string;
+  /** Optional full article body as HTML (paragraphs, headings, lists). When
+      absent the article page renders a "full article coming soon" placeholder. */
+  body?: string;
+  /** Optional named author byline (defaults to "Gemini AMPM team"). */
+  author?: string;
+}
 export interface CaseItem { tag: string; sector: string; scope: string; image?: string; }
 export interface Accred {
   t: string;
@@ -737,10 +749,110 @@ export interface NavLink { href: string; label: string; }
 export const NAV_LINKS: NavLink[] = [
   { href: '/services/',    label: 'Services' },
   { href: '/sectors/',     label: 'Sectors' },
+  { href: '/areas/',       label: 'Areas' },
   { href: '/casestudies/', label: 'Casework' },
   { href: '/news/',        label: 'News' },
   { href: '/about/',       label: 'About' },
   { href: '/contact/',     label: 'Contact' },
+];
+
+// ─── SERVICE_AREAS — local-SEO landing pages, one per region ──────────────
+export interface ServiceArea {
+  slug: string;
+  name: string;
+  longName: string;
+  /** Short blurb shown on the /areas/ index. */
+  blurb: string;
+  /** Lede paragraph on the area page (HTML allowed). */
+  intro: string;
+  /** Outward postcode prefixes covered, e.g. ['EC', 'WC', 'E', 'N']. */
+  postcodes: string[];
+  /** "Within X" line for the area page. */
+  travelTime: string;
+  /** Sectors particularly strong in this area. */
+  topSectors: string[];
+  /** Optional list of named projects/clients located here. */
+  notableProjects: string[];
+}
+
+export const SERVICE_AREAS: ServiceArea[] = [
+  {
+    slug: 'london',
+    name: 'London',
+    longName: 'Greater London',
+    blurb: 'City, West End, Canary Wharf, the whole capital &mdash; commercial estates, financial services, NHS Trusts and listed buildings.',
+    intro: 'Gemini AMPM has been working across Greater London since 1997 &mdash; <strong>commercial fit-outs in the City and West End, NHS estates, residential towers, listed buildings and data centres.</strong> Our engineers are within reach of every London postcode and travel daily for surveys, planned maintenance and out-of-hours installs.',
+    postcodes: ['EC', 'WC', 'E', 'N', 'NW', 'SE', 'SW', 'W', 'IG', 'EN', 'HA', 'UB', 'TW', 'KT', 'BR', 'CR', 'DA', 'RM'],
+    travelTime: 'Within 75 min from our Burgess Hill HQ',
+    topSectors: ['Tier-1 main contractors', 'Facilities management', 'NHS Trusts', 'Higher education', 'Commercial &amp; retail buildings', 'IT data centres'],
+    notableProjects: ['Peterborough Court, Fleet Street (Mace, 2025)', 'Aviva Investors London office portfolio', 'Guy&rsquo;s and St Thomas&rsquo; NHS estate'],
+  },
+  {
+    slug: 'south-east',
+    name: 'South East',
+    longName: 'South East England',
+    blurb: 'Sussex, Kent, Surrey, Hampshire, Berkshire &mdash; the home region. Commercial, healthcare, education and housing estates across the South East.',
+    intro: 'The South East is our home region &mdash; Burgess Hill HQ, engineers based across <strong>Sussex, Kent, Surrey, Hampshire and Berkshire</strong>. Same-day reactive response, planned maintenance routes optimised for travel time, and a long history with the region&rsquo;s NHS Trusts, housing associations and main contractors.',
+    postcodes: ['BN', 'RH', 'TN', 'CT', 'ME', 'GU', 'SO', 'PO', 'RG', 'SL', 'OX', 'KT', 'CR', 'BR', 'DA'],
+    travelTime: 'Same-day reactive across most of the region',
+    topSectors: ['Public sector &amp; housing', 'NHS Trusts', 'Educational institutions', 'Care homes', 'Commercial &amp; retail buildings'],
+    notableProjects: ['NHS Medway', 'Salisbury NHS FT', 'South East Coast Ambulance NHS FT', 'Kingston University', 'University of Bath'],
+  },
+  {
+    slug: 'sussex',
+    name: 'Sussex',
+    longName: 'East &amp; West Sussex',
+    blurb: 'Home county. Brighton, Crawley, Eastbourne, Hastings, Worthing &mdash; full coverage across both East and West Sussex.',
+    intro: 'Sussex is home &mdash; our HQ is in <strong>Burgess Hill, RH15</strong>. Full coverage across Brighton, Crawley, Eastbourne, Hastings, Worthing and the rural belts in between. Engineers on the road across both East and West Sussex daily, with same-day reactive cover and a long-standing local client base.',
+    postcodes: ['BN', 'RH', 'TN'],
+    travelTime: 'Same-day reactive · planned routes daily',
+    topSectors: ['Public sector &amp; housing', 'Care homes', 'Educational institutions', 'Commercial &amp; retail buildings', 'Restaurants &amp; hotels'],
+    notableProjects: ['NHS estates across Brighton, Mid Sussex and Eastbourne (in-discussion)', 'Local-authority leisure centres'],
+  },
+  {
+    slug: 'surrey',
+    name: 'Surrey',
+    longName: 'Surrey',
+    blurb: 'Guildford, Woking, Reigate, Epsom, Croydon-border &mdash; commercial and public-sector estates across the county.',
+    intro: 'Surrey is one of our most active regions outside our home county &mdash; commercial estates along the A3, Woking and Guildford office parks, Reigate and Redhill town centres, and the public-sector estate across the county. Engineers based locally for same-day response.',
+    postcodes: ['GU', 'KT', 'RH', 'SM', 'CR'],
+    travelTime: 'Within 45 min from HQ for most of the county',
+    topSectors: ['Commercial &amp; retail buildings', 'Educational institutions', 'Care homes', 'Public sector &amp; housing'],
+    notableProjects: ['Kingston University'],
+  },
+  {
+    slug: 'kent',
+    name: 'Kent',
+    longName: 'Kent',
+    blurb: 'Maidstone, Canterbury, Medway, Ashford, Dartford &mdash; NHS Trusts, social housing, schools and commercial estates.',
+    intro: 'Active across Kent &mdash; from the Medway towns up to Dartford and across to Canterbury and Ashford. <strong>NHS Medway</strong> is one of our longest-standing healthcare clients, and we work on social housing, schools and commercial estates across the county.',
+    postcodes: ['ME', 'CT', 'DA', 'TN', 'BR'],
+    travelTime: 'Within 60 min from HQ',
+    topSectors: ['NHS Trusts', 'Public sector &amp; housing', 'Educational institutions', 'Care homes'],
+    notableProjects: ['NHS Medway (Trust + ICB)'],
+  },
+  {
+    slug: 'hampshire',
+    name: 'Hampshire',
+    longName: 'Hampshire',
+    blurb: 'Southampton, Portsmouth, Winchester, Basingstoke &mdash; commercial and healthcare estates across the county.',
+    intro: 'Across Hampshire &mdash; from <strong>Southampton and Portsmouth</strong> harbour-side commercial estates up to Winchester and Basingstoke. NHS Trusts, university campuses, commercial parks and the marine/leisure sector along the coast.',
+    postcodes: ['SO', 'PO', 'RG', 'GU', 'SP'],
+    travelTime: 'Within 90 min from HQ',
+    topSectors: ['NHS Trusts', 'Educational institutions', 'Commercial &amp; retail buildings', 'Restaurants &amp; hotels'],
+    notableProjects: ['South East Coast Ambulance NHS FT', 'Salisbury NHS FT (border)'],
+  },
+  {
+    slug: 'm25-corridor',
+    name: 'M25 corridor',
+    longName: 'M25 corridor',
+    blurb: 'The orbital ring &mdash; Heathrow to Dartford, Croydon to Watford. Logistics, commercial parks, data centres, transport hubs.',
+    intro: 'The M25 ring is a high-density commercial estate &mdash; <strong>data centres, logistics parks, transport hubs, airport-adjacent commercial</strong>. We work extensively across the orbital, with FM partners on framework contracts and direct relationships with end occupiers.',
+    postcodes: ['UB', 'TW', 'KT', 'SM', 'CR', 'BR', 'DA', 'RM', 'IG', 'EN', 'WD', 'HA'],
+    travelTime: 'Within 90 min from HQ',
+    topSectors: ['Facilities management', 'IT data centres', 'Warehouses &amp; storage units', 'Commercial &amp; retail buildings'],
+    notableProjects: ['CBRE-managed estates (orbital)', 'Integral UK framework portfolio'],
+  },
 ];
 
 // ─── SUN_COLOURS from g-shell.jsx (day-arc palette for the nav scroll effect)

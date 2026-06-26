@@ -4,6 +4,7 @@ import PageWrap from '~/components/PageWrap.astro';
 import PageHero from '~/components/PageHero.astro';
 import Kicker from '~/components/Kicker.astro';
 import { ACCREDS, PILLARS } from '~/data/site';
+import { graph, breadcrumb } from '~/lib/jsonld';
 
 export function getStaticPaths() {
   return ACCREDS.map((a) => ({ params: { slug: a.slug }, props: { accred: a } }));
@@ -13,15 +14,21 @@ const { accred: a } = Astro.props;
 const relatedPillars = (a.pillars || []).map((pid: string) => PILLARS.find((p) => p.id === pid)).filter(Boolean);
 const siblings = ACCREDS.filter((x) => x.slug !== a.slug);
 
-const schemaJson = {
-  '@context': 'https://schema.org',
-  '@type': 'EducationalOccupationalCredential',
-  name: a.t + ' — Gemini AMPM Ltd',
-  credentialCategory: 'Industry accreditation',
-  recognizedBy: { '@type': 'Organization', name: a.verify_label || a.t, url: a.verify },
-  about: { '@type': 'Organization', name: 'Gemini AMPM Ltd', url: 'https://geminiampm.co.uk' },
-  url: 'https://geminiampm.co.uk/about-us/accreditations/' + a.slug + '/',
-};
+const schemaJson = graph(
+  {
+    '@type': 'EducationalOccupationalCredential',
+    name: a.t + ' — Gemini AMPM Ltd',
+    credentialCategory: 'Industry accreditation',
+    recognizedBy: { '@type': 'Organization', name: a.verify_label || a.t, url: a.verify },
+    about: { '@id': 'https://gemini.ampm.co.uk/#organization' },
+    url: 'https://gemini.ampm.co.uk/accreditations/' + a.slug + '/',
+  },
+  breadcrumb([
+    { name: 'Home', href: '/' },
+    { name: 'Accreditations', href: '/accreditations/' },
+    { name: a.t, href: '/accreditations/' + a.slug + '/' },
+  ]),
+);
 ---
 <Base title={a.meta_title} description={a.meta_desc} schemaJson={schemaJson}>
   <PageWrap skin="night">

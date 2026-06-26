@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { PILLARS, ACCREDS } from '~/data/site';
+import { PILLARS, ACCREDS, NEWS, SERVICE_AREAS } from '~/data/site';
 
 const SITE = 'https://gemini.ampm.co.uk';
 
@@ -7,6 +7,7 @@ const STATIC_URLS = [
   '/',
   '/services/',
   '/sectors/',
+  '/areas/',
   '/casestudies/',
   '/news/',
   '/about/',
@@ -21,6 +22,8 @@ export const GET: APIRoute = () => {
   const urls = [
     ...STATIC_URLS.map((u) => ({ loc: u, pri: u === '/' ? '1.0' : '0.8' })),
     ...PILLARS.map((p) => ({ loc: `/${p.id}/`, pri: '0.9' })),
+    ...SERVICE_AREAS.map((a) => ({ loc: `/areas/${a.slug}/`, pri: '0.8' })),
+    ...NEWS.map((n) => ({ loc: `/news/${n.slug}/`, pri: '0.6' })),
     ...ACCREDS.map((a) => ({ loc: `/accreditations/${a.slug}/`, pri: '0.6' })),
   ];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
