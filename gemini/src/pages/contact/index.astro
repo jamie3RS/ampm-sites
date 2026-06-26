@@ -44,7 +44,14 @@ const formAction = 'https://formsubmit.co/info@geminiampm.co.uk';
             </div>
           </div>
         </div>
-        <form class="cform reveal d1" method="post" action={formAction} enctype="text/plain">
+        <form class="cform reveal d1" method="POST" action={formAction}>
+          <input type="hidden" name="_subject" value="Website consultation request — Gemini AMPM" />
+          <input type="hidden" name="_template" value="table" />
+          <input type="hidden" name="_next" value="https://gemini.ampm.co.uk/contact/thanks/" />
+          <input type="hidden" name="_captcha" value="true" />
+          <input type="hidden" name="_honey" value="" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" />
+          <input type="hidden" name="Source" value="Contact page" />
+
           <input class="f" name="Name" type="text" placeholder="Name" required />
           <input class="f" name="Company" type="text" placeholder="Company" />
           <input class="f" name="Email" type="email" placeholder="Email" required />
