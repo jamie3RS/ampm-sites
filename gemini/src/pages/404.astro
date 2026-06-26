@@ -1,0 +1,59 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import Kicker from '~/components/Kicker.astro';
+import { PILLARS } from '~/data/site';
+
+// Cloudflare Pages serves /404.html with HTTP 404 status when the file
+// exists at the dist root. Astro builds this src/pages/404.astro to
+// dist/404.html automatically.
+---
+<Base
+  title="Page not found — Gemini AMPM"
+  description="Sorry — that page doesn't exist. Try the services menu or contact our team."
+>
+  <PageWrap skin="night">
+    <section class="sec p-hero nightband" data-nav-dark>
+      <div class="reveal"><Kicker dark>404</Kicker></div>
+      <h1 class="reveal d1">That page<br />went dark.</h1>
+      <p class="lede reveal d2">Looks like the URL you followed has been removed, renamed, or never existed. The site map below covers everything we currently serve &mdash; or call <a href="tel:+443300430080" style="color: var(--m-orange)">0330 043 0080</a> if you need help finding something.</p>
+    </section>
+
+    <section class="sec tight">
+      <div class="reveal" style="margin-bottom: 24px">
+        <Kicker>Where to next</Kicker>
+        <h2 class="dhead sm">The seven service lines.</h2>
+      </div>
+      <div class="sec-index reveal">
+        {PILLARS.map((p) => (
+          <a class="sec-card" href={'/' + p.id + '/'} style="text-decoration:none; color:inherit; display:block;">
+            <span class="sw" style={`background: ${p.colour}`}></span>
+            <h3 set:html={p.full} />
+            <p set:html={p.short} />
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="sec tight">
+      <div class="reveal" style="margin-bottom: 24px">
+        <Kicker>Or jump to</Kicker>
+        <h2 class="dhead sm">The main pages.</h2>
+      </div>
+      <ul class="reveal" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; list-style: none; padding: 0;">
+        <li><a href="/">Home</a></li>
+        <li><a href="/services/">All services</a></li>
+        <li><a href="/sectors/">Sectors we serve</a></li>
+        <li><a href="/areas/">Service areas</a></li>
+        <li><a href="/clients/">Clients</a></li>
+        <li><a href="/manufacturers/">Manufacturers</a></li>
+        <li><a href="/accreditations/">Accreditations</a></li>
+        <li><a href="/news/">News &amp; insights</a></li>
+        <li><a href="/about/">About</a></li>
+        <li><a href="/about/team/">Meet the team</a></li>
+        <li><a href="/why/">Why choose Gemini</a></li>
+        <li><a href="/contact/">Contact</a></li>
+      </ul>
+    </section>
+  </PageWrap>
+</Base>

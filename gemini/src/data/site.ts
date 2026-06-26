@@ -466,6 +466,55 @@ export const MANUFACTURERS: Manufacturer[] = [
 const UNSPLASH = (id: string, w = 1200) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=72`;
 
 export const NEWS: NewsItem[] = [
+  { cat: 'Company News', date: '26.06.2026', slug: 'homes-england-imaf-supplier-panel-application',
+    title: 'Gemini AMPM applies to the Homes England IMAF supplier panel',
+    teaser: 'Gemini AMPM has submitted an application to join the Interim Measures Alarm Fund supplier panel &mdash; the government scheme replacing waking-watch costs in residential buildings under remediation.',
+    image: UNSPLASH('1564013799919-ab600027ffc6'),
+    author: 'the Gemini AMPM team',
+    body: `
+<p>Gemini AMPM has applied to join the <strong>Interim Measures Alarm Fund (IMAF)</strong> supplier panel administered by <a href="https://www.gov.uk/guidance/interim-measures-alarm-fund-imaf-guidance" target="_blank" rel="noopener noreferrer">Homes England</a>. The application is currently under review; once approved, Gemini will be eligible to quote for and deliver IMAF-funded interim fire alarm installations across residential buildings in England.</p>
+
+<h3>What is IMAF?</h3>
+
+<p>The Interim Measures Alarm Fund is a UK government scheme launched on <strong>1 April 2026</strong> and managed by Homes England. It funds the installation of interim common fire alarm systems in residential buildings and student accommodation where remediation works are ongoing and where existing fire safety strategies depend on <strong>waking-watch arrangements</strong>.</p>
+
+<p>The fund&rsquo;s stated purpose is to &ldquo;reduce the prolonged use of interim fire safety measures and encourage progress towards more permanent fire safety remediation.&rdquo; In practice that means giving Responsible Persons a route to install a properly designed alarm system &mdash; reducing reliance on round-the-clock human fire wardens, lowering the cost burden on leaseholders, and helping residents stay safely in their homes while permanent works progress.</p>
+
+<h3>Why it matters for building managers and leaseholders</h3>
+
+<p>Waking-watch arrangements have been a contentious feature of the post-Grenfell remediation landscape. They are expensive (typically billed back to leaseholders), they are operationally fragile (turnover, gaps in cover, training inconsistency), and they can run for years where remediation programmes are complex.</p>
+
+<p>IMAF gives Responsible Entities and Responsible Persons a route to fund the installation of a <strong>BS 5839-1 Category L5 common fire alarm system</strong> &mdash; sized to the specific fire safety objectives identified in the building&rsquo;s fire risk assessment &mdash; without that capital cost falling on the leaseholders. The fund pays on completion of works and submission of evidence, against quotes provided by suppliers on the approved panel.</p>
+
+<p>Hotels are explicitly excluded from the scheme. Applications must come from the Responsible Entity or Responsible Person (or an authorised representative), not from individual leaseholders.</p>
+
+<h3>What the supplier panel requires</h3>
+
+<p>Only firms on the Homes England IMAF supplier panel can quote for and undertake work funded by the scheme. The technical bar is set by the published guidance:</p>
+
+<ul>
+  <li>Systems must be <strong>designed to BS 5839-1 for a Category L5 system</strong>, configured to the specific fire safety objectives identified by the building&rsquo;s risk assessment</li>
+  <li>Work must be <strong>designed, installed and commissioned by an appropriately qualified, third-party accredited competent person</strong></li>
+  <li>Systems may need to be capable of being upgraded to the <strong>BS 8629 specification</strong> (the standard for evacuation alert systems in residential blocks)</li>
+  <li>Quotes are submitted to Homes England for review against programme benchmarks before works proceed</li>
+</ul>
+
+<p>The &ldquo;third-party accredited competent person&rdquo; requirement is the technical gate: it is met by being registered under recognised industry schemes such as <strong>BAFE SP203-1</strong>, which independently audits design, installation, commissioning and maintenance of fire detection and alarm systems against BS 5839-1.</p>
+
+<h3>Why Gemini AMPM applied</h3>
+
+<p>Gemini AMPM is BAFE registered (ID 302260) under SP203-1, has 27 years of continuous trading in fire detection and alarm systems, and works extensively across the UK residential and social housing sector &mdash; including longstanding relationships with FirstPort, Newlon Housing, Moat Homes and the Royal Borough of Kensington &amp; Chelsea, alongside Tier-1 contractors delivering fire alarm packages on commercial fit-out programmes.</p>
+
+<p>The IMAF panel application is a natural fit. The credentials the scheme requires (BAFE registration, BS 5839-1 design and install competence, evidence-pack discipline at handover) are the same credentials we maintain day-to-day for our existing residential client base. The application is now with Homes England for review; we&rsquo;ll update this article when the outcome is confirmed.</p>
+
+<h3>What residential building managers should consider now</h3>
+
+<p>If you are currently operating waking-watch arrangements in a residential building undergoing remediation, IMAF is worth investigating directly. The official <a href="https://www.gov.uk/guidance/interim-measures-alarm-fund-imaf-guidance" target="_blank" rel="noopener noreferrer">Homes England IMAF guidance</a> and <a href="https://www.gov.uk/guidance/apply-to-the-interim-measures-alarm-fund-imaf" target="_blank" rel="noopener noreferrer">application guidance</a> are the source-of-truth for eligibility, application process and funded scope.</p>
+
+<p>Once Gemini&rsquo;s supplier-panel application is confirmed, we will be able to quote directly under the scheme. In the meantime, if you would like an early conversation about your building &mdash; the current waking-watch arrangement, the proposed alarm category, the practical install constraints &mdash; <a href="/contact/">our team can attend a survey within 5 working days</a>. We&rsquo;ll work to BS 5839-1 with full BAFE-aligned evidence regardless of how the funding route is structured.</p>
+
+<p><em>This article will be updated when Homes England confirms the outcome of the supplier panel application.</em></p>
+` },
   { cat: 'Fire Alarm',      date: '19.05.2026', slug: 'wireless-fire-alarm-systems-when-to-choose',
     title: 'Wireless fire alarm systems &mdash; when wireless beats wired (and when it doesn&rsquo;t)',
     teaser: 'Wireless fire alarm systems have caught up with wired on reliability and certification. Here&rsquo;s when wireless is the right choice.',
