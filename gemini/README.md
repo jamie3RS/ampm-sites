@@ -1,44 +1,35 @@
-# Gemini AMPM — renewed website (on the AMPM group design system)
+# Gemini AMPM — production Astro site
 
-A fresh attempt at renewing **geminiampm.co.uk**, built on the same design
-system as the AMPM Building Services site so the two read as one group — while
-Gemini keeps its own night / PM→AM "we keep watch" identity. Designed as a
-**re-skin within the existing WordPress install**, so no SEO equity is lost.
+This is the 1:1 Astro port of the React prototype at `../gemini-prototype-src/`.
 
-## Deliverables
+**Rule:** the prototype is the source of truth. Every piece of data, every component, every line of copy here is a port of what's there. No new content, no new design.
 
-| File | What it is |
-|---|---|
-| `index.html` | The clickable renewed site — home, services overview, 7 service pillars, sectors, why, about, news, casework, contact. Hash-routed. |
-| `Gemini AMPM — SEO Migration Map.html` | Printable handoff doc: full URL inventory (live → renewed), redirect register, pre-launch checklist. |
+## What changed from prototype → Astro
 
-## How it relates to the group
+- **Hash routing → real URL routes** (`/#services` → `/services/`)
+- **React + Babel CDN runtime → Astro static build** (faster, SEO-indexable, smaller)
+- **`dangerouslySetInnerHTML` → `set:html`** (same semantics)
+- **`className` → `class`** (Astro convention)
+- **Hook-based scroll/reveal effects → small client `<script>` blocks** (same behaviour)
+- **`setRoute(id)` → `href="/page/"`** (real links, no router)
 
-- **Shared DNA with AMPM Building Services:** Big Shoulders + Archivo type, the
-  four-colour meridian, the stamp/kicker vocabulary, identical nav/footer chrome.
-- **Gemini owns the night:** the homepage runs the inverted PM→AM arc (dusk →
-  deep night → dawn handback) with the night-log differentiator; interior pages
-  run the Building Services calm-page system in a dark "night" skin.
+## What stayed identical
 
-## Tweaks (toolbar → Tweaks)
+- All data in `src/data/site.ts` is a verbatim port of `g-data.jsx`
+- `gemini-base.css` and `gemini-theme.css` copied unchanged into `public/`
+- `image-slot.js` copied unchanged
+- All assets (logos, certs) copied unchanged
+- Every component preserves the prototype's JSX structure, classNames, and copy
 
-- **Night-arc intensity** — Full / Subtle / Still
-- **Homepage** — "The Watch" (full night-log story) / "First Light" (calmer, who-we-are led)
-- **Interior skin** — Night (dark) / Day (cream)
-- **Display face** — Big Shoulders / Archivo Black
-- **Accent** — Amber / Blue / Green / Violet
+## Run
 
-## SEO principle
+```
+cd _websites/gemini
+npm install
+npm run dev      # → http://localhost:4321
+npm run build    # → dist/
+```
 
-Every live URL is frozen: the 7 pillars, their ~40 child service pages, the 8
-`/sector/…/` pages, news, casework and system pages all keep their exact slugs,
-titles and meta. The renewed templates render onto the same addresses — no
-redirects needed. See the migration map for the page-by-page spec.
+## Deploy
 
-## Files
-
-`g-data.jsx` content model (URLs mirror live) · `g-shell.jsx` nav/footer/helpers ·
-`g-home.jsx` both home directions · `g-service.jsx` pillar template ·
-`g-pages.jsx` interior pages · `gemini-base.css` (BS sub-page system) +
-`gemini-theme.css` (night layer). Imagery is image-slot placeholders for the
-client to drop real photos into.
+Cloudflare Pages config: `build: cd gemini && npm install --no-audit --no-fund && npm run build` · `output: gemini/dist` · `NODE_VERSION=22`.

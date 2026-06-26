@@ -1,0 +1,9 @@
+---
+interface Props { skin?: 'night' | 'day'; }
+const { skin } = Astro.props;
+const nightAttrs = skin === 'night' ? { 'data-nav-dark': '' } : {};
+---
+<div class="page" {...nightAttrs}>
+  <span class="pageglow"></span>
+  <div class="shell"><slot /></div>
+</div>

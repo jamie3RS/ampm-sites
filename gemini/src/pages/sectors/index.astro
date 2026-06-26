@@ -1,0 +1,36 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import ContactBand from '~/components/ContactBand.astro';
+import { SECTORS } from '~/data/site';
+---
+<Base title="Sectors — Gemini AMPM" description="Commercial and public-sector buildings — hospitals, data centres, social housing, hospitality, education. Each sector has its own compliance demands; our teams know them.">
+  <PageWrap skin="night">
+    <PageHero
+      kicker="Sectors"
+      h1="The buildings<br />we keep safe."
+      lede="We work across commercial and public-sector buildings in complex, safety-critical environments &mdash; <strong>from hospitals and data centres to social housing, hospitality and education.</strong> Each sector has its own compliance demands; our teams know them."
+    />
+
+    <section class="sec tight">
+      <div class="sec-index reveal">
+        {SECTORS.map((s) => (
+          <a class="sec-card" href="/contact/">
+            <span class="sw" style={`background: ${s.colour}`}></span>
+            <h3 set:html={s.name} />
+            <p set:html={s.blurb} />
+            <span class="url">geminiampm.co.uk/{s.slug}/</span>
+          </a>
+        ))}
+      </div>
+      <p class="case-note">Each sector keeps its own landing page and existing web address &mdash; the renewed design drops straight onto the URLs already ranking.</p>
+    </section>
+
+    <ContactBand />
+  </PageWrap>
+</Base>
+
+<style>
+  .sec-card { text-decoration: none; color: inherit; display: block; }
+</style>

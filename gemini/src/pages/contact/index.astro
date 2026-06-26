@@ -1,0 +1,60 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import { CONTACT, PILLARS } from '~/data/site';
+
+const phone = CONTACT.phone;
+const tel = 'tel:' + String(phone).replace(/\s+/g, '');
+// Build mailto: action so the form works server-rendered without a backend.
+const formAction = `mailto:info@geminiampm.co.uk?subject=${encodeURIComponent('Website enquiry — Gemini AMPM')}`;
+---
+<Base title="Contact — Gemini AMPM" description="A named engineer comes back within 24 hours — not a call centre. Tell us the building, the system and where you are with compliance.">
+  <PageWrap skin="night">
+    <PageHero
+      kicker="Contact"
+      h1="Tell us about<br />the building."
+      lede="A named engineer comes back within 24 hours &mdash; not a call centre. <strong>Tell us the building, the system and where you are with compliance,</strong> and we&rsquo;ll take it from there."
+    />
+
+    <section class="sec tight">
+      <div class="contact-grid">
+        <div class="reveal">
+          <div class="routes2" style="grid-template-columns: 1fr">
+            <div class="route">
+              <p class="rl">Call us</p>
+              <div class="rv"><a href={tel}>{phone}</a></div>
+              <p class="rs">Out of hours? The line is monitored &mdash; an answered call, every time.</p>
+            </div>
+            <div class="route stack">
+              <p class="rl">Email</p>
+              <div class="rv"><a href="mailto:info@geminiampm.co.uk">info@geminiampm.co.uk</a></div>
+            </div>
+            <div class="route stack">
+              <p class="rl">Find us</p>
+              <div class="rv" style="font-size:20px;line-height:1.4" set:html={CONTACT.address} />
+            </div>
+            <div class="route stack">
+              <p class="rl">Existing client</p>
+              <div class="rv" style="font-size:20px"><a href={CONTACT.portal} target="_blank" rel="noopener noreferrer">Client portal ↗</a></div>
+              <p class="rs">Log work, track jobs and view reports through the AMPM client portal.</p>
+            </div>
+          </div>
+        </div>
+        <form class="cform reveal d1" method="post" action={formAction} enctype="text/plain">
+          <input class="f" name="Name" type="text" placeholder="Name" required />
+          <input class="f" name="Company" type="text" placeholder="Company" />
+          <input class="f" name="Email" type="email" placeholder="Email" required />
+          <input class="f" name="Phone" type="tel" placeholder="Phone" />
+          <select class="f" name="Service" required>
+            <option value="" disabled selected>Service required…</option>
+            {PILLARS.map((p) => <option set:html={p.full} />)}
+          </select>
+          <textarea class="f" name="Message" rows="3" placeholder="The building, the system, where you are with compliance"></textarea>
+          <button class="btn" type="submit">Request a consultation</button>
+          <p class="sla">We respond within 24 hours · Mon–Fri</p>
+        </form>
+      </div>
+    </section>
+  </PageWrap>
+</Base>

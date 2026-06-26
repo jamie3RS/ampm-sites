@@ -1,0 +1,10 @@
+---
+interface Props { class?: string; }
+const { class: className = 'fmer' } = Astro.props;
+---
+<span class={className} aria-hidden="true">
+  <span style="background: var(--m-green)"></span>
+  <span style="background: var(--m-purple)"></span>
+  <span style="background: var(--m-orange)"></span>
+  <span style="background: var(--m-blue)"></span>
+</span>

@@ -1,0 +1,14 @@
+---
+// Port of GeminiLogo from g-shell.jsx. Same two-layer light/dark image swap.
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+const isLg = (' ' + className + ' ').indexOf(' lg ') >= 0;
+const lightSrc = isLg ? '/assets/gemini-logo.png' : '/assets/gemini-logo-notag.png';
+const darkSrc  = isLg ? '/assets/gemini-logo-rev.png' : '/assets/gemini-logo-notag-rev.png';
+---
+<span class={'glogo ' + className} aria-label="Gemini AMPM — Asset Management Planned Maintenance">
+  <img class="glogo-img glogo-img--light" src={lightSrc} alt="" aria-hidden="true" />
+  <img class="glogo-img glogo-img--dark"  src={darkSrc}  alt="Gemini AMPM" />
+</span>

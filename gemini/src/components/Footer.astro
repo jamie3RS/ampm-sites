@@ -1,0 +1,55 @@
+---
+// Port of Footer from g-shell.jsx. Hash routes replaced with real URLs.
+import GeminiLogo from '~/components/GeminiLogo.astro';
+import { PILLARS, CONTACT } from '~/data/site';
+
+const phone = CONTACT.phone;
+const tel = 'tel:' + String(phone).replace(/\s+/g, '');
+const year = new Date().getFullYear();
+---
+<footer class="foot" data-nav-dark>
+  <div class="foot-inner">
+    <div>
+      <div class="fwm"><GeminiLogo class="lg" /></div>
+      <p class="ftag">
+        Fire, security, ventilation, gas suppression and passive fire &mdash; designed, installed, monitored and maintained since 1997. An employee-owned company of AMPM Group.
+      </p>
+    </div>
+    <div>
+      <h5>Services</h5>
+      <ul>
+        {PILLARS.map((p) => (
+          <li><a href={'/' + p.id + '/'} set:html={p.full} /></li>
+        ))}
+      </ul>
+    </div>
+    <div>
+      <h5>Company</h5>
+      <ul>
+        <li><a href="/about/">About us</a></li>
+        <li><a href="/why/">Why choose Gemini</a></li>
+        <li><a href="/sectors/">Sectors</a></li>
+        <li><a href="/casestudies/">Case studies</a></li>
+        <li><a href="/news/">News &amp; insights</a></li>
+        <li><a href={CONTACT.portal} target="_blank" rel="noopener noreferrer">Client portal ↗</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5>Get in touch</h5>
+      <ul>
+        <li><a href={tel}>{phone}</a></li>
+        <li><a href="mailto:info@geminiampm.co.uk">info@geminiampm.co.uk</a></li>
+        <li class="muted" style="margin-top: 8px" set:html={CONTACT.address} />
+      </ul>
+      <h5 style="margin-top: 22px">AMPM Group</h5>
+      <ul>
+        <li><a href="https://ampmgroup.co.uk" target="_blank" rel="noopener noreferrer">ampmgroup.co.uk ↗</a></li>
+        <li><a href="https://ampm.co.uk" target="_blank" rel="noopener noreferrer">AMPM Building Services ↗</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-meta">
+    <span>&copy; {year} Gemini AMPM Ltd &middot; An AMPM Group company &middot; est.&nbsp;1997</span>
+    <span>Employee-owned (EOT) &middot; Burgess Hill, West Sussex</span>
+  </div>
+</footer>

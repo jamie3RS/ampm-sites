@@ -1,0 +1,85 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import Kicker from '~/components/Kicker.astro';
+import { CLIENTS, CLIENT_SECTORS } from '~/data/site';
+
+const itemList = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Gemini AMPM clients',
+  url: 'https://geminiampm.co.uk/clients/',
+  numberOfItems: CLIENTS.length,
+  itemListElement: CLIENTS.map((c, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: c.nm.replace(/&[a-z]+;|&#\d+;/g, ''),
+    url: c.link || undefined,
+  })),
+};
+---
+<Base title="Clients — Gemini AMPM" description="The full set of named clients across the sectors we serve — Tier-1 main contractors, FM partners, NHS Trusts, universities, housing associations and corporate occupiers." schemaJson={itemList}>
+  <PageWrap skin="night">
+    <PageHero
+      kicker="Clients"
+      h1="Every client<br />we work with."
+      lede={"The 12 on our home page are the ones we lead with &mdash; but they aren&rsquo;t the whole story. " +
+            "What follows is the full set of named clients across the sectors we serve: Tier-1 main contractors, " +
+            "FM partners, the M&amp;E and building-services peer network, fit-out specialists, the NHS Trusts we " +
+            "work with on hospital and ambulance estates, higher-education campuses, public sector and housing " +
+            "associations, and the corporate occupiers who trust our compliance work."}
+    />
+
+    {CLIENT_SECTORS.map((sector) => {
+      const inSector = CLIENTS.filter((c) => c.sector === sector.id);
+      if (inSector.length === 0) return null;
+      return (
+        <section class="sec tight">
+          <div class="reveal" style="margin-bottom: 18px">
+            <Kicker>{inSector.length} {inSector.length === 1 ? 'client' : 'clients'}</Kicker>
+            <h2 class="dhead sm" set:html={sector.name} />
+          </div>
+          <div class="cdir-grid reveal">
+            {inSector.map((c) => {
+              const logoClass = 'cdir-logo' + (c.logoMode === 'keep' ? ' cdir-logo--keep' : '');
+              const inner = c.logo
+                ? (
+                  <>
+                    <img class={logoClass} src={'/' + c.logo} alt={c.nm + ' logo'} loading="lazy" />
+                    <span class="cdir-nm" set:html={c.nm} />
+                    <span class="cdir-what" set:html={c.what} />
+                  </>
+                )
+                : (
+                  <>
+                    <span class="cdir-logo cdir-logo--text" set:html={c.nm} />
+                    <span class="cdir-nm" set:html={c.nm} />
+                    <span class="cdir-what" set:html={c.what} />
+                  </>
+                );
+              return c.link
+                ? <a class="cdir-cell" href={c.link} target="_blank" rel="noopener noreferrer">{inner}</a>
+                : <div class="cdir-cell">{inner}</div>;
+            })}
+          </div>
+        </section>
+      );
+    })}
+
+    <section class="sec tight">
+      <div class="intro2 reveal">
+        <div>
+          <Kicker>Work with us</Kicker>
+          <h2 class="dhead sm">Looking for a contractor<br />who answers the night call?</h2>
+        </div>
+        <div>
+          <p class="body">If you&rsquo;re building, refurbishing, managing or occupying a commercial property and need fire, security, ventilation or gas suppression delivered by a team that gets compliance right, get in touch.</p>
+          <p class="body" style="margin-top: 16px">
+            <a class="btn line sm" href="/contact/">Contact our team &rarr;</a>
+          </p>
+        </div>
+      </div>
+    </section>
+  </PageWrap>
+</Base>

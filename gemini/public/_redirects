@@ -1,0 +1,9 @@
+# Redirect any old AI-Astro pillar URLs (from the abandoned build) to the
+# matching new pillar pages so no bookmarks 404.
+/gas-suppression/         /gas/         301
+/fire-alarm/              /fire/        301
+/passive-fire/            /passive/     301
+/security-access/         /security/    301
+/ventilation/             /ventilation/ 301
+/mechanical-electrical/   /me/          301
+/small-works/             /smallworks/  301

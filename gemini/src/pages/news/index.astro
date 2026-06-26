@@ -1,0 +1,38 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import ContactBand from '~/components/ContactBand.astro';
+import { NEWS } from '~/data/site';
+---
+<Base title="News & insights — Gemini AMPM" description="Fire, security, ventilation and compliance, explained by the people doing the work. Standards changes, regulations, building complexity.">
+  <PageWrap skin="night">
+    <PageHero
+      kicker="News &amp; insights"
+      h1="From the<br />control room."
+      lede="Standards change, regulations tighten, and buildings get more complex. We write about what that means in practice &mdash; <strong>fire, security, ventilation and compliance, explained by the people doing the work.</strong>"
+    />
+
+    <section class="sec tight">
+      <div class="news-index reveal">
+        {NEWS.map((n) => (
+          <a class="ni-card" href="/contact/">
+            <image-slot id={'g-newsidx-' + n.slug} shape="rect" class="img" style="width:100%; height: 200px; display: block"
+              placeholder={n.cat + ' — article image'}></image-slot>
+            <div class="meta"><span class="cat">{n.cat}</span><span>{n.date}</span></div>
+            <h4 set:html={n.title} />
+            <p set:html={n.teaser} />
+            <span class="url">geminiampm.co.uk/{n.slug}/</span>
+          </a>
+        ))}
+      </div>
+      <p class="case-note">Every existing article keeps its URL &mdash; the renewed design re-skins the post template without breaking a single ranking link.</p>
+    </section>
+
+    <ContactBand />
+  </PageWrap>
+</Base>
+
+<style>
+  .ni-card { text-decoration: none; color: inherit; display: block; }
+</style>

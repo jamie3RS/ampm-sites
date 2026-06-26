@@ -1,10 +1,15 @@
 {
-  "name": "gemini-static-prototype",
+  "name": "gemini",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Static React/Babel prototype of the renewed geminiampm.co.uk — served as-is by Cloudflare Pages.",
+  "description": "Gemini AMPM — Astro port of the prototype at ../gemini-prototype-src/. Same data, same CSS, same components, same copy — just server-rendered at real URLs.",
   "scripts": {
-    "build": "node build.js"
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^4.16.18"
   }
 }

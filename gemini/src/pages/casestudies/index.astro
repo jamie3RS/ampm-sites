@@ -1,0 +1,37 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import ContactBand from '~/components/ContactBand.astro';
+import { CASES } from '~/data/site';
+---
+<Base title="Casework — Gemini AMPM" description="Peterborough Court, Longfield Court, and the kind of jobs that only go well when the same team owns the outcome. Proof, not promises.">
+  <PageWrap skin="night">
+    <PageHero
+      kicker="Casework"
+      h1="Proof, not<br />promises."
+      lede="A landmark City project, social-housing remediation delivered around residents, leisure-centre works completed without closing the doors &mdash; <strong>the kind of jobs that only go well when the same team owns the outcome.</strong>"
+    />
+
+    <section class="sec tight">
+      <div class="caselist reveal">
+        {CASES.map((c, i) => (
+          <a class="case-card" href="/contact/">
+            <image-slot id={'g-case-' + i} shape="rect" class="ci" style="width:100%; height: 210px; display:block"
+              placeholder={'CASE — ' + c.tag}></image-slot>
+            <span class="ctag" style="background: var(--m-orange); position: absolute" set:html={c.tag} />
+            <h4 set:html={c.sector} />
+            <p class="cs" set:html={c.scope} />
+          </a>
+        ))}
+      </div>
+      <p class="case-note">A selection. Full case studies and client references available on request &mdash; including PQQ-ready evidence for tenders.</p>
+    </section>
+
+    <ContactBand />
+  </PageWrap>
+</Base>
+
+<style>
+  .case-card { text-decoration: none; color: inherit; display: block; }
+</style>

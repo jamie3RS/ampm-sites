@@ -1,0 +1,84 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import Kicker from '~/components/Kicker.astro';
+import { MANUFACTURERS, MANUFACTURER_CATEGORIES } from '~/data/site';
+
+const itemList = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Manufacturers Gemini AMPM installs and maintains',
+  url: 'https://geminiampm.co.uk/manufacturers/',
+  numberOfItems: MANUFACTURERS.length,
+  itemListElement: MANUFACTURERS.map((m, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: m.nm.replace(/&[a-z]+;|&#\d+;/g, ''),
+    url: m.link || undefined,
+  })),
+};
+---
+<Base title="Manufacturers — Gemini AMPM" description="Brands we install, maintain and specify across UK commercial estates — from Fike ProInert IG55 to Hyfire wireless and the HVAC majors." schemaJson={itemList}>
+  <PageWrap skin="night">
+    <PageHero
+      kicker="Manufacturers"
+      h1="Brands we install,<br />maintain &amp; specify."
+      lede={"From Fike ProInert IG55 on Peterborough Court to Hyfire wireless systems and the air-conditioning majors &mdash; " +
+            "these are the manufacturers and trade partners we install and maintain across UK commercial estates. " +
+            "Approved installer with several; long-term framework with others. Use this to validate compatibility before " +
+            "calling, or to find the brand specified on your drawings."}
+    />
+
+    {MANUFACTURER_CATEGORIES.map((cat) => {
+      const inCat = MANUFACTURERS.filter((m) => m.cat === cat.id);
+      if (inCat.length === 0) return null;
+      return (
+        <section class="sec tight">
+          <div class="reveal" style="margin-bottom: 18px">
+            <Kicker>{inCat.length} {inCat.length === 1 ? 'brand' : 'brands'}</Kicker>
+            <h2 class="dhead sm" set:html={cat.name} />
+          </div>
+          <div class="cdir-grid reveal">
+            {inCat.map((m) => {
+              const logoClass = 'cdir-logo' + (m.logoMode === 'keep' ? ' cdir-logo--keep' : '');
+              const inner = m.logo
+                ? (
+                  <>
+                    <img class={logoClass} src={'/' + m.logo} alt={m.nm + ' logo'} loading="lazy" />
+                    <span class="cdir-nm" set:html={m.nm} />
+                    <span class="cdir-what" set:html={m.what} />
+                  </>
+                )
+                : (
+                  <>
+                    <span class="cdir-logo cdir-logo--text" set:html={m.nm} />
+                    <span class="cdir-nm" set:html={m.nm} />
+                    <span class="cdir-what" set:html={m.what} />
+                  </>
+                );
+              return m.link
+                ? <a class="cdir-cell" href={m.link} target="_blank" rel="noopener noreferrer">{inner}</a>
+                : <div class="cdir-cell">{inner}</div>;
+            })}
+          </div>
+        </section>
+      );
+    })}
+
+    <section class="sec tight">
+      <div class="intro2 reveal">
+        <div>
+          <Kicker>Specifier?</Kicker>
+          <h2 class="dhead sm">Need a quote on a<br />specified brand?</h2>
+        </div>
+        <div>
+          <p class="body">Working from a drawing set or specification that names one of these brands? Send us the spec and we&rsquo;ll come back with a fixed quote, certified install and audit-ready evidence pack.</p>
+          <p class="body" style="margin-top: 16px">
+            <a class="btn line sm" href="/contact/">Send a specification &rarr;</a>
+          </p>
+        </div>
+      </div>
+    </section>
+  </PageWrap>
+</Base>

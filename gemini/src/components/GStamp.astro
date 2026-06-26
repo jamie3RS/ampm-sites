@@ -1,0 +1,7 @@
+---
+interface Props { time: string; shift: string; }
+const { time, shift } = Astro.props;
+---
+<div class="gstamp reveal">
+  <span class="tick"></span>{time}<span class="shift">{shift}</span>
+</div>

@@ -1,0 +1,10 @@
+{
+  "name": "gemini-static-prototype",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Static React/Babel prototype of the renewed geminiampm.co.uk — served as-is by Cloudflare Pages.",
+  "scripts": {
+    "build": "node build.js"
+  }
+}

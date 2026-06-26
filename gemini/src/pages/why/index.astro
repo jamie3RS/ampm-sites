@@ -1,0 +1,46 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import AccredWall from '~/components/AccredWall.astro';
+import ContactBand from '~/components/ContactBand.astro';
+import { WHY, PROOF } from '~/data/site';
+---
+<Base title="Why choose Gemini — Gemini AMPM" description="Owned by the people who do the work. Employee-owned (EOT), BSI-compliant, specialists in large-scale buildings, sustainable systems.">
+  <PageWrap skin="night">
+    <PageHero
+      kicker="Why choose Gemini"
+      h1="Owned by the<br />people who<br />do the work."
+      lede="Safety and security sit at the heart of everything we do. As an <strong>employee-owned business (EOT)</strong>, every member of the team has a vested interest in delivering the highest standard &mdash; not a brief to hit, an ownership stake to protect."
+    />
+
+    <section class="sec tight">
+      <div class="principles reveal">
+        {WHY.map((w) => (
+          <div class="principle">
+            <span class="n">{w.n}</span>
+            <div>
+              <h4 set:html={w.t} />
+              <p set:html={w.d} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <AccredWall head="Owned by our people.<br />Audited by everyone else." />
+
+    <section class="sec tight">
+      <div class="statband reveal">
+        {PROOF.map((c) => (
+          <div class="cell">
+            <div class="big">{c.big}</div>
+            <div class="lbl" set:html={c.lbl} />
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <ContactBand />
+  </PageWrap>
+</Base>

@@ -1,0 +1,224 @@
+---
+// Homepage — port of GeminiHome from g-home.jsx, "watch" concept.
+// Composes: Stars, Hero, Ribbon, ServiceLedger, TheWatch, SectorsTeaser,
+// ClientsRow, AccredBand, NewsTeaser, DawnHandback.
+import Base from '~/layouts/Base.astro';
+import GStamp from '~/components/GStamp.astro';
+import { PILLARS, heroPillars, PROOF, NIGHTLOG, SECTORS, CLIENTS, NEWS, ACCREDS, CONTACT } from '~/data/site';
+
+const STAR_FIELD: Array<[number, number]> = [
+  [220, 14], [340, 38], [480, 72], [620, 8], [780, 55], [960, 85], [1140, 24],
+  [1320, 64], [1520, 12], [1700, 78], [1900, 42], [2100, 90], [2320, 18],
+  [2560, 58], [2800, 30], [3050, 74], [3300, 10], [3550, 48], [3800, 67], [4050, 33],
+];
+
+const hero = heroPillars.map((id) => PILLARS.find((p) => p.id === id)!).filter(Boolean);
+const featuredClients = CLIENTS.filter((c) => c.featured);
+const phone = CONTACT.phone;
+---
+<Base title="Fire, Security & Ventilation Systems for UK Commercial & Public Sector Buildings · Gemini AMPM">
+  <div class="ghome" data-nav-dark data-screen-label="Gemini AMPM — homepage">
+    {/* Stars */}
+    <div class="stars" aria-hidden="true">
+      <span class="moonglow" style="top: 360px; right: 5%"></span>
+      {STAR_FIELD.map(([top, left], i) => (
+        <span class={'star' + (i % 2 ? ' s2' : '')} style={`top: ${top}px; left: ${left}%`}></span>
+      ))}
+    </div>
+    <div class="gspine"></div>
+
+    {/* Hero */}
+    <header class="gwrap ghero">
+      <GStamp time="18:42" shift="The building empties" />
+      <h1 class="reveal">PM <span class="arr">&rarr;</span> AM.<br />We keep<br />watch.</h1>
+      <div class="sub-row">
+        <div class="reveal d1">
+          <p class="standfirst">
+            Fire, security, ventilation and passive fire for the South East&rsquo;s most demanding buildings &mdash; <strong>designed, installed, monitored and maintained since 1997.</strong> When the last person leaves, we&rsquo;re still on.
+          </p>
+          <div class="gcta">
+            <a class="btn" href="/contact/">Request a consultation</a>
+            <a class="btn line" href="/services/">Our services</a>
+          </div>
+        </div>
+        <figure class="gfig reveal d2">
+          <image-slot id="g-hero" shape="rect" style="width:100%; height: clamp(300px,38vw,460px); display: block"
+            src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1400&q=72"
+            placeholder="NIGHT — the building / city after dark"></image-slot>
+          <figcaption class="gcap">After hours &mdash; when the building empties, the systems stay on · Peterborough Court, Fleet Street &middot; London</figcaption>
+        </figure>
+      </div>
+    </header>
+
+    {/* Ribbon */}
+    <div class="gribbon reveal">
+      <div class="bar">
+        {hero.map((p) => (
+          <a class="seg" href={'/' + p.id + '/'} style={`background: ${p.colour}`}>
+            <span set:html={p.name} /><small>{p.no}</small>
+          </a>
+        ))}
+      </div>
+      <div class="legend">
+        <span>PM &mdash; the watch begins</span>
+        <span>Employee-owned &middot; monitored 24/7</span>
+        <span>AM &mdash; handed back</span>
+      </div>
+    </div>
+
+    {/* ServiceLedger */}
+    <section class="gwrap gservices">
+      <GStamp time="23:00" shift="Systems live" />
+      <h2 class="gh2 reveal">What&rsquo;s on<br /><span class="lt">while you&rsquo;re off.</span></h2>
+      <div>
+        {PILLARS.map((p) => (
+          <a class="gsvc reveal" href={'/' + p.id + '/'}>
+            <span class="num">{p.no}</span>
+            <span class="nm" set:html={p.name + '<span class="sw" style="background:' + p.colour + '"></span>'} />
+            <p set:html={p.short} />
+            <span class="go">&rarr;</span>
+          </a>
+        ))}
+      </div>
+      <div class="gglass gproof reveal" style="margin-top: clamp(40px,5vw,60px)">
+        {PROOF.map((c) => (
+          <div class="cell">
+            <div class="big">{c.big}</div>
+            <div class="lbl" set:html={c.lbl} />
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* TheWatch */}
+    <section class="gwrap gwatch">
+      <GStamp time="02:47" shift="The watch" />
+      <h2 class="gh2 reveal">While you<br /><span class="lt">were out.</span></h2>
+      <div class="cols">
+        <div class="story reveal">
+          <p>
+            Most security companies sell you boxes on the wall. <strong>We sell you the night&rsquo;s
+            sleep</strong> &mdash; systems that are designed, installed, watched and answered, not just
+            fitted and forgotten.
+          </p>
+          <p>
+            Fire detection, suppression, intruder and access &mdash; monitored from one control centre,
+            with an engineer who responds. Every line in the log is a real kind of night for our
+            clients. <strong>The difference is who&rsquo;s awake when it happens.</strong>
+          </p>
+        </div>
+        <div class="gglass glog reveal d1">
+          <div class="hd"><span class="dotlive"></span>Night log &mdash; [site name]</div>
+          {NIGHTLOG.map((r) => (
+            <div class="row">
+              <span class="t">{r.t}</span>
+              <span set:html={r.e} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* SectorsTeaser */}
+    <section class="gwrap gclients">
+      <GStamp time="03:30" shift="Who we protect" />
+      <h2 class="gh2 reveal">The buildings<br /><span class="lt">we keep safe.</span></h2>
+      <div class="gsector-grid reveal">
+        {SECTORS.map((s) => (
+          <a class="gsector" href="/sectors/">
+            <span class="sw" style={`background: ${s.colour}`}></span>
+            <span class="nm" set:html={s.name} />
+            <p class="bl" set:html={s.blurb} />
+          </a>
+        ))}
+      </div>
+    </section>
+
+    {/* ClientsRow */}
+    <section class="gwrap gclients" style="padding-top: clamp(70px,8vw,100px)">
+      <GStamp time="04:30" shift="Trusted by" />
+      <h2 class="gh2 reveal">The company<br /><span class="lt">we keep.</span></h2>
+      <div class="gglass gclient-row reveal">
+        {featuredClients.map((c) => {
+          const logoClass = 'gclient-logo' + (c.logoMode === 'keep' ? ' gclient-logo--keep' : '');
+          const inner = c.logo
+            ? (
+              <>
+                <img class={logoClass} src={'/' + c.logo} alt={c.nm + ' logo'} loading="lazy" />
+                <span class="nm" set:html={c.nm} />
+                <span class="what" set:html={c.what} />
+              </>
+            )
+            : (
+              <>
+                <span class="gclient-logo gclient-logo--text" set:html={c.nm} />
+                <span class="nm" set:html={c.nm} />
+                <span class="what" set:html={c.what} />
+              </>
+            );
+          return c.link
+            ? <a class="gclient gclient--linked" href={c.link} target="_blank" rel="noopener noreferrer">{inner}</a>
+            : <div class="gclient">{inner}</div>;
+        })}
+      </div>
+      <div class="reveal" style="text-align: center; margin-top: clamp(24px, 3vw, 36px)">
+        <a class="gpill" href="/clients/">See every client we work with &rarr;</a>
+      </div>
+    </section>
+
+    {/* AccredBand */}
+    <section class="gwrap gclients" style="padding-top: clamp(70px,8vw,100px)">
+      <GStamp time="04:50" shift="Accredited" />
+      <h2 class="gh2 reveal">Certified to<br /><span class="lt">the standard.</span></h2>
+      <div class="gaccred reveal">
+        {ACCREDS.map((a) => (
+          <div class="cell">
+            <span class="t">{a.t}</span>
+            <span class="d" set:html={a.d} />
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* NewsTeaser */}
+    <section class="gwrap gclients" style="padding-top: clamp(70px,8vw,100px)">
+      <GStamp time="05:10" shift="Latest insights" />
+      <h2 class="gh2 reveal">From the<br /><span class="lt">control room.</span></h2>
+      <div class="gnews-row reveal">
+        {NEWS.slice(0, 3).map((n) => (
+          <a class="gnews" href="/news/">
+            <image-slot id={'g-news-' + n.slug} shape="rect" class="ni" style="width:100%; height:196px; display:block"
+              placeholder={n.cat + ' — article image'}></image-slot>
+            <div class="meta"><span class="cat">{n.cat}</span><span>{n.date}</span></div>
+            <h4 set:html={n.title} />
+            <p set:html={n.teaser} />
+          </a>
+        ))}
+      </div>
+    </section>
+  </div>
+
+  {/* DawnHandback */}
+  <div class="gdaybreak">
+    <section class="gwrap gdawn">
+      <GStamp time="06:12" shift="First light" />
+      <h2 class="gh2 reveal">Handed back,<br />every morning.</h2>
+      <p class="lead reveal d1">
+        The building opens, the systems disarm, and the night&rsquo;s log is in your inbox before
+        your coffee. <strong>That&rsquo;s the product: an uneventful morning</strong> &mdash; and a
+        building that stayed compliant, safe and operational while you slept.
+      </p>
+      <div class="gcta reveal d1" style="margin-top: 0">
+        <a class="btn" href="/contact/">Request a consultation</a>
+        <a class="btn line" href={'tel:' + String(phone).replace(/\s+/g, '')}>{phone}</a>
+      </div>
+      <a class="gsister reveal d2" href="https://ampm.co.uk" target="_blank" rel="noopener noreferrer">
+        <span class="txt">
+          <strong>Daytime building works? That&rsquo;s our sister company.</strong>
+          AMPM Building Services &mdash; MEPH, commercial fit-out, fabric and groundworks. Same group, same standard, the day shift: AM &rarr; PM.
+        </span>
+        <span class="arrow">↗</span>
+      </a>
+    </section>
+  </div>
+</Base>

@@ -1,0 +1,45 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import ContactBand from '~/components/ContactBand.astro';
+import { PILLARS } from '~/data/site';
+---
+<Base title="Services — Gemini AMPM" description="Fire, security, ventilation, gas suppression and passive fire — seven service lines, one accountable employee-owned team. UK commercial and public-sector.">
+  <PageWrap skin="night">
+    <PageHero
+      kicker="Services"
+      h1="Everything that keeps<br />a building safe<br />after dark."
+      lede="Fire, security, ventilation, gas suppression and passive fire &mdash; <strong>seven service lines, one accountable, employee-owned team.</strong> Designed, installed, monitored and maintained for the South East&rsquo;s most demanding commercial and public-sector buildings."
+    >
+      <a slot="ctas" class="btn sm" href="/contact/">Request a consultation</a>
+    </PageHero>
+
+    <section class="sec tight">
+      {PILLARS.map((p) => (
+        <a class="svc-detail link reveal" href={'/' + p.id + '/'}>
+          <div class="lead-col">
+            <span class="no">{p.no}</span>
+            <span class="swatch" style={`background: ${p.colour}`}></span>
+          </div>
+          <div>
+            <h3 class="nm" set:html={p.full} />
+            <p class="scope" set:html={p.short} />
+          </div>
+          <div>
+            <p class="aside-l">Why now</p>
+            <p class="driver" set:html={p.drivers} />
+          </div>
+        </a>
+      ))}
+    </section>
+
+    <ContactBand />
+  </PageWrap>
+</Base>
+
+<style>
+  /* The prototype uses onClick on a div. We use a real anchor for SSR;
+     keep the flex/grid layout the same. */
+  .svc-detail.link { text-decoration: none; color: inherit; display: grid; }
+</style>

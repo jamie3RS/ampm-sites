@@ -1,0 +1,107 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import Kicker from '~/components/Kicker.astro';
+import { ACCREDS, PILLARS } from '~/data/site';
+
+export function getStaticPaths() {
+  return ACCREDS.map((a) => ({ params: { slug: a.slug }, props: { accred: a } }));
+}
+
+const { accred: a } = Astro.props;
+const relatedPillars = (a.pillars || []).map((pid: string) => PILLARS.find((p) => p.id === pid)).filter(Boolean);
+const siblings = ACCREDS.filter((x) => x.slug !== a.slug);
+
+const schemaJson = {
+  '@context': 'https://schema.org',
+  '@type': 'EducationalOccupationalCredential',
+  name: a.t + ' — Gemini AMPM Ltd',
+  credentialCategory: 'Industry accreditation',
+  recognizedBy: { '@type': 'Organization', name: a.verify_label || a.t, url: a.verify },
+  about: { '@type': 'Organization', name: 'Gemini AMPM Ltd', url: 'https://geminiampm.co.uk' },
+  url: 'https://geminiampm.co.uk/about-us/accreditations/' + a.slug + '/',
+};
+---
+<Base title={a.meta_title} description={a.meta_desc} schemaJson={schemaJson}>
+  <PageWrap skin="night">
+    <PageHero kicker={'Accreditation · ' + a.t} h1={a.h1} lede={a.lede} />
+
+    <section class="sec tight">
+      <div class="acc-detail reveal">
+        <div class="acc-detail-copy">
+          <Kicker>What it covers</Kicker>
+          <ul class="acc-covers">
+            {(a.covers || []).map((c) => <li set:html={c} />)}
+          </ul>
+        </div>
+        <div class="acc-detail-cert">
+          {a.thumb ? (
+            <a class="acc-cert-card" href={'/' + a.pdf} target="_blank" rel="noopener noreferrer">
+              <img src={'/' + a.thumb} alt={'Gemini AMPM ' + a.t + ' certificate'} />
+              <span class="acc-cert-go">View certificate PDF ↗</span>
+            </a>
+          ) : (
+            <div class="acc-cert-card pending">
+              <span class="acc-cert-pending">Certificate PDF pending</span>
+              <span class="acc-cert-pending-sub">Membership held; current certificate being uploaded.</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+
+    <section class="sec tight">
+      <div class="intro2 reveal">
+        <div>
+          <Kicker>What it means for clients</Kicker>
+          <h2 class="dhead sm">Why this matters<br />on a real job.</h2>
+        </div>
+        <div>
+          <p class="body" set:html={a.means} />
+          {a.verify && (
+            <p class="body" style="margin-top: 16px">
+              <a class="btn line sm" href={a.verify} target="_blank" rel="noopener noreferrer">Verify on {a.verify_label} ↗</a>
+            </p>
+          )}
+        </div>
+      </div>
+    </section>
+
+    {relatedPillars.length > 0 && (
+      <section class="sec tight">
+        <div class="reveal" style="margin-bottom: 24px">
+          <Kicker>Where we apply this</Kicker>
+          <h2 class="dhead sm">The work it underpins.</h2>
+        </div>
+        <div class="acc-pillars reveal">
+          {relatedPillars.map((p) => p && (
+            <a class="acc-pillar" href={'/' + p.id + '/'}>
+              <span class="t" set:html={p.name} />
+              <span class="d" set:html={p.short} />
+              <span class="go" aria-hidden="true">→</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section class="sec tight">
+      <div class="reveal" style="margin-bottom: 24px">
+        <Kicker>The full set</Kicker>
+        <h2 class="dhead sm">All twelve accreditations.</h2>
+      </div>
+      <div class="acc-siblings reveal">
+        {siblings.map((x) => (
+          <a class="acc-sibling" href={'/accreditations/' + x.slug + '/'}>
+            <span class="t">{x.t}</span>
+            <span class="d" set:html={x.d} />
+          </a>
+        ))}
+      </div>
+      <p class="case-note" style="margin-top: 24px">
+        <a href="/accreditations/">← Back to the accreditations index</a>
+      </p>
+    </section>
+  </PageWrap>
+</Base>

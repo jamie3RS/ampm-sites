@@ -1,0 +1,15 @@
+---
+import Kicker from '~/components/Kicker.astro';
+interface Props { kicker: string; h1: string; lede?: string; }
+const { kicker, h1, lede } = Astro.props;
+---
+<section class="sec p-hero nightband" data-nav-dark>
+  <div class="reveal"><Kicker dark>{kicker}</Kicker></div>
+  <h1 class="reveal d1" set:html={h1} />
+  {lede && <p class="lede reveal d2" set:html={lede} />}
+  {Astro.slots.has('ctas') && (
+    <div class="reveal d3" style="margin-top: 26px; display: flex; gap: 14px; flex-wrap: wrap;">
+      <slot name="ctas" />
+    </div>
+  )}
+</section>

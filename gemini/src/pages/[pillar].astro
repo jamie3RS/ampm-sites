@@ -1,0 +1,142 @@
+---
+// Service pillar page — port of ServicePillarPage from g-service.jsx.
+// Generates one page per pillar id (fire, passive, security, ventilation,
+// gas, smallworks, me).
+import Base from '~/layouts/Base.astro';
+import Kicker from '~/components/Kicker.astro';
+import { PILLARS, SECTORS, REP_CASES } from '~/data/site';
+
+export function getStaticPaths() {
+  return PILLARS.map((p) => ({ params: { pillar: p.id }, props: { pillar: p } }));
+}
+
+const { pillar: p } = Astro.props;
+const others = PILLARS.filter((x) => x.id !== p.id);
+const cases = REP_CASES[p.id] || REP_CASES.fire;
+---
+<Base title={p.full.replace(/&amp;/g, '&') + ' — Gemini AMPM'} description={p.short.replace(/<[^>]+>/g, '').replace(/&mdash;/g, '—').replace(/&amp;/g, '&').slice(0, 155)}>
+  <div class="page" data-nav-dark>
+    <span class="pageglow"></span>
+    <div class="shell">
+      <section class="sec p-hero nightband" data-nav-dark>
+        <div class="reveal"><span class="svc-bar accent" style={`background: ${p.colour}`}></span></div>
+        <div class="reveal"><Kicker dark>Services &middot; {p.no}</Kicker></div>
+        <h1 class="reveal d1" set:html={p.full} />
+        <p class="lede reveal d2" set:html={p.intro} />
+        <div class="reveal d3" style="margin-top:26px;display:flex;gap:14px;flex-wrap:wrap">
+          <a class="btn sm" href="/contact/">Book a survey</a>
+          <a class="btn line sm" href="/services/">All services</a>
+        </div>
+      </section>
+
+      {p.children.length > 0 ? (
+        <section class="sec tight">
+          <div class="reveal" style="margin-bottom: 28px">
+            <Kicker>What we cover</Kicker>
+            <h2 class="dhead sm">Every {p.name.replace(/&amp;/g, '&')} service,<br />one accountable team.</h2>
+          </div>
+          <div class="kids reveal">
+            {p.children.map((c) => (
+              <a class="kid" href={'https://geminiampm.co.uk/' + c.slug + '/'} target="_blank" rel="noopener noreferrer">
+                <span class="kn" set:html={c.name} />
+                <span class="ku">geminiampm.co.uk/{c.slug}/</span>
+              </a>
+            ))}
+          </div>
+          <p class="case-note">Each service keeps its own page &mdash; and its existing web address &mdash; so the search ranking earned over the years carries straight into the renewed site.</p>
+        </section>
+      ) : (
+        <section class="sec tight">
+          <div class="intro2 reveal">
+            <div>
+              <Kicker>What we cover</Kicker>
+              <h2 class="dhead sm">Scope,<br />in brief.</h2>
+            </div>
+            <p class="body" set:html={p.short} />
+          </div>
+        </section>
+      )}
+
+      <section class="sec tight">
+        <div class="intro2 reveal">
+          <div>
+            <Kicker>Why it matters now</Kicker>
+            <h2 class="dhead sm">Where the work<br />is coming from.</h2>
+          </div>
+          <p class="body" set:html={p.drivers} />
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="reveal" style="margin-bottom: 30px">
+          <Kicker>Representative projects</Kicker>
+          <h2 class="dhead sm" set:html={p.name + ' work, in the field.'} />
+        </div>
+        <div class="caselist reveal">
+          {cases.map((c, i) => (
+            <a class="case-card" href="/casestudies/">
+              <image-slot id={'g-rc-' + p.id + '-' + i} shape="rect" class="ci" style="width:100%;height:200px;display:block"
+                placeholder={'CASE — ' + p.name.replace(/&amp;/g, '&')}></image-slot>
+              <span class="ctag" style={`background: ${p.colour}; position: absolute`} set:html={c.tag} />
+              <h4>[{c.sector}]</h4>
+              <p class="cs" set:html={c.scope} />
+            </a>
+          ))}
+        </div>
+        <p class="case-note">Representative of the {p.name.replace(/&amp;/g, '&')} work we deliver. Named, full case studies and PQQ references available on request.</p>
+      </section>
+
+      <section class="sec tight line-top">
+        <div class="reveal" style="margin-bottom: 22px">
+          <Kicker>Sectors</Kicker>
+          <h2 class="dhead sm">Built for the most<br />demanding buildings.</h2>
+        </div>
+        <div class="sectorchips reveal">
+          {SECTORS.map((s) => (
+            <a class="sectorchip" href="/sectors/">
+              <span class="sw" style={`background: ${s.colour}`}></span>
+              <span set:html={s.name} />
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section class="sec tight line-top">
+        <div class="reveal" style="margin-bottom: 22px">
+          <Kicker>The rest of the offer</Kicker>
+          <h2 class="dhead sm">One contractor,<br />the whole building.</h2>
+        </div>
+        <div class="otherlines reveal">
+          {others.map((o) => (
+            <a class="otherline" href={'/' + o.id + '/'}>
+              <span class="ol-l"><span class="ol-sw" style={`background: ${o.colour}`}></span><span class="ol-nm" set:html={o.name} /></span>
+              <span class="ol-go">&rarr;</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    </div>
+
+    <section class="band" data-nav-dark style={`background: ${p.colour}; color: #fff`}>
+      <div class="shell">
+        <div class="cta-split reveal">
+          <div>
+            <Kicker dark>Talk to us about {p.name.replace(/&amp;/g, '&')}</Kicker>
+            <h2 class="dhead sm" style="color:#fff">Get the building<br />surveyed this week.</h2>
+            <p class="body" style="color: rgba(255,255,255,0.9); margin-top: 16px">
+              A named engineer, not a call centre, comes back within 24 hours. Tell us the building, the system and where you are with compliance.
+            </p>
+          </div>
+          <div class="cta-row2" style="flex-direction:column;align-items:flex-start">
+            <a class="btn ghost" href="/contact/">Request a consultation &rarr;</a>
+            <a class="btn ghost" href="/why/">Why choose Gemini</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .case-card, .sectorchip, .otherline { text-decoration: none; color: inherit; display: block; }
+</style>

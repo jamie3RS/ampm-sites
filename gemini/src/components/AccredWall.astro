@@ -1,0 +1,38 @@
+---
+import Kicker from '~/components/Kicker.astro';
+import { ACCREDS } from '~/data/site';
+interface Props { head?: string; }
+const { head = 'Certified to<br />the standard.' } = Astro.props;
+---
+<section class="sec tight">
+  <div class="reveal" style="margin-bottom: 24px">
+    <Kicker>Accreditations</Kicker>
+    <h2 class="dhead sm" set:html={head} />
+  </div>
+  <div class="acc-wall reveal">
+    {ACCREDS.map((a) => {
+      const href = '/accreditations/' + a.slug + '/';
+      return (
+        <a class="cell linked" href={href}>
+          {a.thumb ? (
+            <div class="flipper">
+              <div class="face front">
+                <div class="t">{a.t}</div>
+                <div class="d" set:html={a.d} />
+                <div class="acc-go" aria-hidden="true">Read more →</div>
+              </div>
+              <div class="face back" style={`background-image: url(/${a.thumb})`} aria-hidden="true" />
+            </div>
+          ) : (
+            <div class="face front">
+              <div class="t">{a.t}</div>
+              <div class="d" set:html={a.d} />
+              <div class="acc-go" aria-hidden="true">Read more →</div>
+            </div>
+          )}
+        </a>
+      );
+    })}
+  </div>
+  <p class="case-note">Held and maintained live &mdash; click any accreditation to see the certificate and what it means. References and PQQ submissions available on request.</p>
+</section>

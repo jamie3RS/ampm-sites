@@ -1,0 +1,34 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import Kicker from '~/components/Kicker.astro';
+import AccredWall from '~/components/AccredWall.astro';
+import { CONTACT } from '~/data/site';
+
+const tel = 'tel:' + String(CONTACT.phone).replace(/\s+/g, '');
+---
+<Base title="Accreditations — Gemini AMPM" description="BAFE, NSI Gold, FIRAS, CHAS Elite and more — every cert verifiable on its awarding body's register. The third-party-audited reasons our work can be trusted.">
+  <PageWrap skin="night">
+    <PageHero
+      kicker="Accreditations"
+      h1="The marks behind<br />the work."
+      lede="Every system we install lands on a building where someone &mdash; a Responsible Person, a building manager, a tenant &mdash; has to trust it. The accreditations on this page are the third-party-audited reasons that trust is reasonable. Each one is verifiable on its awarding body&rsquo;s register; each certificate is on its dedicated page below."
+    />
+
+    <AccredWall head="Every cert, on its own page." />
+
+    <section class="sec tight">
+      <div class="intro2 reveal">
+        <div>
+          <Kicker>Verification</Kicker>
+          <h2 class="dhead sm">Don&rsquo;t take our<br />word for it.</h2>
+        </div>
+        <div>
+          <p class="body">Each accreditation page links to the awarding body&rsquo;s own register so the certificate can be verified directly. The certificates themselves are uploaded as PDFs &mdash; current versions only, held by us and renewed on the schedule the awarding body audits to.</p>
+          <p class="body">For tender or PQQ submissions, copies of the live certificates and our references are available on request. Email <a href="mailto:info@geminiampm.co.uk">info@geminiampm.co.uk</a> or call <a href={tel}>{CONTACT.phone}</a>.</p>
+        </div>
+      </div>
+    </section>
+  </PageWrap>
+</Base>

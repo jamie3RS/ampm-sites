@@ -1,0 +1,28 @@
+---
+// Port of Nav from g-shell.jsx. Hash routes replaced with real URLs.
+// Scroll/dark/sun-color side-effects live in Base.astro's inline script.
+import GeminiLogo from '~/components/GeminiLogo.astro';
+import { NAV_LINKS, CONTACT } from '~/data/site';
+
+const phone = CONTACT.phone;
+const tel = 'tel:' + String(phone).replace(/\s+/g, '');
+const path = Astro.url.pathname;
+---
+<nav class="nav dark" id="nav" data-screen-label="Nav">
+  <svg class="sunmark" viewBox="0 0 32 32" aria-hidden="true">
+    <circle class="sun-disc" cx="16" cy="16" r="10" />
+  </svg>
+  <a class="wm" href="/">
+    <GeminiLogo />
+  </a>
+  <span class="est">Fire &amp; Security &middot; est.&nbsp;1997</span>
+  <div class="links">
+    {NAV_LINKS.map((p) => {
+      const active = path === p.href || path.startsWith(p.href);
+      return (
+        <a href={p.href} class={active ? 'active' : ''}>{p.label}</a>
+      );
+    })}
+  </div>
+  <a class="phone" href={tel}>{phone}</a>
+</nav>

@@ -1,0 +1,75 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageWrap from '~/components/PageWrap.astro';
+import PageHero from '~/components/PageHero.astro';
+import Kicker from '~/components/Kicker.astro';
+import AccredWall from '~/components/AccredWall.astro';
+import ContactBand from '~/components/ContactBand.astro';
+import { GROUP, PROOF } from '~/data/site';
+---
+<Base title="About us — Gemini AMPM" description="The night shift of AMPM Group. Employee-owned life-safety specialist since 1997, working on the buildings that can't afford to get safety wrong.">
+  <PageWrap skin="night">
+    <PageHero
+      kicker="About us"
+      h1="The night shift<br />of AMPM Group."
+      lede="Gemini AMPM has protected the South East&rsquo;s buildings since <strong>1997</strong>. In 2024 we became an Employee Ownership Trust &mdash; and today we&rsquo;re the life-safety specialist within AMPM Group, working alongside our daytime sister company on the buildings that can&rsquo;t afford to get safety wrong."
+    />
+
+    <section class="sec tight">
+      <div class="intro2 reveal">
+        <div>
+          <Kicker>Who we are</Kicker>
+          <h2 class="dhead sm">Specialists in<br />the difficult buildings.</h2>
+        </div>
+        <div>
+          <p class="body">We work with construction firms, facilities-management providers, property owners and businesses across the UK &mdash; <strong>keeping their buildings compliant, safe and operational 24/7.</strong></p>
+          <p class="body">Hospitals, data centres, social housing, leisure centres, schools and commercial estates: the environments where evacuation strategy, clinical continuity and controlled access actually matter. We design, install, monitor and maintain the systems that hold them safe &mdash; and we&rsquo;re owned by the engineers who deliver them.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec tight">
+      <div class="reveal" style="margin-bottom: 24px">
+        <Kicker>The group</Kicker>
+        <h2 class="dhead sm">One group,<br />around the clock.</h2>
+      </div>
+      <div class="grp-grid reveal">
+        {GROUP.map((g) => {
+          const cls = 'cell' + (g.current ? ' current' : '') + (g.href ? ' linked' : '');
+          if (g.href) {
+            return (
+              <a class={cls} href={g.href} target="_blank" rel="noopener noreferrer">
+                <span class="tag">{g.tag}</span>
+                <h3 set:html={g.t} />
+                <p set:html={g.d} />
+                <span class="cell-go" aria-hidden="true">Visit ↗</span>
+              </a>
+            );
+          }
+          return (
+            <div class={cls}>
+              <span class="tag">{g.tag}</span>
+              <h3 set:html={g.t} />
+              <p set:html={g.d} />
+            </div>
+          );
+        })}
+      </div>
+    </section>
+
+    <AccredWall head="The accreditations<br />behind the work." />
+
+    <section class="sec tight">
+      <div class="statband reveal">
+        {PROOF.map((c) => (
+          <div class="cell">
+            <div class="big">{c.big}</div>
+            <div class="lbl" set:html={c.lbl} />
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <ContactBand />
+  </PageWrap>
+</Base>
