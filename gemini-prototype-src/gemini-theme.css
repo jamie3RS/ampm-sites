@@ -479,9 +479,32 @@ html[data-skin="day"] .founder .portrait image-slot { background: rgba(28,24,18,
 .gaccred { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: rgba(244,234,216,0.85); border: 3px solid rgba(244,234,216,0.85); }
 @media (max-width: 1000px) { .gaccred { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 560px) { .gaccred { grid-template-columns: repeat(2, 1fr); } }
-.gaccred .cell { background: var(--night); padding: 20px 18px; display: flex; flex-direction: column; gap: 7px; min-height: 96px; justify-content: center; }
+.gaccred .cell { background: var(--night); padding: 20px 18px; display: flex; flex-direction: column; gap: 7px; min-height: 140px; justify-content: center;
+  text-decoration: none; color: inherit; position: relative; perspective: 800px; transition: box-shadow 0.18s ease; }
+.gaccred a.cell.linked { cursor: pointer; }
+.gaccred a.cell.linked:hover { box-shadow: 0 0 0 1px rgba(244,234,216,0.4) inset, 0 6px 18px rgba(0,0,0,0.35); }
+/* Flipper structure mirrors .acc-wall: front face is the label, back is the cert thumb. */
+.gaccred .flipper { position: relative; width: 100%; height: 100%; min-height: inherit;
+  transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.gaccred a.cell.linked:hover .flipper { transform: rotateY(180deg); }
+@media (prefers-reduced-motion: reduce) {
+  .gaccred .flipper { transition: none; }
+  .gaccred a.cell.linked:hover .flipper { transform: none; }
+  .gaccred a.cell.linked:hover .face.back { display: block; }
+}
+.gaccred .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  display: flex; flex-direction: column; gap: 7px; padding: 20px 18px; justify-content: center; }
+.gaccred .face.back { transform: rotateY(180deg); background-color: var(--night);
+  background-size: contain; background-position: center; background-repeat: no-repeat;
+  background-origin: content-box; padding: 14px; }
+/* Tiles without a flipper (no thumb) keep the original layout. */
+.gaccred .cell > .face.front:only-child { position: relative; inset: auto; padding: 0; }
 .gaccred .t { font-family: var(--d-display); font-weight: 700; text-transform: uppercase; font-size: 20px; line-height: 0.98; color: #fff; }
 .gaccred .d { font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(244,234,216,0.6); line-height: 1.35; }
+
+/* ===== sister-company card on homepage: BS brand mark on the left ===== */
+.gsister-logo { width: clamp(110px, 14vw, 170px); height: auto; flex-shrink: 0; display: block; margin-right: clamp(18px, 2.5vw, 32px); }
+@media (max-width: 720px) { .gsister-logo { margin-bottom: 14px; margin-right: 0; } }
 
 /* utility */
 .center-narrow { max-width: 760px; }

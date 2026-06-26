@@ -166,16 +166,28 @@ const phone = CONTACT.phone;
       </div>
     </section>
 
-    {/* AccredBand */}
+    {/* AccredBand — clickable + flip-on-hover, matching the acc-wall pattern */}
     <section class="gwrap gclients" style="padding-top: clamp(70px,8vw,100px)">
       <GStamp time="04:50" shift="Accredited" />
       <h2 class="gh2 reveal">Certified to<br /><span class="lt">the standard.</span></h2>
       <div class="gaccred reveal">
         {ACCREDS.map((a) => (
-          <div class="cell">
-            <span class="t">{a.t}</span>
-            <span class="d" set:html={a.d} />
-          </div>
+          <a class="cell linked" href={'/accreditations/' + a.slug + '/'}>
+            {a.thumb ? (
+              <div class="flipper">
+                <div class="face front">
+                  <span class="t">{a.t}</span>
+                  <span class="d" set:html={a.d} />
+                </div>
+                <div class="face back" style={`background-image: url(/${a.thumb})`} aria-hidden="true" />
+              </div>
+            ) : (
+              <div class="face front">
+                <span class="t">{a.t}</span>
+                <span class="d" set:html={a.d} />
+              </div>
+            )}
+          </a>
         ))}
       </div>
     </section>
@@ -214,6 +226,7 @@ const phone = CONTACT.phone;
         <a class="btn line" href={'tel:' + String(phone).replace(/\s+/g, '')}>{phone}</a>
       </div>
       <a class="gsister reveal d2" href="https://ampmbuilding.services" target="_blank" rel="noopener noreferrer">
+        <img class="gsister-logo" src="/assets/ampm-bs-reversed.svg" alt="AMPM Building Services" />
         <span class="txt">
           <strong>Daytime building works? That&rsquo;s our sister company.</strong>
           AMPM Building Services &mdash; MEPH, commercial fit-out, fabric and groundworks. Same group, same standard, the day shift: AM &rarr; PM.
