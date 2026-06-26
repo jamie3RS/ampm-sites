@@ -90,6 +90,29 @@ const schemaJson = graph(breadcrumb([
     font-size: 16px; margin: 24px 0 8px; color: var(--ink, #f4ead8);
     text-transform: uppercase; letter-spacing: 0.04em; }
 
+  /* Document-control summary box — used by signed policy pages (anti-slavery,
+     etc.) to surface version/owner/signed-by/review-date at a glance. */
+  .legal-doc-control { background: rgba(244,234,216,0.04);
+    border: 1px solid rgba(244,234,216,0.10); border-radius: 4px;
+    padding: 20px 24px; margin: 0 0 36px; }
+  .legal-doc-control dl { display: grid; grid-template-columns: minmax(140px, 180px) 1fr;
+    gap: 6px 24px; margin: 0; padding: 0; border: 0; }
+  .legal-doc-control dt { font-family: var(--d-display); font-weight: 700;
+    color: var(--ink, #f4ead8); font-size: 13px; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 2px 0; border: 0; }
+  .legal-doc-control dd { color: var(--ink-2, rgba(244,234,216,0.78));
+    font-size: 14.5px; margin: 0; padding: 2px 0; border: 0; }
+  @media (max-width: 540px) {
+    .legal-doc-control dl { grid-template-columns: 1fr; gap: 2px; }
+    .legal-doc-control dt { margin-top: 10px; }
+  }
+
+  /* Signed-by block at end of formally signed policies. */
+  .legal-signed { background: rgba(244,234,216,0.04);
+    border-left: 3px solid var(--m-orange); padding: 16px 20px;
+    margin: 24px 0 0; font-style: normal; }
+  .legal-signed strong { color: var(--ink, #f4ead8); }
+
   /* Part A summary — protections table at end. */
   .legal-summary-wrap { margin: 48px 0 8px; padding-top: 32px;
     border-top: 1px solid rgba(244,234,216,0.16); }
